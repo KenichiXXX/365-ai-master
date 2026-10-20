@@ -21,7 +21,7 @@ from cloud.models import (
 from cloud.database import DatabaseEngine
 from cloud.config import settings
 from cloud.analytics import AnalyticsEngine
-from cloud.coach import CoachEngine
+from cloud.coach import CoachEngine, checkup_score
 from cloud.schemas import TrendAnalysis
 
 logger = logging.getLogger(__name__)
@@ -90,6 +90,18 @@ def _resolve_token(query_token: Optional[str], header_token: Optional[str]) -> O
     return token
 
 
+def _with_checkup_score(payload: AggregatedScore) -> AggregatedScore:
+    """用云端四维加权分覆盖客户端上报的 score/tier, 排名与报告同口径。"""
+    score, tier = checkup_score(
+        payload.rule_hits,
+        payload.usage_by_model,
+        payload.hourly_histogram,
+        payload.cache_hit_rate,
+        payload.total_cost_7d,
+    )
+    return payload.model_copy(update={"score": score, "tier": tier})
+
+
 @router.post("/submit", status_code=201, response_model=APIResponse, dependencies=[Depends(rate_limit)])
 async def submit_score(
     payload: AggregatedScore,
@@ -109,6 +121,7 @@ async def submit_score(
     if settings.require_api_key and not verify_api_key(x_api_key):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
+    payload = _with_checkup_score(payload)
     success = db.save_aggregated_score(payload)
 
     if not success:
@@ -309,13 +322,12 @@ async def coach_analyze(
     if settings.require_api_key and not verify_api_key(x_api_key):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
+    payload = _with_checkup_score(payload)
     if not db.save_aggregated_score(payload):
         raise HTTPException(status_code=500, detail="Failed to save profile")
 
     try:
         report = coach.generate_report(
-            score=payload.score,
-            tier=payload.tier,
             total_tokens_7d=payload.total_tokens_7d,
             total_cost_7d=payload.total_cost_7d,
             rule_hits=payload.rule_hits,
@@ -345,8 +357,6 @@ def _report_for_token(token: str) -> CoachReport:
         raise HTTPException(status_code=404, detail="No submissions yet for this device")
     try:
         return coach.generate_report(
-            score=latest["score"],
-            tier=latest["tier"],
             total_tokens_7d=latest["total_tokens_7d"],
             total_cost_7d=latest["total_cost_7d"],
             rule_hits=latest["rule_hits"],

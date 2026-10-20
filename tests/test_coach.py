@@ -214,7 +214,7 @@ def test_money_texts_zero_saving():
 def test_report_carries_billing_fields(engine):
     coach, db = engine
     report = coach.generate_report(
-        score=70, tier="B", total_tokens_7d=1_000_000, total_cost_7d=70.0,
+        total_tokens_7d=1_000_000, total_cost_7d=70.0,
         usage_by_model={"claude-opus-5": {"tokens": 900_000, "cost": 65.0, "requests": 100}},
         billing_mode="subscription", monthly_subscription_usd=200.0,
     )
@@ -228,14 +228,12 @@ def test_report_carries_billing_fields(engine):
 def test_small_sample_beat_text_uses_rank(engine):
     """回归: 小样本时说'N 位用户中排第几名',不说'百分位'术语。"""
     coach, db = engine
-    for s in [40, 60, 90]:
+    for s in [40, 60, 95]:
         db.save_aggregated_score(
             AggregatedScore(score=s, tier="B", total_tokens_7d=100, total_cost_7d=1.0, device_token=f"dev-{s}")
         )
-    report = coach.generate_report(
-        score=70, tier="B", total_tokens_7d=100, total_cost_7d=1.0
-    )
-    assert "排第 2 名" in report.beat_ratio_text  # 90 分在前,70 排第 2
+    report = coach.generate_report(total_tokens_7d=100, total_cost_7d=1.0)
+    assert "排第 2 名" in report.beat_ratio_text  # 95 分在前,最小画像 (91) 排第 2
     assert "百分位" not in report.beat_ratio_text
 
 
@@ -377,8 +375,6 @@ def test_full_report_generation(engine):
         )
 
     report = coach.generate_report(
-        score=85,
-        tier="A",
         total_tokens_7d=8_000_000,
         total_cost_7d=70.0,
         rule_hits={"RULE_MODEL_OVERUSE": True},
@@ -412,7 +408,7 @@ def test_report_minimal_payload(engine):
         AggregatedScore(score=50, tier="B", total_tokens_7d=100, total_cost_7d=1.0)
     )
     report = coach.generate_report(
-        score=60, tier="B", total_tokens_7d=500_000, total_cost_7d=5.0
+        total_tokens_7d=500_000, total_cost_7d=5.0
     )
     assert report.beat_ratio_text
     assert len(report.model_routing) == 4

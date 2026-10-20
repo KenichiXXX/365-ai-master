@@ -13,8 +13,17 @@ TIER_PRICES = {
     "fast": (1.0, 5.0, 0.1),
 }
 
-PREMIUM_KEYWORDS = ("opus", "fable", "mythos")
-FAST_KEYWORDS = ("haiku", "-mini", "nano", "flash", "lite")
+# 模型分档 — CLI 与云端 (cloud/coach.py) 共用的唯一一张表, 按名称子串归类。
+# GPT-6 系列档位依据 Codex 官方模型描述: astra=frontier, sol=workhorse,
+# terra=balanced, luna/gpt-reserve=fast and affordable。
+PREMIUM_KEYWORDS = (
+    "opus", "fable", "mythos", "o1-pro", "o3-pro", "ultra", "gpt-5-pro", "astra",
+)
+# "-mini" 带连字符, 避免误伤 "gemini"
+FAST_KEYWORDS = (
+    "haiku", "-mini", "nano", "flash", "lite", "8b", "instant", "luna", "gpt-reserve",
+)
+# 其余归为 balanced (sonnet / gpt-6-sol / gemini-pro 等)
 
 
 def classify_model(name: str) -> str:

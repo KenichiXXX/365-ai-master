@@ -12,7 +12,14 @@ from fastapi.testclient import TestClient
 
 from cloud.database import DatabaseEngine
 from cloud.analytics import AnalyticsEngine
-from cloud.coach import CoachEngine
+from cloud.coach import CoachEngine, checkup_score
+
+BLOAT = {"RULE_CONTEXT_BLOAT": True}
+
+
+def _expected(rule_hits=None):
+    """云端由画像算出的总分 (上报的 score 字段会被覆盖)。"""
+    return checkup_score(rule_hits or {}, {}, None, None, 5.0)[0]
 
 
 @pytest.fixture
@@ -30,13 +37,13 @@ def client(monkeypatch):
     return TestClient(app)
 
 
-def _payload(score, token=None):
+def _payload(score, token=None, rule_hits=None):
     p = {
         "score": score,
         "tier": "A",
         "total_tokens_7d": 1_000_000,
         "total_cost_7d": 5.0,
-        "rule_hits": {},
+        "rule_hits": rule_hits or {},
     }
     if token is not None:
         p["device_token"] = token
@@ -45,10 +52,10 @@ def _payload(score, token=None):
 
 def test_mine_returns_own_report(client):
     """带 token 提交后, /coach/mine?token= 返回本人报告。"""
-    client.post("/api/v1/coach/analyze", json=_payload(42, "tokenA"))
+    client.post("/api/v1/coach/analyze", json=_payload(42, "tokenA", BLOAT))
     r = client.get("/api/v1/coach/mine", params={"token": "tokenA"})
     assert r.status_code == 200
-    assert r.json()["score"] == 42
+    assert r.json()["score"] == _expected(BLOAT)
 
 
 def test_mine_unknown_token_is_404(client):
@@ -65,12 +72,13 @@ def test_mine_requires_token(client):
 
 def test_tokens_are_isolated(client):
     """A 和 B 各自提交, 互不覆盖 —— 匿名写入无法劫持他人首页。"""
-    client.post("/api/v1/coach/analyze", json=_payload(30, "tokenA"))
+    client.post("/api/v1/coach/analyze", json=_payload(30, "tokenA", BLOAT))
     client.post("/api/v1/coach/analyze", json=_payload(90, "tokenB"))
     a = client.get("/api/v1/coach/mine", params={"token": "tokenA"}).json()
     b = client.get("/api/v1/coach/mine", params={"token": "tokenB"}).json()
-    assert a["score"] == 30
-    assert b["score"] == 90
+    assert _expected(BLOAT) != _expected()
+    assert a["score"] == _expected(BLOAT)
+    assert b["score"] == _expected()
 
 
 def test_latest_no_longer_leaks_global(client):
@@ -113,8 +121,8 @@ def test_export_locked_without_api_key(client):
 
 def test_submit_stores_device_token(client):
     """/submit 也接受并存储 device_token (与 /coach/analyze 一致)。"""
-    r = client.post("/api/v1/submit", json=_payload(55, "tokenC"))
+    r = client.post("/api/v1/submit", json=_payload(55, "tokenC", BLOAT))
     assert r.status_code == 201
     mine = client.get("/api/v1/coach/mine", params={"token": "tokenC"})
     assert mine.status_code == 200
-    assert mine.json()["score"] == 55
+    assert mine.json()["score"] == _expected(BLOAT)

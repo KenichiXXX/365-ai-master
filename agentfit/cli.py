@@ -287,8 +287,7 @@ def sync(
         "API 折算价值" if cfg.get("billing_mode") == "subscription" else "成本"
     )
     typer.echo(
-        f"画像: 分数 {profile['score']} ({profile['tier']}) · "
-        f"{profile['total_tokens_7d']:,} tokens · {cost_label} ${profile['total_cost_7d']} · "
+        f"画像: {profile['total_tokens_7d']:,} tokens · {cost_label} ${profile['total_cost_7d']} · "
         f"{len(profile['usage_by_model'])} 个模型"
     )
 
@@ -303,7 +302,10 @@ def sync(
         typer.echo(f"✗ 上报失败: {exc}", err=True)
         raise typer.Exit(code=SCAN_EXIT_ERROR)
 
-    typer.echo(f"\n🏆 {report.get('beat_ratio_text', '')}")
+    # 总分以云端四维加权为准 (与网页同一个数), 本地规则分只作兼容字段上报
+    score_now = report.get("score", profile["score"])
+    typer.echo(f"\n🩺 AI 健康分 {score_now} ({report.get('tier', profile['tier'])})")
+    typer.echo(f"🏆 {report.get('beat_ratio_text', '')}")
     typer.echo(f"📋 {report.get('verdict_text', '')}")
     if report.get("value_text"):
         typer.echo(f"💎 {report['value_text']}")
@@ -314,7 +316,6 @@ def sync(
 
     # 留存钩子: 和上次比, 让"修完再测"有反馈; 没装定时任务的提示一句
     prev = cfg.get("last_score")
-    score_now = profile["score"]
     if isinstance(prev, (int, float)):
         delta = int(score_now - prev)
         if delta > 0:

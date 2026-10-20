@@ -106,20 +106,14 @@ def test_percentile_query_single_score(client):
     assert data["total_samples"] >= 1
 
 
-def test_percentile_query_multiple_scores(client):
-    """Test percentile ranking with multiple submitted scores."""
-    # Submit multiple scores
-    scores = [50, 70, 80, 90]
-    for score in scores:
-        payload = {
-            "score": score,
-            "tier": "B",
-            "total_tokens_7d": 1_000_000,
-            "total_cost_7d": 5.0,
-            "rule_hits": {}, "device_token": f"dev-{score}"
-        }
-        response = client.post("/api/v1/submit", json=payload)
-        assert response.status_code == 201
+def test_percentile_query_multiple_scores(client, test_db):
+    """Test percentile ranking with multiple stored scores."""
+    # 直接写库: /submit 会用云端四维分覆盖上报分, 这里只测排名机制
+    for score in [50, 70, 80, 90]:
+        test_db.save_aggregated_score(AggregatedScore(
+            score=score, tier="B", total_tokens_7d=1_000_000, total_cost_7d=5.0,
+            device_token=f"dev-{score}",
+        ))
 
     # Query percentiles - should increase with score
     p50 = client.get("/api/v1/percentile?score=50").json()["percentile"]
@@ -167,18 +161,13 @@ def test_percentile_query_invalid_score_negative(client):
     assert response.status_code == 422
 
 
-def test_stats_endpoint(client):
+def test_stats_endpoint(client, test_db):
     """Test public statistics endpoint."""
-    # Submit some scores
     for score in [60, 70, 80]:
-        payload = {
-            "score": score,
-            "tier": "B",
-            "total_tokens_7d": 1_000_000,
-            "total_cost_7d": 5.0,
-            "rule_hits": {}, "device_token": f"dev-{score}"
-        }
-        client.post("/api/v1/submit", json=payload)
+        test_db.save_aggregated_score(AggregatedScore(
+            score=score, tier="B", total_tokens_7d=1_000_000, total_cost_7d=5.0,
+            device_token=f"dev-{score}",
+        ))
 
     response = client.get("/api/v1/stats")
     assert response.status_code == 200

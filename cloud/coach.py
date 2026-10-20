@@ -18,13 +18,8 @@ from cloud.models import (
     TimeInsight,
 )
 
-# ---------------------------------------------------------------------------
-# 模型分层知识库 (按名称子串归类, 大小写不敏感)
-# ---------------------------------------------------------------------------
-PREMIUM_KEYWORDS = ("opus", "fable", "mythos", "o1-pro", "o3-pro", "ultra", "gpt-5-pro")
-# "-mini" 带连字符, 避免误伤 "gemini"
-FAST_KEYWORDS = ("haiku", "-mini", "nano", "flash", "lite", "8b", "instant")
-# 其余归为 balanced (sonnet / gpt-4o / gemini-pro 等)
+# 模型分档只有一张表, 在 agentfit/pricing.py (CLI 与云端共用)
+from agentfit.pricing import classify_model
 
 # fast 档价格约为 premium 档的 1/10 — 用于节省估算
 FAST_VS_PREMIUM_COST_RATIO = 0.1
@@ -75,16 +70,6 @@ RULE_ADVICE = {
         expected_impact="重复任务耗时下降一半以上",
     ),
 }
-
-
-def classify_model(name: str) -> str:
-    """按模型名称归入 premium / balanced / fast 三档。"""
-    lower = name.lower()
-    if any(k in lower for k in PREMIUM_KEYWORDS):
-        return "premium"
-    if any(k in lower for k in FAST_KEYWORDS):
-        return "fast"
-    return "balanced"
 
 
 def build_routing_table(dominant_task: Optional[str]) -> List[ModelRoutingAdvice]:
@@ -533,6 +518,40 @@ def compute_checkup(
     return dims, issues
 
 
+# 总分的唯一出口: 四维分项加权。客户端上报的 score 只作兼容字段, 不参与展示与排名。
+DIMENSION_WEIGHTS = {"routing": 0.25, "timing": 0.25, "context": 0.25, "leverage": 0.25}
+
+
+def overall_from_dimensions(dims: List[DimensionScore]) -> int:
+    total = sum(DIMENSION_WEIGHTS[d.key] * d.score for d in dims)
+    return int(total + 0.5)  # 四舍五入 (round() 是银行家舍入)
+
+
+def tier_for_score(score: int) -> str:
+    if score >= 90:
+        return "S"
+    if score >= 75:
+        return "A"
+    if score >= 60:
+        return "B"
+    return "C"
+
+
+def checkup_score(
+    rule_hits: Optional[Dict[str, bool]],
+    usage_by_model: Optional[Dict[str, dict]],
+    hourly_histogram: Optional[List[int]],
+    cache_hit_rate: Optional[float],
+    total_cost_7d: float,
+) -> Tuple[int, str]:
+    """由画像算出 (总分, 段位) — 入库前调用, 保证排名与报告同口径。"""
+    _, saving, mix_flags = diagnose_model_mix(usage_by_model or {}, total_cost_7d)
+    _, _, time_flags = analyze_time_habits(hourly_histogram)
+    dims, _ = compute_checkup(rule_hits or {}, mix_flags, time_flags, cache_hit_rate, saving)
+    score = overall_from_dimensions(dims)
+    return score, tier_for_score(score)
+
+
 def build_money_texts(
     saving: float,
     total_cost_7d: float,
@@ -666,8 +685,6 @@ class CoachEngine:
 
     def generate_report(
         self,
-        score: int,
-        tier: str,
         total_tokens_7d: int,
         total_cost_7d: float,
         rule_hits: Optional[Dict[str, bool]] = None,
@@ -682,6 +699,16 @@ class CoachEngine:
         rule_hits = rule_hits or {}
         usage_by_model = usage_by_model or {}
         task_types = task_types or {}
+
+        diagnosis, saving, mix_flags = diagnose_model_mix(usage_by_model, total_cost_7d)
+        time_insights, peak_hours, time_flags = analyze_time_habits(hourly_histogram)
+        goal_inference, path_advice = infer_goal_and_path(task_types, goal, rule_hits)
+        dominant_task = max(task_types, key=task_types.get) if task_types else None
+        dimension_scores, issues = compute_checkup(
+            rule_hits, mix_flags, time_flags, cache_hit_rate, saving
+        )
+        score = overall_from_dimensions(dimension_scores)
+        tier = tier_for_score(score)
 
         percentile = self.db.get_percentile_for_score(score)
         stats = self.db.get_statistics()
@@ -703,13 +730,6 @@ class CoachEngine:
             rank_headline = "第 1 名"
             rank_caption = "你是首位提交数据的用户"
 
-        diagnosis, saving, mix_flags = diagnose_model_mix(usage_by_model, total_cost_7d)
-        time_insights, peak_hours, time_flags = analyze_time_habits(hourly_histogram)
-        goal_inference, path_advice = infer_goal_and_path(task_types, goal, rule_hits)
-        dominant_task = max(task_types, key=task_types.get) if task_types else None
-        dimension_scores, issues = compute_checkup(
-            rule_hits, mix_flags, time_flags, cache_hit_rate, saving
-        )
         title_text, encourage_text = build_title_and_encourage(
             tier, percentile, len(issues)
         )

@@ -17,7 +17,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from cloud.analytics import AnalyticsEngine
-from cloud.coach import CoachEngine
+from cloud.coach import CoachEngine, checkup_score
 from cloud.database import DatabaseEngine
 from cloud.models import AggregatedScore
 
@@ -50,6 +50,13 @@ def _submit(client, score, token, **extra):
     return client.post("/api/v1/submit", json=payload)
 
 
+def _seed(db, score, token):
+    """直接写库: /submit 会用云端四维分覆盖上报分, 排名机制测试需要指定分数。"""
+    db.save_aggregated_score(AggregatedScore(
+        score=score, tier="B", total_tokens_7d=100_000, total_cost_7d=1.0, device_token=token,
+    ))
+
+
 # ---------------------------------------------------------------------------
 # 排名口径: 每设备只算最近一次
 # ---------------------------------------------------------------------------
@@ -58,9 +65,9 @@ def test_percentile_counts_devices_not_submissions(env):
     client, db = env
     # 设备 A 每天自动 sync 五次 (同一个人), 四台别的设备各一次
     for _ in range(5):
-        assert _submit(client, 90, "dev-a").status_code == 201
+        _seed(db, 90, "dev-a")
     for i, s in enumerate([50, 50, 50, 50]):
-        assert _submit(client, s, f"dev-{i}").status_code == 201
+        _seed(db, s, f"dev-{i}")
 
     # 人头口径: [90, 50, 50, 50, 50] → 60 分排在 4/5 之上 = 80
     # 行数口径会是 4/9 ≈ 44, 那是被自动 sync 灌出来的假排名
@@ -71,9 +78,9 @@ def test_percentile_counts_devices_not_submissions(env):
 
 def test_percentile_uses_latest_submission_per_device(env):
     client, db = env
-    _submit(client, 30, "dev-a")
-    _submit(client, 95, "dev-a")  # 改善后重测, 应以这条为准
-    _submit(client, 60, "dev-b")
+    _seed(db, 30, "dev-a")
+    _seed(db, 95, "dev-a")  # 改善后重测, 应以这条为准
+    _seed(db, 60, "dev-b")
     assert db.get_rank_for_score(80) == 2  # 只有 dev-a 的 95 在上面
 
 
@@ -84,7 +91,7 @@ def test_legacy_rows_without_token_are_excluded(env):
         db.save_aggregated_score(
             AggregatedScore(score=s, tier="C", total_tokens_7d=1, total_cost_7d=0.0)
         )
-    _submit(client, 70, "dev-real")
+    _seed(db, 70, "dev-real")
     stats = db.get_statistics()
     assert stats["total_submissions"] == 1
     assert stats["avg_score"] == 70.0
@@ -116,11 +123,13 @@ def test_rate_limit_trips_on_write_endpoints(env, monkeypatch):
 
 def test_device_token_header_is_accepted(env):
     client, _ = env
-    _submit(client, 77, "dev-h", usage_by_model={"claude-sonnet-5": {"tokens": 1000, "cost": 1.0, "requests": 3}})
+    usage = {"claude-sonnet-5": {"tokens": 1000, "cost": 1.0, "requests": 3}}
+    _submit(client, 77, "dev-h", usage_by_model=usage)
     h = {"X-Device-Token": "dev-h"}
+    expected, _ = checkup_score({}, usage, None, None, 1.0)
 
     r = client.get("/api/v1/coach/mine", headers=h)
-    assert r.status_code == 200 and r.json()["score"] == 77
+    assert r.status_code == 200 and r.json()["score"] == expected
 
     r = client.get("/api/v1/analytics/30day", headers=h)
     assert r.status_code == 200 and isinstance(r.json()["weeks"], list)
