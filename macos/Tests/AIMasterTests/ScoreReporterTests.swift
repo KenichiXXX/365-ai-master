@@ -148,6 +148,26 @@ final class ScoreReporterTests: XCTestCase {
         }
     }
 
+    @MainActor func testInvalidCoverageHidesPreviousRankAndDoesNotReport() async throws {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        defaults.set(true, forKey: "shareAnonymousScore")
+        var calls = 0
+        let reporter = ScoreReporter(defaults: defaults, transport: { _ in
+            calls += 1
+            return (Data(#"{"total":25,"rank":13,"percentile":50,"small_sample":false}"#.utf8), 200)
+        })
+        let valid = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":80,"tier":"A"},"dimensions":[{"key":"routing","label":"Routing","score":80},{"key":"timing","label":"Timing","score":80},{"key":"context","label":"Context","score":80},{"key":"leverage","label":"Leverage","score":80}]}"#.utf8), status: 0)
+        let unknown = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":null,"tier":null,"availability":"unavailable"},"dimensions":[]}"#.utf8), status: 0)
+        let store = SnapshotStore(defaults: defaults, load: { _, _ in valid }, scoreReporter: reporter)
+        await store.refresh()?.value
+        XCTAssertEqual(store.ranking?.percentile, 50)
+        XCTAssertEqual(calls, 1)
+        store.load = { _, _ in unknown }
+        await store.refresh()?.value
+        XCTAssertEqual(calls, 1)
+        XCTAssertNil(store.ranking)
+    }
+
     func testRankingStrings() {
         let early = AppScoreOut(total: 3, rank: 2, percentile: nil, small_sample: true)
         XCTAssertEqual(early.caption(locale: "zh"), "早期排名：3 人中第 2 名")

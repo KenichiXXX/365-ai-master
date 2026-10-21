@@ -47,4 +47,14 @@ final class SnapshotDecodingTests: XCTestCase {
         let legacy = try EngineRunner.decode(Data("{\"schema\":1}".utf8), status: 0)
         XCTAssertNil(legacy.snapshot.coverage)
     }
+    func testSchemaThreeNullScoresAndEvidence() throws {
+        let result = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":null,"tier":null,"availability":"partial","score_version":"1"},"dimensions":[{"key":"routing","label":"Routing","score":35,"availability":"available","evidence":[{"rule_id":"fast_gap","version":"1","window_days":7,"numerator":0,"denominator":100,"availability":"available","explanation":"Token share","limitation":"Heuristic"}]},{"key":"context","label":"Context","score":null,"availability":"unknown","evidence":[]}]}"#.utf8), status: 0)
+        XCTAssertNil(result.snapshot.overall?.score)
+        XCTAssertNil(result.snapshot.overall?.tier)
+        XCTAssertEqual(result.snapshot.overall?.scoreVersion, "1")
+        XCTAssertEqual(result.snapshot.dimensions?.first?.evidence?.first?.denominator, 100)
+        XCTAssertNil(result.snapshot.dimensions?.last?.score)
+        XCTAssertFalse(result.snapshot.hasEvaluableScores)
+    }
+
 }

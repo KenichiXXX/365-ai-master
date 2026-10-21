@@ -17,3 +17,17 @@
 "New today" = "今日新技能";
 "Training" = "修炼";
 "Usage stays local. Only public content is downloaded." = "用量留在本机，仅下载公开内容。";
+
+"No assessable records yet" = "尚无可评估记录";
+"Partly assessable" = "部分可评估";
+"Unknown" = "未知";
+"Why this suggestion" = "为什么推荐";
+"This is a heuristic from log metrics, not a measure of task difficulty or ability" = "这是日志指标的启发式判断，不代表任务难度或能力";
+"Not suitable" = "不适合";
+"Later" = "稍后";
+"Do not suggest again" = "不再推荐";
+"I do not understand" = "看不懂";
+"My tool does not support this" = "工具不支持";
+"I have no project" = "没有项目";
+"Not useful right now" = "暂时用不上";
+"Reset suggestion preferences" = "重置推荐偏好";

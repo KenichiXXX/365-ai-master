@@ -5,9 +5,7 @@ import os
 from pathlib import Path
 import tempfile
 
-from agentfit.engine.content import (
-    POOL, QUESTS, dimension_tip, pool_tip, quest_text, rank_title,
-)
+from agentfit.engine.content import QUESTS, quest_text, rank_title
 from agentfit.engine.inventory import Inventory
 from agentfit.engine.profile import Profile
 from agentfit.models.checkup import DimensionScore
@@ -36,7 +34,8 @@ def evaluate(
         ),
         "automation": sum(item.hooks for item in inv.values()) >= 1 and p.hook_success_14d >= 1,
         "declutter": not installed or len(used) / len(installed) >= 0.5,
-        "graduate": all(d.score >= 85 for d in dims),
+        "graduate": (len(dims) == 4 and {d.key for d in dims} == set(_DIMENSION_ORDER)
+                     and all(d.score is not None and d.score >= 85 for d in dims)),
     }
     return {
         key: (met, "" if met else "need_data" if key == "less_rework" and p.turns_14d < 10 else "not_yet")
@@ -78,25 +77,11 @@ def advance(met: dict[str, tuple[bool, str]], progress_path: Path, now: datetime
     return {"passed": passed, "current": current, "regressed": regressed}
 
 
-def today_tip(state: dict, dims: list[DimensionScore], locale: str, today: date) -> dict:
-    """Select a tip; advance() guarantees that current is unmet or None."""
-    if state["current"] is not None:
-        kind, ref = "quest", state["current"]
-        text = quest_text(ref, locale)
-    else:
-        lowest = min(
-            dims, key=lambda d: (d.score, _DIMENSION_ORDER.index(d.key)), default=None,
-        )
-        if lowest is not None and lowest.score < 85:
-            kind, ref = "dimension", lowest.key
-            text = dimension_tip(ref, locale)
-        else:
-            kind, ref = "pool", POOL[today.toordinal() % len(POOL)]
-            text = pool_tip(ref, locale)
-    return {
-        "title": text["title"], "why": text["why"], "steps": text["steps"],
-        "prompt_for_claude": text["prompt"], "source": {"kind": kind, "ref": ref},
-    }
+def today_tip(state: dict, dims, locale: str, today: date,
+              progress_path: Path | None = None, supported: set[str] | None = None) -> dict:
+    from agentfit.engine.action_rules import assign_action
+    return assign_action(state, dims, locale, today, progress_path,
+                         set(QUESTS) if supported is None else supported)
 
 
 def village_block(state: dict, met: dict, locale: str) -> dict:

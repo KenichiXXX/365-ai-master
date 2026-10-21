@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 export PYINSTALLER_CONFIG_DIR="$PWD/build/pyinstaller-cache"
 # Resolve the local package when analyzing the entry point under scripts/.
 export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
-.venv/bin/pyinstaller --onefile --name 365engine --clean --noconfirm \
+.venv/bin/python -m PyInstaller --onefile --name 365engine --clean --noconfirm \
   --exclude-module fastapi --exclude-module sqlalchemy --exclude-module cloud \
   --add-data agentfit/engine/content_pool.json:agentfit/engine \
   scripts/engine_entry.py

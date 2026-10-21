@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from agentfit.checkup import overall_from_dimensions, tier_for_score
+from agentfit.engine.action_rules import overall, supported_quests
 from agentfit.engine.codex_book import (
     badges,
     book_groups,
@@ -75,8 +75,9 @@ def build_snapshot(
                 quota = latest_rate_limits(home)
         except Exception:
             row["error"] = "unavailable"
-    dims = dimensions(profile)
-    score = overall_from_dimensions(dims)
+    dims = dimensions(profile, coverage, locale)
+    assessment = overall(dims)
+    score = assessment["score"]
     met = evaluate(profile, inventories, dims)
     progress = advance(met, state_dir / "progress.json", now)
     pool = load_content(content)
@@ -98,10 +99,12 @@ def build_snapshot(
     return {
         "schema": 3, "coverage": coverage, "generated_at": now.isoformat(), "locale": locale,
         "tools": tools, "quota": {"codex": quota},
-        "dimensions": [{"key": d.key, "label": label(d.key, locale), "score": d.score} for d in dims],
-        "overall": {"score": score, "tier": tier_for_score(score)},
+        "dimensions": [{"key": d.key, "label": d.label, "score": d.score,
+                        "availability": d.availability, "evidence": d.evidence} for d in dims],
+        "overall": assessment,
         "village": village_block(progress, met, locale),
-        "today_tip": today_tip(progress, dims, locale, now.astimezone().date()),
+        "today_tip": today_tip(progress, dims, locale, today, state_dir / "progress.json",
+                               supported_quests(coverage, inventories)),
         "inventory": {tool: inv.to_public() for tool, inv in inventories.items()},
         "book": book,
         "rankings": daily_rankings(pool, inventories, locale, today, n=20),

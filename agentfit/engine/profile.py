@@ -3,9 +3,7 @@ from collections import Counter
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 
-from agentfit.checkup import analyze_time_habits, compute_checkup, diagnose_model_mix
 from agentfit.engine.events import CompactEvent
-from agentfit.models.checkup import DimensionScore
 from agentfit.pricing import TIER_PRICES, classify_model
 
 
@@ -35,6 +33,12 @@ class Profile:
     light_token_share_30d: float = 0.0
     efforts_30d: set[str] = field(default_factory=set)
     active_dates_30d: list[str] = field(default_factory=list)
+
+    usage_tools_7d: set[str] = field(default_factory=set)
+    usage_tools_14d: set[str] = field(default_factory=set)
+    behavior_tools_14d: set[str] = field(default_factory=set)
+    input_tokens_7d: int = 0
+    cache_tokens_7d: int = 0
 
     def rule_hits(self) -> dict[str, bool]:
         return {
@@ -123,14 +127,17 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
         tool_calls.update(event.tool_calls)
         skill_calls.update(event.skill_calls)
         profile.sidechain_14d += int(event.sidechain)
+        if event.turn_start or event.aborted or event.compacted:
+            profile.behavior_tools_14d.add(event.tool)
         profile.turns_14d += event.turn_start
         profile.aborted_14d += event.aborted
         profile.compactions_14d += event.compacted
         profile.hook_success_14d += event.hook_success
         if event.cwd:
             profile.project_dirs_14d.add(event.cwd)
-        if not event.model:
+        if not event.model or event.input + event.output + event.cache_read <= 0:
             continue
+        profile.usage_tools_14d.add(event.tool)
         tokens = event.input + event.output
         all_tokens += tokens
         if classify_model(event.model) == "fast":
@@ -138,6 +145,7 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
         if timestamp < cutoff_7d:
             continue
 
+        profile.usage_tools_7d.add(event.tool)
         cost = event_cost(event)
         usage = profile.usage_by_model_7d.setdefault(
             event.model, {"tokens": 0, "cost": 0.0, "requests": 0}
@@ -167,6 +175,8 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
         model_usage["tokens"] += tokens
         model_usage["cost_usd"] += cost
 
+    profile.input_tokens_7d = input_tokens
+    profile.cache_tokens_7d = cache_tokens
     profile.tool_calls_30d = dict(calls_30d)
     profile.skill_calls_30d = dict(skills_30d)
     profile.active_dates_30d = sorted(active_dates)
@@ -188,10 +198,6 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
     return profile
 
 
-def dimensions(p: Profile) -> list[DimensionScore]:
-    _, saving, mix_flags = diagnose_model_mix(p.usage_by_model_7d, p.total_cost_7d)
-    _, _, time_flags = analyze_time_habits(p.hourly_histogram_7d)
-    scores, _ = compute_checkup(
-        p.rule_hits(), mix_flags, time_flags, p.cache_hit_rate_7d, saving
-    )
-    return scores
+def dimensions(p: Profile, coverage: dict | None = None, locale: str = "en"):
+    from agentfit.engine.action_rules import evaluate_dimensions
+    return evaluate_dimensions(p, coverage, locale)

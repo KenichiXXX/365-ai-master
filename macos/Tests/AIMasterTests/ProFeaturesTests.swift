@@ -56,6 +56,20 @@ final class ProFeaturesTests: XCTestCase {
         XCTAssertNil(old.growth)
         XCTAssertNil(old.weekly)
     }
+    func testUnknownScoresDoNotChangeEntitlementsOrAcquireAPercentile() throws {
+        let snapshot = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":null,"tier":null},"dimensions":[{"key":"routing","label":"Routing","score":null}],"growth":{"days":[],"week_delta":null}}"#.utf8), status: 0).snapshot
+        XCTAssertFalse(snapshot.hasEvaluableScores)
+        XCTAssertTrue(snapshot.growth?.days.isEmpty == true)
+        for pro in [false, true] {
+            let features = ProFeatures(isPro: pro)
+            XCTAssertEqual(features.growthCurve, pro)
+            XCTAssertNil(features.dimensionCaption(nil, key: "routing", locale: "en"))
+            let renderer = ImageRenderer(content: DimensionRings(dimensions: snapshot.dimensions!,
+                features: features).frame(width: 408))
+            XCTAssertNotNil(renderer.nsImage)
+        }
+    }
+
     private func contains<T>(_ type: T.Type, in value: Any) -> Bool {
         if value is T { return true }
         return Mirror(reflecting: value).children.contains { contains(type, in: $0.value) }

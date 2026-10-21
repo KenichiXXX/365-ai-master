@@ -5,8 +5,8 @@ from pathlib import Path
 from agentfit.engine.codex_book import _read_progress, _save_progress
 
 
-def record_history(progress_path: Path, now: datetime, score: int,
-                   dims: dict[str, int], active_dates: list[str]) -> tuple[dict, dict]:
+def record_history(progress_path: Path, now: datetime, score: int | None,
+                   dims: dict[str, int | None], active_dates: list[str]) -> tuple[dict, dict]:
     today = now.astimezone().date()
     week_start = today - timedelta(days=today.weekday())
     previous_start = (week_start - timedelta(days=7)).isoformat()
@@ -14,13 +14,14 @@ def record_history(progress_path: Path, now: datetime, score: int,
     end = today.isoformat()
     progress = _read_progress(progress_path)
     history = progress.setdefault("history", {})
-    history[end] = {"score": score, "dims": dims}
+    if score is not None:
+        history[end] = {"score": score, "dims": dims}
     cutoff = (today - timedelta(days=89)).isoformat()
     history = {day: history[day] for day in sorted(history) if cutoff <= day <= end}
     progress["history"] = history
     _save_progress(progress_path, progress)
     previous = [record["score"] for day, record in history.items() if previous_start <= day < start]
-    delta = score - previous[-1] if previous else None
+    delta = score - previous[-1] if score is not None and previous else None
     growth = {"days": [{"date": day, "score": record["score"]}
                        for day, record in history.items()
                        if day >= (today - timedelta(days=29)).isoformat()],

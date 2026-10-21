@@ -39,3 +39,32 @@ def test_score_reporter_only_posts_anonymous_scores():
     assert re.findall(r"(?:let|var) (\w+):", payload) == ["device_token", "score", "dims", "app_version"]
     for banned in ("uploadTask", "multipart", "NWConnection"):
         assert banned not in text
+
+
+def test_action_evidence_and_feedback_do_not_export_tool_arguments_or_paths(tmp_path):
+    from datetime import datetime, timezone
+    import json
+    from agentfit.engine.action_rules import action_feedback
+    from agentfit.engine.snapshot import build_snapshot
+    now = datetime(2026, 10, 21, 12, tzinfo=timezone.utc)
+    home = tmp_path / "home"
+    log = home / ".codex/sessions/a.jsonl"
+    log.parent.mkdir(parents=True)
+    rows = [
+        {"type": "turn_context", "payload": {"model": "gpt-6.1-sol", "cwd": "/private/project-sentinel"}},
+        {"type": "event_msg", "payload": {"type": "task_started"}},
+        {"type": "response_item", "payload": {"type": "function_call", "name": "shell", "call_id": "a1",
+            "arguments": "private-argument-sentinel"}},
+        {"type": "token_usage_record", "payload": {"response_id": "r1", "turn_id": "t1",
+            "usage": {"input_tokens": 500, "cached_input_tokens": 400, "output_tokens": 20}}},
+    ]
+    log.write_text("".join(json.dumps({**row, "timestamp": now.isoformat()}) + "\n" for row in rows))
+    state = tmp_path / "state"
+    first = build_snapshot(home, state, "en", now=now)
+    assert first["overall"]["score"] is not None
+    assert first["dimensions"][0]["evidence"]
+    assert action_feedback(state / "progress.json", first["today_tip"]["action_id"], "not_suitable", "no_project", now.date())
+    second = build_snapshot(home, state, "en", now=now)
+    for raw in (json.dumps(first), json.dumps(second), (state / "progress.json").read_text()):
+        for forbidden in ("private-argument-sentinel", "/private/project-sentinel", str(home)):
+            assert forbidden not in raw

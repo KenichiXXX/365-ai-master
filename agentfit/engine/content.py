@@ -297,52 +297,47 @@ _DIMENSION_TIPS = {
 
 _POOL_TIPS = {
     "zh": {
+        "privacy_check": {
+            "title": "练习：查看工具的隐私说明",
+            "why": "无需读取日志，也可以先准备三个隐私问题。",
+            "steps": ["选一个你想了解的工具", "写下数据保存位置、训练用途和删除方式三个问题"],
+            "prompt": "请起草一份三问隐私检查清单：数据存在哪里、是否用于训练、如何删除。只给清单，不读取文件或修改设置。",
+        },
         "fresh_session": {
-            "title": "长会话记得开新会话，省钱又提质",
-            "why": "会话越长，每次请求都在为历史付费，注意力也被稀释。",
-            "steps": [],
-            "prompt": "请就这一条，结合我的使用方式给我一个具体建议。",
+            "title": "练习：写一段交接说明",
+            "why": "用一个虚构任务练习写清目标、约束和验收条件。",
+            "steps": ["选一个虚构任务", "写出目标、约束和检查方法"],
+            "prompt": "以整理虚构的读书清单为例，起草一段包含目标、约束和验收方法的交接说明。只给草稿，不操作文件。",
         },
         "background_agent": {
-            "title": "批量任务交给后台 agent，你只看结果",
-            "why": "翻译、清洗一批数据这类活，让 agent 在后台跑完再叫你。",
-            "steps": [],
-            "prompt": "请就这一条，结合我的使用方式给我一个具体建议。",
-        },
-        "privacy_check": {
-            "title": "任何要读你聊天记录的 AI 产品，先问三件事",
-            "why": "数据存哪、是否用于训练、能否一键删除。",
-            "steps": [],
-            "prompt": "请就这一条，结合我的使用方式给我一个具体建议。",
+            "title": "练习：拆解一个批量任务",
+            "why": "先检查步骤，再决定是否执行。",
+            "steps": ["用虚构数据描述一个批量任务", "列出步骤和每步的检查方法"],
+            "prompt": "以整理十个虚构文件名为例，起草批量处理步骤和检查清单。不要运行命令或操作文件。",
         },
     },
     "en": {
+        "privacy_check": {
+            "title": "Practice: review a tool's privacy information",
+            "why": "Prepare three privacy questions without reading any logs.",
+            "steps": ["Choose a tool to learn about", "Ask about storage, training use and deletion"],
+            "prompt": "Draft a three-question privacy checklist about storage, training use and deletion. Only provide a checklist. Do not read files or change settings.",
+        },
         "fresh_session": {
-            "title": "Start fresh sessions",
-            "why": "Long sessions pay for history on every request and dilute "
-            "attention.",
-            "steps": [],
-            "prompt": "Give me one concrete suggestion on this, based on how I "
-            "work.",
+            "title": "Practice: draft a hand-off note",
+            "why": "Use a fictional task to state a goal, constraints and acceptance checks.",
+            "steps": ["Choose a fictional task", "Write the goal, constraints and checks"],
+            "prompt": "Using a fictional reading list, draft a hand-off note with a goal, constraints and acceptance checks. Only draft text. Do not operate on files.",
         },
         "background_agent": {
-            "title": "Hand batch jobs to a background agent",
-            "why": "Let an agent run translations or data cleanup in the "
-            "background and ping you when done.",
-            "steps": [],
-            "prompt": "Give me one concrete suggestion on this, based on how I "
-            "work.",
-        },
-        "privacy_check": {
-            "title": "Three questions before granting an AI app your chat history",
-            "why": "Where is data stored, is it used for training, can you delete it "
-            "in one click.",
-            "steps": [],
-            "prompt": "Give me one concrete suggestion on this, based on how I "
-            "work.",
+            "title": "Practice: break down a batch task",
+            "why": "Review the steps before deciding whether to execute anything.",
+            "steps": ["Describe a batch task with fictional data", "List steps and checks"],
+            "prompt": "Using ten fictional file names, draft batch-processing steps and a checklist. Do not run commands or operate on files.",
         },
     },
 }
+
 
 _RANK_TITLES = {
     "zh": ["AI 探索者", "AI 熟练者", "AI 大师", "AI 宗师"],
@@ -428,3 +423,43 @@ _COVERAGE_LABELS = {
 for _key, (_zh, _en) in _COVERAGE_LABELS.items():
     _LABELS["zh"][_key] = _zh
     _LABELS["en"][_key] = _en
+
+
+_ACTION_COPY = {
+    "en": {
+        "heuristic": "This is a heuristic from log metrics, not a measure of task difficulty or ability",
+        "missing": "No assessable records yet",
+        "partial": "Partly assessable",
+        "practice": "A suggested practice; completion needs subsequent structured evidence, not a click.",
+        "safe": "A built-in exercise available without supported logs. Completion is self-reported.",
+        "none": "No suggestions available. Reset suggestion preferences in Settings to see them again.",
+        "model_overuse": "Premium-tier API-equivalent cost share; this does not identify routine tasks or guarantee savings.",
+        "fast_gap": "Fast-tier token share; model tier does not establish task difficulty.",
+        "late_night": "Share of usage records between local midnight and 06:00; this does not measure sleep or productivity.",
+        "fragmented": "Active local hour bins and the top-three-hour share; this does not establish interruptions.",
+        "concentrated": "Top-three-hour share of usage records; this does not measure focus.",
+        "context_bloat": "Compactions per recorded turn; compaction does not establish wasted context.",
+        "retry": "Abort markers per recorded turn; an abort does not establish an error or repeated task.",
+        "cache": "Cached input tokens divided by recorded input plus cached input; provider caching differs.",
+    },
+    "zh": {
+        "heuristic": "这是日志指标的启发式判断，不代表任务难度或能力",
+        "missing": "尚无可评估记录",
+        "partial": "部分可评估",
+        "practice": "建议练习；完成需要后续结构化记录，点击不代表完成。",
+        "safe": "无需受支持日志的内置练习，完成情况由你自行确认。",
+        "none": "暂无可推荐的练习。可在设置中重置推荐偏好。",
+        "model_overuse": "旗舰档 API 折算成本占比；不能据此识别常规任务或保证节省。",
+        "fast_gap": "轻量档 token 占比；模型档位不能说明任务难度。",
+        "late_night": "本地零点至六点的用量记录占比；不代表睡眠或生产力。",
+        "fragmented": "有活动的本地小时数与前三小时占比；不代表受到打断。",
+        "concentrated": "前三小时的用量记录占比；不代表专注程度。",
+        "context_bloat": "每个记录轮次的压缩次数；压缩不代表上下文浪费。",
+        "retry": "中断标记与记录轮次之比；中断不代表错误或重复任务。",
+        "cache": "缓存输入 token 除以输入与缓存输入总量；不同供应商的缓存机制有差异。",
+    },
+}
+
+
+def action_copy(key: str, locale: str) -> str:
+    return _ACTION_COPY[locale][key]

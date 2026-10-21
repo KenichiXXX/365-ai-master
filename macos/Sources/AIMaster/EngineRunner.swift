@@ -28,10 +28,14 @@ struct EngineRunner {
 
     // The engine owns the self-report allowlist and rejects log-detectable cards.
     static func markTried(id: String) throws -> Bool {
+        try actionCommand(["mark-tried", id])
+    }
+
+    static func actionCommand(_ arguments: [String]) throws -> Bool {
         guard let url = engineURL() else { throw EngineError.missing }
         let process = Process()
         process.executableURL = url
-        process.arguments = ["mark-tried", id]
+        process.arguments = arguments
         let output = Pipe()
         process.standardOutput = output
         process.standardError = FileHandle.nullDevice

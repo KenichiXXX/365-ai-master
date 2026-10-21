@@ -17,3 +17,17 @@
 "New today" = "New today";
 "Training" = "Training";
 "Usage stays local. Only public content is downloaded." = "Usage stays local. Only public content is downloaded.";
+
+"No assessable records yet" = "No assessable records yet";
+"Partly assessable" = "Partly assessable";
+"Unknown" = "Unknown";
+"Why this suggestion" = "Why this suggestion";
+"This is a heuristic from log metrics, not a measure of task difficulty or ability" = "This is a heuristic from log metrics, not a measure of task difficulty or ability";
+"Not suitable" = "Not suitable";
+"Later" = "Later";
+"Do not suggest again" = "Do not suggest again";
+"I do not understand" = "I do not understand";
+"My tool does not support this" = "My tool does not support this";
+"I have no project" = "I have no project";
+"Not useful right now" = "Not useful right now";
+"Reset suggestion preferences" = "Reset suggestion preferences";

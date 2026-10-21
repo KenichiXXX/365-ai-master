@@ -49,7 +49,7 @@ def test_today_tip_order_and_determinism(tmp_path):
     done = {"passed": {k: "x" for k in V.QUESTS}, "current": None, "regressed": []}
     assert V.today_tip(done, dims(90,60,70,90), "en", date(2026,10,21))["source"] == {"kind": "dimension", "ref": "timing"}
     a = V.today_tip(done, dims(90,90,90,90), "en", date(2026,10,21)); b = V.today_tip(done, dims(90,90,90,90), "en", date(2026,10,21))
-    assert a == b and a["source"]["kind"] == "pool"
+    assert a == b and a["source"] == {"kind": "dimension", "ref": "routing"}
 
 
 @pytest.mark.parametrize("calls", [{"Edit": 1}, {"Write": 1}, {"apply_patch": 1}, {}])
@@ -134,18 +134,18 @@ def test_village_snapshot_and_localized_tip(tmp_path, locale):
         }
     tip = V.today_tip(state, dims(0, 0, 0, 0), locale, NOW.date())
     copy = C.quest_text("rules_file", locale)
-    assert tip == {"title": copy["title"], "why": copy["why"], "steps": copy["steps"],
+    assert {key: tip[key] for key in ("title", "why", "steps", "prompt_for_claude", "source")} == {"title": copy["title"], "why": copy["why"], "steps": copy["steps"],
                    "prompt_for_claude": copy["prompt"], "source": {"kind": "quest", "ref": "rules_file"}}
 
 
-def test_dimension_tie_order_and_pool_rotation():
+def test_dimension_tie_order_and_safe_fallback():
     state = {"passed": dict.fromkeys(V.QUESTS, NOW.isoformat()), "current": None, "regressed": []}
     scores = list(reversed(dims(60, 60, 60, 60)))
     assert V.today_tip(state, scores, "en", NOW.date())["source"] == {"kind": "dimension", "ref": "routing"}
     for offset in range(len(C.POOL)):
         day = NOW.date() + timedelta(days=offset)
-        assert V.today_tip(state, dims(85, 85, 85, 85), "en", day)["source"] == {
-            "kind": "pool", "ref": C.POOL[day.toordinal() % len(C.POOL)],
+        assert V.today_tip(state, [], "en", day)["source"] == {
+            "kind": "pool", "ref": "privacy_check",
         }
     block = V.village_block(state, dict.fromkeys(V.QUESTS, (True, "")), "en")
     assert block["current"] is None and block["rank_title"] == "Grandmaster"

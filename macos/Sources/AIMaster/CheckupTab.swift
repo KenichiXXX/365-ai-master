@@ -16,13 +16,17 @@ struct CheckupTab: View {
                                         closeConsent: { consentSource = nil })
             }
             VStack(spacing: 10) {
-                RingView(score: snapshot.overall?.score ?? 0, size: 150)
+                RingView(score: snapshot.overall?.score, size: 150)
+                if snapshot.overall?.score == nil {
+                    Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
+                        .font(.callout).foregroundStyle(.secondary)
+                }
                 if let village = snapshot.village {
                     Text(village.rankTitle).font(.title2.bold())
-                    if store.shareAnonymousScore {
+                    if store.shareAnonymousScore && snapshot.hasEvaluableScores {
                         Text(store.rankingCaption(locale: snapshot.locale ?? store.locale))
                             .font(.system(size: 11)).foregroundStyle(.secondary)
-                    } else {
+                    } else if snapshot.hasEvaluableScores {
                         Button(zh ? "看看你击败了全球多少 AI 用户 →" : "See how you rank worldwide →") {
                             consentSource = .rankLink
                         }.buttonStyle(.plain).foregroundStyle(.tint).font(.system(size: 11))

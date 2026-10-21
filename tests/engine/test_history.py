@@ -18,12 +18,10 @@ def test_history_overwrites_today_retains_90_days_and_exposes_last_30(tmp_path):
     saved = json.loads((state / "progress.json").read_text())
     assert len(saved["history"]) == 90
     assert min(saved["history"]) == (today - timedelta(days=89)).isoformat()
-    assert saved["history"][today.isoformat()] == {
-        "score": snapshot["overall"]["score"],
-        "dims": {d["key"]: d["score"] for d in snapshot["dimensions"]},
-    }
+    assert snapshot["overall"]["score"] is None
+    assert saved["history"][today.isoformat()] == history[today.isoformat()]
     assert len(snapshot["growth"]["days"]) == 30
-    assert snapshot["growth"]["days"][-1] == {"date": today.isoformat(), "score": snapshot["overall"]["score"]}
+    assert snapshot["growth"]["days"][-1] == {"date": today.isoformat(), "score": 0}
     again = build_snapshot(tmp_path / "empty", state, "en", now=NOW)
     assert again["growth"] == snapshot["growth"]
     assert len(json.loads((state / "progress.json").read_text())["history"]) == 90
@@ -41,7 +39,8 @@ def test_week_delta_uses_previous_calendar_week_latest_and_weekly_progress(tmp_p
                     "2026-10-18": {"score": 60, "dims": {}}},
     }))
     snapshot = build_snapshot(tmp_path / "empty", state, "en", now=NOW)
-    delta = snapshot["overall"]["score"] - 60
+    delta = None
+    assert snapshot["overall"]["score"] is None
     assert snapshot["growth"]["week_delta"] == delta
     assert snapshot["weekly"] == {"week_start": "2026-10-19", "score_delta": delta,
         "cards_lit_this_week": ["a"], "quests_passed_this_week": ["first_edit"], "days_active": 0}

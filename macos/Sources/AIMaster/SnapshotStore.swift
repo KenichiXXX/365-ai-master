@@ -93,6 +93,9 @@ final class SnapshotStore: ObservableObject {
     }
 
     func rankingCaption(locale: String) -> String {
+        guard snapshot?.hasEvaluableScores == true else {
+            return NSLocalizedString("No assessable records yet", bundle: .module, comment: "")
+        }
         if let ranking { return ranking.caption(locale: locale) }
         if rankingUnavailable {
             return locale == "zh" ? "暂时连不上排名服务" : "Ranking service unavailable"
@@ -100,23 +103,61 @@ final class SnapshotStore: ObservableObject {
         return locale == "zh" ? "正在获取排名…" : "Fetching your ranking…"
     }
     var ranking: AppScoreOut? {
-        guard shareAnonymousScore, scoreReporter.cached() != nil else { return nil }
+        guard snapshot?.hasEvaluableScores == true, shareAnonymousScore, scoreReporter.cached() != nil else { return nil }
         return reportedScore
     }
 
     private func refreshRanking(allowFirstReport: Bool = false) async {
-        guard shareAnonymousScore, let overall = snapshot?.overall,
-              let dimensions = snapshot?.dimensions else { return }
-        let scores = Dictionary(dimensions.map { ($0.key, $0.score) }, uniquingKeysWith: { first, _ in first })
+        guard shareAnonymousScore, snapshot?.hasEvaluableScores == true,
+              let score = snapshot?.overall?.score, let dimensions = snapshot?.dimensions else {
+            reportedScore = nil
+            rankingUnavailable = false
+            return
+        }
+        let scores = Dictionary(dimensions.compactMap { d in d.score.map { (d.key, $0) } }, uniquingKeysWith: { first, _ in first })
         guard let routing = scores["routing"], let timing = scores["timing"],
               let context = scores["context"], let leverage = scores["leverage"] else { return }
         rankingUnavailable = false
-        let result = await scoreReporter.report(score: overall.score,
+        let result = await scoreReporter.report(score: score,
             dims: .init(routing: routing, timing: timing, context: context, leverage: leverage),
             appVersion: String((Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").prefix(20)),
             allowFirstReport: allowFirstReport)
         reportedScore = shareAnonymousScore ? result : nil
         rankingUnavailable = shareAnonymousScore && result == nil
+    }
+
+    enum ActionFeedback: String { case later, notSuitable = "not_suitable", never, completed }
+    enum ActionReason: String, CaseIterable { case unclear, unsupportedTool = "unsupported_tool", noProject = "no_project", notNow = "not_now" }
+    var actionCommand: @Sendable ([String]) throws -> Bool = { try EngineRunner.actionCommand($0) }
+
+    @discardableResult
+    func actionFeedback(_ feedback: ActionFeedback, reason: ActionReason? = nil) -> Task<Void, Never>? {
+        guard let id = snapshot?.todayTip?.actionId else { return nil }
+        var args = ["action-feedback", id, feedback.rawValue]
+        if let reason { args += ["--reason", reason.rawValue] }
+        return runActionCommand(args)
+    }
+
+    @discardableResult
+    func resetActionPreferences() -> Task<Void, Never>? {
+        runActionCommand(["reset-action-preferences"])
+    }
+
+    private func runActionCommand(_ args: [String]) -> Task<Void, Never>? {
+        guard !isRefreshing else { return nil }
+        isRefreshing = true
+        let command = actionCommand
+        return Task {
+            do {
+                let accepted = try await Task.detached { try command(args) }.value
+                guard accepted else { throw EngineError.badJSON }
+                isRefreshing = false
+                await refresh()?.value
+            } catch {
+                lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
+                isRefreshing = false
+            }
+        }
     }
 
     enum TriedFeedback { case notSeen, lit }

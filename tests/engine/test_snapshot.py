@@ -20,7 +20,9 @@ def test_snapshot_shape(tmp_path):
     assert len(s["village"]["quests"]) == 9 and s["village"]["rank_title"].startswith("AI")
     assert s["today_tip"]["prompt_for_claude"]
     assert s["quota"]["codex"]["primary_pct"] == 42.5
-    assert s["overall"]["tier"] in {"S", "A", "B", "C"}
+    assert s["overall"]["tier"] is None
+    assert s["overall"]["availability"] == "unavailable"
+    assert s["dimensions"][2]["score"] is None
 
 def test_no_content_or_paths_leak(tmp_path):
     raw = json.dumps(build_snapshot(_home(tmp_path), tmp_path / "state", "en", now=NOW), ensure_ascii=False)

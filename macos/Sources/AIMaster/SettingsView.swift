@@ -42,6 +42,9 @@ struct SettingsView: View {
                 Text(store.locale == "zh" ? "关闭后停止上报，服务器上已有的排名记录仍会保留。"
                      : "Turning sharing off stops reporting. Your existing ranking record stays on the server.")
                     .font(.system(size: 11)).foregroundStyle(.secondary)
+                Button(action: { store.resetActionPreferences() }) {
+                    Text("Reset suggestion preferences", bundle: .module)
+                }.disabled(store.isRefreshing)
                 ProSettingsSection(store: store, zh: store.locale == "zh")
                 Button(action: { NSApp.terminate(nil) }) { Text("Quit", bundle: .module) }
                 Button(action: { dismiss() }) { Text("Done", bundle: .module) }

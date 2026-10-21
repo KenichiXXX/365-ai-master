@@ -22,6 +22,15 @@ struct Snapshot: Decodable {
     let usageSummary: UsageSummary?
     let growth: Growth?
     let weekly: WeeklyReview?
+
+    var hasEvaluableScores: Bool {
+        guard let score = overall?.score, (0...100).contains(score),
+              let dimensions, dimensions.count == 4,
+              Set(dimensions.map(\.key)) == Set(["routing", "timing", "context", "leverage"]) else { return false }
+        return (overall?.availability == nil || overall?.availability == "available") && dimensions.allSatisfy {
+            ($0.availability == nil || $0.availability == "available") && $0.score.map { (0...100).contains($0) } == true
+        }
+    }
 }
 
 struct ToolUsage: Decodable, Identifiable {
@@ -69,12 +78,27 @@ struct Dimension: Decodable, Identifiable {
     var id: String { key }
     let key: String
     let label: String
-    let score: Int
+    let score: Int?
+    var availability: String? = nil
+    var evidence: [RuleEvidence]? = nil
+}
+
+struct RuleEvidence: Decodable {
+    let ruleId: String
+    let version: String
+    let windowDays: Int
+    let numerator: Double?
+    let denominator: Double?
+    let availability: String
+    let explanation: String
+    let limitation: String
 }
 
 struct Overall: Decodable {
-    let score: Int
-    let tier: String
+    let score: Int?
+    let tier: String?
+    var availability: String? = nil
+    var scoreVersion: String? = nil
 }
 
 struct Village: Decodable {
@@ -98,6 +122,11 @@ struct Tip: Decodable {
     let steps: [String]
     let promptForClaude: String
     let source: TipSource
+    var actionId: String? = nil
+    var ruleId: String? = nil
+    var evidenceSummary: String? = nil
+    var limitation: String? = nil
+    var validationKind: String? = nil
 }
 
 struct TipSource: Decodable {

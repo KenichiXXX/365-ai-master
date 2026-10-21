@@ -129,7 +129,10 @@ def test_rule_thresholds_and_scoring_integration():
         _, saving, mix_flags = diagnose_model_mix(p.usage_by_model_7d, p.total_cost_7d)
         _, _, time_flags = analyze_time_habits(p.hourly_histogram_7d)
         expected, _ = compute_checkup(p.rule_hits(), mix_flags, time_flags, p.cache_hit_rate_7d, saving)
-        assert dimensions(p) == expected
+        coverage = {"claude_code": {"signals": dict.fromkeys(
+            ["usage", "turn_start", "compacted", "aborted"], "available")}}
+        actual = dimensions(p, coverage)
+        assert [d.score for d in actual] == [d.score for d in expected]
 
 
 def test_context_bloat_uses_compaction_ratio():
