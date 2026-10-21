@@ -103,10 +103,13 @@ def test_fallback_keys_missing_model_and_zero_token_filter(tmp_path):
     assert all(e.model == "unknown" and e.effort is None for e in events)
 
 
-def test_registered_and_inventory_deferred(tmp_path):
+def test_registered_and_inventory(tmp_path):
     from agentfit.engine.collectors.base import REGISTRY
 
     assert any(isinstance(c, ClaudeCodeCollector) for c in REGISTRY)
     collector = ClaudeCodeCollector()
     assert (collector.tool, collector.tier) == ("claude_code", "deep")
-    assert collector.inventory(tmp_path) is None
+    assert collector.inventory(tmp_path).to_public() == {
+        "skills_installed": 0, "instructions_bytes": 0, "hooks": 0,
+        "mcp_servers": 0, "subagents": 0, "plugins": 0,
+    }

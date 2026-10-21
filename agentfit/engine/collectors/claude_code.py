@@ -5,6 +5,7 @@ from pathlib import Path
 
 from agentfit.engine.collectors.base import register
 from agentfit.engine.events import CompactEvent
+from agentfit.engine.inventory import Inventory, claude_inventory
 from agentfit.engine.scan_state import ScanState
 
 
@@ -80,8 +81,8 @@ class ClaudeCodeCollector:
     def detect(self, home: Path) -> bool:
         return (home / ".claude").is_dir()
 
-    def inventory(self, home: Path) -> None:
-        return None
+    def inventory(self, home: Path, project_dirs: set[str] | None = None) -> Inventory:
+        return claude_inventory(home, project_dirs or set())
 
     def scan(self, home: Path, state: ScanState) -> list[CompactEvent]:
         files = sorted((home / ".claude").glob("projects/**/*.jsonl"))

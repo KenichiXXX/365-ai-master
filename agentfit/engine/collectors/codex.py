@@ -5,6 +5,7 @@ from pathlib import Path
 
 from agentfit.engine.collectors.base import register
 from agentfit.engine.events import CompactEvent
+from agentfit.engine.inventory import Inventory, codex_inventory
 from agentfit.engine.scan_state import ScanState
 
 
@@ -76,8 +77,8 @@ class CodexCollector:
     def detect(self, home: Path) -> bool:
         return (home / ".codex").is_dir()
 
-    def inventory(self, home: Path) -> None:
-        return None
+    def inventory(self, home: Path) -> Inventory:
+        return codex_inventory(home)
 
     def scan(self, home: Path, state: ScanState) -> list[CompactEvent]:
         files = _session_files(home)

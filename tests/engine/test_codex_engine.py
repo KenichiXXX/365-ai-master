@@ -76,7 +76,10 @@ def test_archived_logs_and_malformed_lines(tmp_path):
         stream.write('not json\nnull\n{"type":"token_usage_record","payload":null}\n')
     collector = CodexCollector()
     assert collector.detect(home)
-    assert collector.inventory(home) is None
+    assert collector.inventory(home).to_public() == {
+        "skills_installed": 0, "instructions_bytes": 0, "hooks": 0,
+        "mcp_servers": 0, "subagents": 0, "plugins": 0,
+    }
     assert len([e for e in collector.scan(home, ScanState(tmp_path / "s.json")) if e.model]) == 1
     assert latest_rate_limits(home)["primary_pct"] == 42.5
 
