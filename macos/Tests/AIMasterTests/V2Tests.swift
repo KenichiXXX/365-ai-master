@@ -3,13 +3,17 @@ import XCTest
 
 final class V2Tests: XCTestCase {
     func testCompactTokensAndSummary() {
-        XCTAssertEqual(UsageSummary.tokens(28_670_000, locale: "zh"), "2867万")
+        XCTAssertEqual(UsageSummary.tokens(28_670_000, locale: "zh"), "2,867 万")
         XCTAssertEqual(UsageSummary.tokens(28_670_000, locale: "en"), "28.7M")
-        XCTAssertEqual(UsageSummary.tokens(100_000_000, locale: "zh"), "1亿")
+        XCTAssertEqual(UsageSummary.tokens(100_000_000, locale: "zh"), "1.0 亿")
+        XCTAssertEqual(UsageSummary.tokens(29_442_000, locale: "zh"), "2,944 万")
+        XCTAssertEqual(UsageSummary.tokens(120_000_000, locale: "zh"), "1.2 亿")
+        XCTAssertEqual(UsageSummary.tokens(10_000, locale: "zh"), "1 万")
+        XCTAssertEqual(UsageSummary.tokens(9_999, locale: "zh"), "9999")
         XCTAssertEqual(UsageSummary.tokens(1_200, locale: "en"), "1.2K")
         XCTAssertEqual(UsageSummary.tokens(2_000_000_000, locale: "en"), "2B")
         let usage = UsageSummary(tokens7d: 28_670_000, costUsd7d: 577, codexQuotaPct: 13)
-        XCTAssertEqual(usage.caption(locale: "zh"), "本周 2867万 tokens · 折算 $577 · Codex 周额度 13%")
+        XCTAssertEqual(usage.caption(locale: "zh"), "本周 2,867 万 tokens · 折算 $577 · Codex 周额度 13%")
         XCTAssertEqual(usage.caption(locale: "en"), "This week 28.7M tokens · ≈$577 API-equivalent · Codex weekly 13%")
         XCTAssertFalse(UsageSummary(tokens7d: 0, costUsd7d: 0, codexQuotaPct: nil).caption(locale: "en").contains("Codex"))
     }

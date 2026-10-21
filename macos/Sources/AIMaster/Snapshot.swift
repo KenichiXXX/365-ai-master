@@ -161,9 +161,14 @@ struct UsageSummary: Decodable {
     }
 
     static func tokens(_ count: Int, locale: String) -> String {
-        let units: [(Double, String)] = locale == "zh"
-            ? [(1e8, "亿"), (1e4, "万")]
-            : [(1e9, "B"), (1e6, "M"), (1e3, "K")]
+        if locale == "zh", count >= 10_000 {
+            let billions = count >= 100_000_000
+            let value = Double(count) / (billions ? 1e8 : 1e4)
+            let text = value.formatted(.number.locale(Locale(identifier: "en_US"))
+                .precision(.fractionLength(billions ? 1 : 0)))
+            return text + (billions ? " 亿" : " 万")
+        }
+        let units: [(Double, String)] = locale == "zh" ? [] : [(1e9, "B"), (1e6, "M"), (1e3, "K")]
         for (divisor, suffix) in units where Double(count) >= divisor {
             let value = (Double(count) / divisor * 10).rounded() / 10
             let text = value.formatted(.number.locale(Locale(identifier: "en_US_POSIX"))
