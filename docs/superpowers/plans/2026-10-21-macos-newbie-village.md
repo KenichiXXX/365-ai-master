@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - **Zero network:** no module under `agentfit/engine/` or `macos/` may import/use `urllib`, `http.client`, `requests`, `httpx`, `socket`, `URLSession`, `NWConnection`. Enforced by a test (Task 10).
-- **No credentials:** never open `~/.codex/auth.json`, `~/.claude/.credentials*`, Keychain, or any `*auth*`/`*token*` file.
+- **No credentials:** never open `~/.codex/auth.json`, `~/.claude/.credentials*`, `~/.claude.json` `oauthAccount` data, Keychain, OpenCode `credential`/`account` tables, or any credential/auth/oauth file. Usage logs whose names merely contain "token" (e.g. Qwen `token-usage-*.jsonl`) are usage data and ARE allowed.
 - **Read-only on user files:** never write under `~/.claude`, `~/.codex`, `~/.gemini`, `~/.local/share/opencode`, `~/.qwen`. Engine writes only to its `--state-dir` (default `~/Library/Application Support/365AIMaster/`).
 - **No content in output:** prompt/response text and absolute paths must never appear in the snapshot. Content may be inspected in memory only for the markers named in this plan.
 - **Do not touch** these files (they carry someone else's uncommitted work on `main`): `agentfit/analyzer/rules.py`, `agentfit/collector/codex.py`, `agentfit/cli.py`, `tests/test_*_pilot.py`. The new engine lives in `agentfit/engine/` (deviation from spec §7's `agentfit/collector/`, made to avoid that conflict).
