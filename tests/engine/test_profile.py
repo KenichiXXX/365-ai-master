@@ -130,3 +130,17 @@ def test_rule_thresholds_and_scoring_integration():
         _, _, time_flags = analyze_time_habits(p.hourly_histogram_7d)
         expected, _ = compute_checkup(p.rule_hits(), mix_flags, time_flags, p.cache_hit_rate_7d, saving)
         assert dimensions(p) == expected
+
+
+def test_context_bloat_uses_compaction_ratio():
+    for compactions, turns, expected in [
+        (48, 905, False),  # Heavy usage alone is not context bloat.
+        (5, 20, True),
+        (3, 30, True),    # Inclusive ten-percent boundary.
+        (3, 31, False),
+        (2, 2, False),    # Still requires at least three compactions.
+        (3, 0, True),     # Missing turns must not divide by zero.
+        (0, 0, False),
+    ]:
+        profile = build_profile([ev(compacted=compactions, turn_start=turns)], NOW)
+        assert profile.rule_hits()["RULE_CONTEXT_BLOAT"] is expected, (compactions, turns)

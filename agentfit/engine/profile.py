@@ -29,7 +29,10 @@ class Profile:
 
     def rule_hits(self) -> dict[str, bool]:
         return {
-            "RULE_CONTEXT_BLOAT": self.compactions_14d >= 3,
+            "RULE_CONTEXT_BLOAT": (
+                self.compactions_14d >= 3
+                and self.compactions_14d / max(self.turns_14d, 1) >= 0.10
+            ),
             "RULE_ERROR_RETRY_LOOP": (
                 self.turns_14d >= 10 and self.aborted_14d / self.turns_14d >= 0.10
             ),
