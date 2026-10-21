@@ -418,7 +418,7 @@
         "url": "https://github.com/wheresryan22/anatomy",
         "tagline": {
           "en": "Transforms technical concepts into detailed, interactive isometric SVG illustrations.",
-          "zh": "Transforms technical concepts into detailed, interactive isometric SVG illustrations."
+          "zh": "将技术概念转化为细致、可交互的等距 SVG 插图。"
         },
         "match": [
           "anatomy"
@@ -431,7 +431,7 @@
         "url": "https://github.com/mattpocock/skills",
         "tagline": {
           "en": "A library of specialized engineering flows for codebase design and technical diagnosis",
-          "zh": "A library of specialized engineering flows for codebase design and technical diagnosis"
+          "zh": "一套面向代码库设计与技术诊断的专业工程流程库。"
         },
         "match": [
           "skills"
@@ -444,7 +444,7 @@
         "url": "https://github.com/DietrichGebert/ponytail",
         "tagline": {
           "en": "A quality audit framework for identifying technical debt and repository vulnerabilities",
-          "zh": "A quality audit framework for identifying technical debt and repository vulnerabilities"
+          "zh": "用于识别技术债务与代码仓库漏洞的质量审计框架。"
         },
         "match": [
           "ponytail"
@@ -457,7 +457,7 @@
         "url": "https://github.com/cathrynlavery/diagram-design",
         "tagline": {
           "en": "A comprehensive system for generating branded technical architecture and data flow diagrams.",
-          "zh": "A comprehensive system for generating branded technical architecture and data flow diagrams."
+          "zh": "综合性系统，用于生成带品牌风格的技术架构图与数据流图。"
         },
         "match": [
           "diagram-design"
@@ -470,7 +470,7 @@
         "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
         "tagline": {
           "en": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs",
-          "zh": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs"
+          "zh": "通过云端实验室 API 自动化设计并监控蛋白质表征实验。"
         },
         "match": [
           "scientific-agent-skills"
@@ -483,7 +483,7 @@
         "url": "https://github.com/Leonxlnx/taste-skill",
         "tagline": {
           "en": "A system for generating high-end brand guidelines and visual identity decks.",
-          "zh": "A system for generating high-end brand guidelines and visual identity decks."
+          "zh": "用于生成高端品牌指南与视觉识别提案的系统。"
         },
         "match": [
           "taste-skill"
@@ -496,7 +496,7 @@
         "url": "https://github.com/cloudflare/security-audit-skill",
         "tagline": {
           "en": "Automated vulnerability research and security reviews for codebases, APIs, and system services",
-          "zh": "Automated vulnerability research and security reviews for codebases, APIs, and system services"
+          "zh": "面向代码库、API 与系统服务的自动化漏洞研究与安全审查。"
         },
         "match": [
           "security-audit-skill"
@@ -509,7 +509,7 @@
         "url": "https://github.com/obra/superpowers",
         "tagline": {
           "en": "A framework for orchestrating agentic workflows through structured software development methodologies",
-          "zh": "A framework for orchestrating agentic workflows through structured software development methodologies"
+          "zh": "通过结构化软件开发方法论编排智能体工作流的框架。"
         },
         "match": [
           "superpowers"
@@ -522,7 +522,7 @@
         "url": "https://github.com/Graphify-Labs/graphify",
         "tagline": {
           "en": "Transforms codebases and documentation into persistent, queryable knowledge graphs.",
-          "zh": "Transforms codebases and documentation into persistent, queryable knowledge graphs."
+          "zh": "将代码库与文档转化为可持久保存、可查询的知识图谱。"
         },
         "match": [
           "graphify"
@@ -535,7 +535,7 @@
         "url": "https://github.com/pbakaus/impeccable",
         "tagline": {
           "en": "Turns standard frontend interfaces into high-fidelity, production-grade design craft.",
-          "zh": "Turns standard frontend interfaces into high-fidelity, production-grade design craft."
+          "zh": "将标准前端界面提升为高保真、可用于生产的设计品质。"
         },
         "match": [
           "impeccable"
@@ -548,7 +548,7 @@
         "url": "https://github.com/addyosmani/agent-skills",
         "tagline": {
           "en": "A library of production-grade engineering capabilities for AI coding agents",
-          "zh": "A library of production-grade engineering capabilities for AI coding agents"
+          "zh": "面向 AI 编程智能体的一套生产级工程能力库。"
         },
         "match": [
           "agent-skills"
@@ -561,7 +561,7 @@
         "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "tagline": {
           "en": "A systematic approach to creating multi-platform creative assets and digital banners.",
-          "zh": "A systematic approach to creating multi-platform creative assets and digital banners."
+          "zh": "一套系统化方法，用于制作多平台创意素材与数字横幅。"
         },
         "match": [
           "ui-ux-pro-max-skill"
@@ -574,7 +574,7 @@
         "url": "https://github.com/JuliusBrussee/caveman",
         "tagline": {
           "en": "Reduces token consumption for coding agents through compressed communication and specialized roles.",
-          "zh": "Reduces token consumption for coding agents through compressed communication and specialized roles."
+          "zh": "通过压缩式沟通与专用角色，降低编程智能体的 token 消耗。"
         },
         "match": [
           "caveman"
@@ -587,7 +587,7 @@
         "url": "https://github.com/blader/humanizer",
         "tagline": {
           "en": "Removes the structural patterns and predictable phrasing of AI-generated prose.",
-          "zh": "Removes the structural patterns and predictable phrasing of AI-generated prose."
+          "zh": "去除 AI 生成文字的结构性模式与可预测的句式。"
         },
         "match": [
           "humanizer"
@@ -600,7 +600,7 @@
         "url": "https://github.com/earthtojake/text-to-cad",
         "tagline": {
           "en": "Translates text prompts into parametric 3D models and printable CAD files",
-          "zh": "Translates text prompts into parametric 3D models and printable CAD files"
+          "zh": "将文本提示词转化为参数化 3D 模型与可打印的 CAD 文件。"
         },
         "match": [
           "text-to-cad"
@@ -613,7 +613,7 @@
         "url": "https://github.com/lemomo-ai/lemo-opuscar",
         "tagline": {
           "en": "Directs and produces short films generated entirely through code-based animation.",
-          "zh": "Directs and produces short films generated entirely through code-based animation."
+          "zh": "完全通过代码驱动动画，制作短片。"
         },
         "match": [
           "lemo-opuscar"
@@ -626,7 +626,7 @@
         "url": "https://github.com/emilkowalski/skills",
         "tagline": {
           "en": "A framework for building fluid mobile animations and gestures in React Native and Expo",
-          "zh": "A framework for building fluid mobile animations and gestures in React Native and Expo"
+          "zh": "用于在 React Native 与 Expo 中构建流畅移动端动画与手势的框架。"
         },
         "match": [
           "skills"
@@ -639,7 +639,7 @@
         "url": "https://github.com/multica-ai/andrej-karpathy-skills",
         "tagline": {
           "en": "Practical coding guardrails for simpler, surgical AI-assisted changes",
-          "zh": "Practical coding guardrails for simpler, surgical AI-assisted changes"
+          "zh": "面向更简单、更精准的 AI 辅助修改的实用编码护栏。"
         },
         "match": [
           "andrej-karpathy-skills"
@@ -652,7 +652,7 @@
         "url": "https://github.com/anthropics/skills",
         "tagline": {
           "en": "A collection of specialized capabilities for extending the functionality of LLM agents.",
-          "zh": "A collection of specialized capabilities for extending the functionality of LLM agents."
+          "zh": "一组专用能力，用于扩展 LLM 智能体的功能。"
         },
         "match": [
           "skills"
@@ -665,7 +665,7 @@
         "url": "https://github.com/latent-spaces/brag",
         "tagline": {
           "en": "Transforms project directories and website URLs into shareable launch videos.",
-          "zh": "Transforms project directories and website URLs into shareable launch videos."
+          "zh": "将项目目录与网站 URL 转化为可分享的发布视频。"
         },
         "match": [
           "brag"
@@ -680,12 +680,12 @@
         "url": "https://github.com/morluto/rea",
         "tagline": {
           "en": "Reverse engineer anything with agents, from app behavior down to native binaries.",
-          "zh": "Reverse engineer anything with agents, from app behavior down to native binaries."
+          "zh": "借助智能体进行逆向工程，覆盖从应用行为到原生二进制文件的各个层面。"
         },
         "match": [
           "rea"
         ],
-        "stars": 350320,
+        "stars": 350366,
         "stars7d": null
       },
       {
@@ -693,12 +693,12 @@
         "url": "https://github.com/affaan-m/ECC",
         "tagline": {
           "en": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
-          "zh": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond."
+          "zh": "智能体 harness 性能优化系统，包含技能、直觉、记忆与安全机制，并以研究优先的方式服务于 Claude Code、Codex、Opencode、Cursor 等工具。"
         },
         "match": [
           "ecc"
         ],
-        "stars": 285034,
+        "stars": 285036,
         "stars7d": null
       },
       {
@@ -706,12 +706,12 @@
         "url": "https://github.com/deepseek-ai/deepseek-harness",
         "tagline": {
           "en": "DeepSeek Harness: Everything is a Plugin.",
-          "zh": "DeepSeek Harness: Everything is a Plugin."
+          "zh": "DeepSeek Harness：一切皆插件。"
         },
         "match": [
           "deepseek-harness"
         ],
-        "stars": 256161,
+        "stars": 256169,
         "stars7d": null
       },
       {
@@ -719,7 +719,7 @@
         "url": "https://github.com/NousResearch/hermes-agent",
         "tagline": {
           "en": "The agent that grows with you",
-          "zh": "The agent that grows with you"
+          "zh": "与你一同成长的智能体。"
         },
         "match": [
           "hermes-agent"
@@ -732,12 +732,12 @@
         "url": "https://github.com/firecrawl/firecrawl",
         "tagline": {
           "en": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥",
-          "zh": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥"
+          "zh": "用网络及更广泛的数据为你的 AI 智能体赋能，打造面向超级智能的数据库。🔥"
         },
         "match": [
           "firecrawl"
         ],
-        "stars": 193550,
+        "stars": 193551,
         "stars7d": null
       },
       {
@@ -745,12 +745,12 @@
         "url": "https://github.com/DietrichGebert/ponytail",
         "tagline": {
           "en": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
-          "zh": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote."
+          "zh": "让你的 AI 智能体像办公室里最懒的资深开发者那样思考：最好的代码，是你从未写过的代码。"
         },
         "match": [
           "ponytail"
         ],
-        "stars": 170155,
+        "stars": 170165,
         "stars7d": null
       },
       {
@@ -758,7 +758,7 @@
         "url": "https://github.com/langchain-ai/langchain",
         "tagline": {
           "en": "The agent engineering platform.",
-          "zh": "The agent engineering platform."
+          "zh": "智能体工程平台。"
         },
         "match": [
           "langchain"
@@ -771,12 +771,12 @@
         "url": "https://github.com/Graphify-Labs/graphify",
         "tagline": {
           "en": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store.",
-          "zh": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store."
+          "zh": "将任意代码库及其文档、SQL schema、配置与 PDF 转化为可查询的知识图谱。为 Claude Code、Cursor、Codex 与 Gemini CLI 提供 /graphify 技能：本地确定性 AST 解析，每条边都有解释，无需向量存储。"
         },
         "match": [
           "graphify"
         ],
-        "stars": 130549,
+        "stars": 130551,
         "stars7d": null
       },
       {
@@ -784,12 +784,12 @@
         "url": "https://github.com/browser-use/browser-use",
         "tagline": {
           "en": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API.",
-          "zh": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API."
+          "zh": "面向 AI 浏览器智能体的开源 Python 库，并提供 Browser Use Cloud：隐身浏览器与托管式智能体 API。"
         },
         "match": [
           "browser-use"
         ],
-        "stars": 118696,
+        "stars": 118698,
         "stars7d": null
       },
       {
@@ -797,7 +797,7 @@
         "url": "https://github.com/google-gemini/gemini-cli",
         "tagline": {
           "en": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
-          "zh": "An open-source AI agent that brings the power of Gemini directly into your terminal."
+          "zh": "一个开源 AI 智能体，可将 Gemini 的能力直接带入终端。"
         },
         "match": [
           "gemini-cli"
@@ -810,12 +810,12 @@
         "url": "https://github.com/paperclipai/paperclip",
         "tagline": {
           "en": "The open-source app everyone uses to manage agents at work",
-          "zh": "The open-source app everyone uses to manage agents at work"
+          "zh": "大家在工作中用来管理智能体的开源应用。"
         },
         "match": [
           "paperclip"
         ],
-        "stars": 105326,
+        "stars": 105327,
         "stars7d": null
       },
       {
@@ -823,7 +823,7 @@
         "url": "https://github.com/thedotmack/claude-mem",
         "tagline": {
           "en": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
-          "zh": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More"
+          "zh": "为每个智能体提供跨会话的持久上下文：捕获会话中的全部操作，经 AI 压缩后，将相关上下文注入未来的会话。支持 Claude Code、OpenClaw、Codex、Gemini、Hermes、Copilot、OpenCode 等。"
         },
         "match": [
           "claude-mem"
@@ -836,7 +836,7 @@
         "url": "https://github.com/Panniantong/Agent-Reach",
         "tagline": {
           "en": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
-          "zh": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees."
+          "zh": "让你的 AI 智能体看见整个互联网：一个 CLI 即可读取与搜索 Twitter、Reddit、YouTube、GitHub、Bilibili、小红书，且零 API 费用。"
         },
         "match": [
           "agent-reach"
@@ -849,12 +849,12 @@
         "url": "https://github.com/stablyai/orca",
         "tagline": {
           "en": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
-          "zh": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime."
+          "zh": "Orca 是管理智能体舰队的工作台（如 Grok Bot、Claude Code）。可用你自己的订阅运行任意编码智能体，支持桌面端、移动端与远程运行时。"
         },
         "match": [
           "orca"
         ],
-        "stars": 100074,
+        "stars": 100078,
         "stars7d": null
       },
       {
@@ -862,12 +862,12 @@
         "url": "https://github.com/Leonxlnx/taste-skill",
         "tagline": {
           "en": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages",
-          "zh": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages"
+          "zh": "为编码智能体赋予审美品味的技能包：艺术指导、参考图与浏览器检查，告别千篇一律的 AI 页面。"
         },
         "match": [
           "taste-skill"
         ],
-        "stars": 100001,
+        "stars": 100003,
         "stars7d": null
       },
       {
@@ -875,7 +875,7 @@
         "url": "https://github.com/infiniflow/ragflow",
         "tagline": {
           "en": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs",
-          "zh": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs"
+          "zh": "RAGFlow 是领先的开源检索增强生成（RAG）引擎，将前沿 RAG 与智能体能力融合，为 LLM 打造更出色的上下文层。"
         },
         "match": [
           "ragflow"
@@ -888,12 +888,12 @@
         "url": "https://github.com/tt-a1i/archify",
         "tagline": {
           "en": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
-          "zh": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more."
+          "zh": "将任意想法、计划或代码库转化为精美的交互式图表。适用于 Claude Code、Codex 等的智能体技能。"
         },
         "match": [
           "archify"
         ],
-        "stars": 86605,
+        "stars": 86608,
         "stars7d": null
       },
       {
@@ -901,7 +901,7 @@
         "url": "https://github.com/unclecode/crawl4ai",
         "tagline": {
           "en": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf",
-          "zh": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf"
+          "zh": "面向 LLM 与 AI 智能体的开源网页爬虫与抓取工具：将任意网站转为干净、适合 LLM 读取的 Markdown。可自行部署，也可使用 Crawl4AI Cloud 并只需一个密钥。加入我们的 Discord：https://discord.gg/VuxzM8mtf"
         },
         "match": [
           "crawl4ai"
@@ -914,7 +914,7 @@
         "url": "https://github.com/bytedance/deer-flow",
         "tagline": {
           "en": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours.",
-          "zh": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours."
+          "zh": "开源的长周期 SuperAgent harness，可进行调研、编码与创作。借助沙箱、记忆、工具、技能、子智能体与消息网关，可处理耗时数分钟至数小时的各类任务。"
         },
         "match": [
           "deer-flow"
@@ -927,12 +927,12 @@
         "url": "https://github.com/diegosouzapw/OmniRoute",
         "tagline": {
           "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
-          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
+          "zh": "永不停止编码。免费 MIT 许可的 AI 网关：一个端点接入 375 个服务商（其中 150 多个免费）、1400 多个模型，涵盖 Kimi、Claude、GPT、Gemini、GLM、DeepSeek、MiniMax 等。支持 Claude Code、Codex、Cursor、OpenCode、Cline 与 Copilot。具备配额感知的自动回退，RTK+Caveman 压缩可节省 15–95% 的 token，支持 MCP/A2A、桌面端与 PWA。由 900 多名贡献者共同打造。"
         },
         "match": [
           "omniroute"
         ],
-        "stars": 79058,
+        "stars": 79060,
         "stars7d": null
       }
     ],
