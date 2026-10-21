@@ -13,7 +13,7 @@ def _home(tmp_path):
 
 def test_snapshot_shape(tmp_path):
     s = build_snapshot(_home(tmp_path), tmp_path / "state", "zh", now=NOW)
-    assert s["schema"] == 1 and s["locale"] == "zh"
+    assert s["schema"] == 2 and s["locale"] == "zh"
     assert {t["tool"] for t in s["tools"] if t["detected"]} == {"claude_code", "codex"}
     assert [d["key"] for d in s["dimensions"]] == ["routing", "timing", "context", "leverage"]
     assert s["dimensions"][0]["label"] == "模型路由"
@@ -35,7 +35,7 @@ def test_cli_entry(tmp_path):
     out = subprocess.run([sys.executable, "-m", "agentfit.engine", "snapshot", "--json", "--home", str(_home(tmp_path)),
                           "--state-dir", str(tmp_path / "st"), "--locale", "en"], capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
-    assert json.loads(out.stdout)["schema"] == 1
+    assert json.loads(out.stdout)["schema"] == 2
 
 
 def test_inventory_import_in_fresh_process():
@@ -78,7 +78,7 @@ def test_cli_error_is_sanitized(tmp_path):
                           "--home", str(tmp_path / "empty"), "--state-dir", str(state)],
                          capture_output=True, text=True)
     assert out.returncode == 2
-    assert json.loads(out.stdout) == {"schema": 1, "error": "FileExistsError"}
+    assert json.loads(out.stdout) == {"schema": 2, "error": "FileExistsError"}
     assert out.stderr == ""
 
 
@@ -99,3 +99,43 @@ def test_snapshot_includes_localized_notice_labels(tmp_path):
         assert snapshot["labels"] == {
             key: label(key, locale) for key in ("no_tools", "tool_unavailable")
         }
+
+
+def test_snapshot_v2_blocks(tmp_path):
+    s = build_snapshot(_home(tmp_path), tmp_path / "state", "en", now=NOW)
+    assert s["book"]["total"] == 24
+    assert isinstance(s["book"]["today"]["title"], str)
+    assert set(s["rankings"]) == {"skill", "agent"}
+    assert isinstance(s["daily_tip"]["detail"], str)
+    assert s["streak"]["days"] == 1
+    assert len(s["badges"]) == 9
+    assert s["usage_summary"] == {
+        "tokens_7d": sum(t["usage_7d"]["tokens"] for t in s["tools"]),
+        "cost_usd_7d": round(sum(t["usage_7d"]["cost_usd"] for t in s["tools"]), 6),
+        "codex_quota_pct": 42.5,
+    }
+    empty = build_snapshot(tmp_path / "empty", tmp_path / "empty-state", "zh", now=NOW)
+    assert empty["usage_summary"] == {"tokens_7d": 0, "cost_usd_7d": 0.0, "codex_quota_pct": None}
+    assert empty["streak"] == {"days": 0}
+
+
+def test_content_override_and_mark_tried_cli(tmp_path):
+    from agentfit.engine.content_pool import load_content
+    content = load_content(None)
+    content["skills"] = [{**content["skills"][-1], "id": "custom_self"}]
+    content["skills"][0]["title"]["en"] = "Custom title"
+    path = tmp_path / "content.json"
+    path.write_text(json.dumps(content))
+    state = tmp_path / "state"
+    command = [sys.executable, "-m", "agentfit.engine"]
+    snapshot = ["snapshot", "--json", "--home", str(tmp_path / "empty"),
+                "--state-dir", str(state), "--locale", "en", "--content", str(path)]
+    def run(args):
+        out = subprocess.run(command + args, capture_output=True, text=True)
+        assert out.returncode == 0, out.stderr
+        return json.loads(out.stdout)
+    assert run(snapshot)["book"]["today"]["title"] == "Custom title"
+    assert run(["mark-tried", "custom_self", "--state-dir", str(state)]) == {"ok": True}
+    assert run(snapshot)["book"]["today"]["how"] == "self"
+    assert run(["mark-tried", "web_search", "--state-dir", str(state)]) == {"ok": False}
+    assert run(["mark-tried", "missing", "--state-dir", str(state)]) == {"ok": False}

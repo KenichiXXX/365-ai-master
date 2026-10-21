@@ -392,3 +392,20 @@ def label(name: str, locale: str) -> str:
 def locale_from_env() -> str:
     language = os.environ.get("LC_ALL") or os.environ.get("LANG", "")
     return "zh" if language.startswith("zh") else "en"
+
+
+_BADGE_TITLES = {
+    "streak_3": ("连续 3 天", "3-day streak"),
+    "streak_7": ("一周修行", "One-week streak"),
+    "streak_14": ("两周修行", "Two-week streak"),
+    "streak_30": ("一月修行", "30-day streak"),
+    "book_5": ("图鉴 5 张", "5 cards lit"),
+    "book_10": ("图鉴 10 张", "10 cards lit"),
+    "book_20": ("图鉴 20 张", "20 cards lit"),
+    "book_all": ("图鉴全收集", "Full collection"),
+    "village_done": ("新手村出师", "Village graduate"),
+}
+
+
+def badge_title(key: str, locale: str) -> str:
+    return _BADGE_TITLES[key][0 if locale == "zh" else 1]

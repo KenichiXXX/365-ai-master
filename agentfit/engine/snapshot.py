@@ -5,6 +5,8 @@ from pathlib import Path
 from agentfit.checkup import overall_from_dimensions, tier_for_score
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
+from agentfit.engine.codex_book import badges, daily_rankings, daily_tip, streak, update_book
+from agentfit.engine.content_pool import load_content
 from agentfit.engine.content import label
 from agentfit.engine.profile import build_profile, dimensions
 from agentfit.engine.scan_state import ScanState
@@ -13,7 +15,7 @@ from agentfit.engine.village import advance, evaluate, today_tip, village_block
 
 def build_snapshot(
     home: Path, state_dir: Path, locale: str, now: datetime | None = None,
-    enabled: set[str] | None = None,
+    enabled: set[str] | None = None, content: Path | None = None,
 ) -> dict:
     now = now or datetime.now(timezone.utc)
     state = ScanState(state_dir / "scan.json")
@@ -61,16 +63,33 @@ def build_snapshot(
     score = overall_from_dimensions(dims)
     met = evaluate(profile, inventories, dims)
     progress = advance(met, state_dir / "progress.json", now)
+    pool = load_content(content)
+    book = update_book(pool, profile, inventories, state_dir / "progress.json", now)
+    for card in book["cards"]:
+        for key in ("title", "why", "prompt"):
+            card[key] = card[key][locale]
+    today = now.astimezone().date()
+    streak_days = streak(profile.active_dates_30d, today)
     notices = [] if any(row["tier"] == "deep" and row["detected"] for row in tools) else ["no_tools"]
     notices.extend(f"regressed:{key}" for key in progress["regressed"])
     return {
-        "schema": 1, "generated_at": now.isoformat(), "locale": locale,
+        "schema": 2, "generated_at": now.isoformat(), "locale": locale,
         "tools": tools, "quota": {"codex": quota},
         "dimensions": [{"key": d.key, "label": label(d.key, locale), "score": d.score} for d in dims],
         "overall": {"score": score, "tier": tier_for_score(score)},
         "village": village_block(progress, met, locale),
         "today_tip": today_tip(progress, dims, locale, now.astimezone().date()),
         "inventory": {tool: inv.to_public() for tool, inv in inventories.items()},
+        "book": book,
+        "rankings": daily_rankings(pool, inventories, locale, today),
+        "daily_tip": daily_tip(pool, locale, today),
+        "streak": {"days": streak_days},
+        "badges": badges(streak_days, book["lit"], book["total"], len(progress["passed"]), locale),
+        "usage_summary": {
+            "tokens_7d": sum(usage["tokens"] for usage in profile.usage_by_model_7d.values()),
+            "cost_usd_7d": profile.total_cost_7d,
+            "codex_quota_pct": quota.get("primary_pct") if quota else None,
+        },
         "notices": notices,
         "labels": {key: label(key, locale) for key in ("no_tools", "tool_unavailable")},
     }

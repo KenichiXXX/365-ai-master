@@ -27,6 +27,15 @@ class Profile:
     light_token_share_14d: float = 0.0
     project_dirs_14d: set[str] = field(default_factory=set)
 
+    tool_calls_30d: dict[str, int] = field(default_factory=dict)
+    skill_calls_30d: dict[str, int] = field(default_factory=dict)
+    sidechain_30d: int = 0
+    hook_success_30d: int = 0
+    compactions_30d: int = 0
+    light_token_share_30d: float = 0.0
+    efforts_30d: set[str] = field(default_factory=set)
+    active_dates_30d: list[str] = field(default_factory=list)
+
     def rule_hits(self) -> dict[str, bool]:
         return {
             "RULE_CONTEXT_BLOAT": (
@@ -60,6 +69,7 @@ def _dedupe(events: list[CompactEvent]) -> list[CompactEvent]:
             tool_calls=dict(Counter(previous.tool_calls) + Counter(event.tool_calls)),
             skill_calls=dict(Counter(previous.skill_calls) + Counter(event.skill_calls)),
             sidechain=previous.sidechain or event.sidechain,
+            effort=chosen.effort or previous.effort or event.effort,
             turn_start=previous.turn_start + event.turn_start,
             aborted=previous.aborted + event.aborted,
             compacted=previous.compacted + event.compacted,
@@ -73,14 +83,34 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
     profile = Profile(now=now)
     cutoff_7d = now - timedelta(days=7)
     cutoff_14d = now - timedelta(days=14)
+    cutoff_30d = now - timedelta(days=30)
     today = now.astimezone().date()
     tool_calls: Counter[str] = Counter()
     skill_calls: Counter[str] = Counter()
     all_tokens = fast_tokens = input_tokens = cache_tokens = 0
     tool_models: dict[str, dict[str, dict]] = {}
+    calls_30d: Counter[str] = Counter()
+    skills_30d: Counter[str] = Counter()
+    tokens_30d = fast_30d = 0
+    active_dates: set[str] = set()
 
     for event in _dedupe(events):
         timestamp = event.dt()
+        if timestamp < cutoff_30d or timestamp > now:
+            continue
+        calls_30d.update(event.tool_calls)
+        skills_30d.update(event.skill_calls)
+        profile.sidechain_30d += int(event.sidechain)
+        profile.hook_success_30d += event.hook_success
+        profile.compactions_30d += event.compacted
+        if event.effort:
+            profile.efforts_30d.add(event.effort)
+        if event.model:
+            active_dates.add(timestamp.astimezone().date().isoformat())
+            tokens = event.input + event.output
+            tokens_30d += tokens
+            if classify_model(event.model) == "fast":
+                fast_30d += tokens
         if timestamp < cutoff_14d:
             continue
         tool_calls.update(event.tool_calls)
@@ -130,6 +160,10 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
         model_usage["tokens"] += tokens
         model_usage["cost_usd"] += cost
 
+    profile.tool_calls_30d = dict(calls_30d)
+    profile.skill_calls_30d = dict(skills_30d)
+    profile.active_dates_30d = sorted(active_dates)
+    profile.light_token_share_30d = fast_30d / tokens_30d if tokens_30d else 0.0
     profile.tool_calls_14d = dict(tool_calls)
     profile.skill_calls_14d = dict(skill_calls)
     profile.light_token_share_14d = round(fast_tokens / all_tokens, 4) if all_tokens else 0.0
