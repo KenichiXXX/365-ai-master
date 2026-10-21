@@ -5,7 +5,6 @@ from pathlib import Path
 import stat
 import tomllib
 
-from agentfit.engine.collectors._usage import allowed
 
 
 @dataclass
@@ -26,6 +25,9 @@ def _mapping(value) -> dict:
 
 
 def _config(path: Path, *, toml: bool = False) -> dict:
+    # Collector registration imports Inventory; defer the shared path guard.
+    from agentfit.engine.collectors._usage import allowed
+
     if not allowed(path):
         return {}
     try:
