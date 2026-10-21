@@ -977,3 +977,113 @@ Authoritative: spec §6. Additions fixed by this plan: `tools[].error` is `null`
 
 - Spec coverage: §3 → Tasks 2–6; §4 → 7–9; §5 → 12; §6 → 10; §8 privacy → 10/12; §8 packaging → 11/13; §9 branch/WIP constraint → Global Constraints. Spec §7 location change (`agentfit/engine/` instead of `agentfit/collector/`) is deliberate (WIP conflict) and noted above.
 - Spec §7 also listed a `365aimaster snapshot` CLI subcommand; replaced by `python -m agentfit.engine snapshot` so `agentfit/cli.py` (WIP) stays untouched.
+
+---
+
+# Phase 2 — v2 redesign (spec §11)
+
+Global Constraints still apply, with ONE amendment: `macos/Sources/AIMaster/ContentUpdater.swift` is the only file allowed to use the network (`URLSession`), for a single plain HTTPS GET of the fixed content URL. The engine stays network-free. Update `tests/engine/test_privacy.py` accordingly (Task 16).
+
+### Task 14: Content file — schema, bundled default, loader
+
+**Files:** Create `agentfit/engine/content_pool.json`, `content/daily.json` (identical copy — the public file), `agentfit/engine/content_pool.py`, `tests/engine/test_content_pool.py`. Add `agentfit/engine/content_pool.json` to PyInstaller data in `scripts/build_engine.sh` (`--add-data agentfit/engine/content_pool.json:agentfit/engine`).
+
+**Schema (version 1):**
+```json
+{"version": 1, "updated_at": "2026-10-21",
+ "skills": [{"id": "web_search", "level": 1, "detect": "tool:WebSearch",
+             "title": {"zh": "", "en": ""}, "why": {"zh": "", "en": ""}, "prompt": {"zh": "", "en": ""}}],
+ "rankings": {"skill": [{"name": "", "url": "", "tagline": {"zh": "", "en": ""}, "match": []}],
+              "agent": [{"name": "", "url": "", "tagline": {"zh": "", "en": ""}, "match": []}]},
+ "tips": [{"id": "", "title": {"zh": "", "en": ""}, "detail": {"zh": "", "en": ""}, "source": ""}]}
+```
+`detect` grammar: `tool:<ToolName>` | `mcp` | `skill_any` | `sidechain` | `hook` | `light_model` | `effort:<v1>|<v2>` | `compaction` | `instructions:claude` | `instructions:codex` | `self`.
+`match`: inventory skill names that mean "installed" (may be empty).
+
+**Interfaces — Produces:** `load_content(path: Path | None) -> dict` — if `path` is given, exists, parses, has `version == 1` and passes `validate(d)`, return it; otherwise return the bundled file (loaded via `importlib.resources` / `Path(__file__).with_name(...)`, works inside PyInstaller). `validate(d) -> bool`: every skill has id/level/detect/title/why/prompt with both zh and en non-empty, detect matches the grammar, ids unique; rankings and tips have zh+en text.
+
+**Skill cards** (exact copy; order = recommendation order):
+
+| id | detect | zh title / why / prompt | en title / why / prompt |
+|---|---|---|---|
+| rules_file | instructions:claude | 写一份 CLAUDE.md / AI 每次开工先读它，写一次长期省事 / 请读一下这个项目，帮我写一份 60 行以内的 CLAUDE.md，写完给我看 | Write a CLAUDE.md / Your AI reads it before every task — write once, save time forever / Read this project and write a CLAUDE.md under 60 lines, then show me |
+| web_search | tool:WebSearch | 让 AI 联网搜索 / 问最新的东西时让它先查再答，少编造 / 请先联网搜索这个问题的最新资料，再给我结论和出处：[你的问题] | Let the AI search the web / For anything recent, have it look things up first — fewer made-up answers / Search the web for the latest on this, then give me a conclusion with sources: [your question] |
+| web_fetch | tool:WebFetch | 让 AI 读一个网页 / 贴个链接让它读完再总结，省得你自己翻 / 请读这个网页并用 5 条要点总结：[链接] | Have the AI read a page / Paste a link and let it read and summarize for you / Read this page and summarize it in 5 bullet points: [link] |
+| plan_mode | tool:ExitPlanMode | Plan 模式：先出方案再动手 / 大改动前先看步骤，你点头再执行，返工更少 / 进入 Plan 模式（Shift+Tab 切换），先给我方案，不要改文件：[你的任务] | Plan mode: plan before acting / See the steps before big changes and approve them — less rework / Enter plan mode (Shift+Tab), give me a plan first and don't edit files: [your task] |
+| todo_list | tool:TodoWrite | 让 AI 列任务清单 / 长任务拆成清单逐项打勾，不容易漏 / 请先把这个任务拆成一个待办清单，再一项项完成：[你的任务] | Let the AI keep a to-do list / Long tasks get split into a checklist so nothing is missed / Break this task into a to-do list first, then work through it item by item: [your task] |
+| ask_first | tool:AskUserQuestion | 让 AI 先问你 / 需求不清时让它先提问，比猜错再改快 / 开始之前，如果有任何不确定的地方，先用选择题问我 | Let the AI ask first / When the request is fuzzy, questions beat wrong guesses / Before you start, ask me multiple-choice questions about anything unclear |
+| subagent | sidechain | 子代理：同时开几条线 / 让子代理并行查资料，主对话保持清爽 / 请用子代理并行完成：A 梳理目录结构，B 找出所有 TODO，最后汇总给我 | Sub-agents: work in parallel / Sub-agents research side by side and keep your main chat clean / Use sub-agents in parallel: A) map the project structure, B) find all TODOs, then summarize |
+| light_model | light_model | 机械活交给轻量模型 / 格式转换这类活用轻量档更快更省 / 这个任务是机械性的，请用最轻量的模型完成；如果当前不是，告诉我怎么用 /model 切换 | Give chores to a light model / Formatting-type work is faster and cheaper on a light tier / This task is mechanical — use the lightest model; if you aren't on one, tell me how to switch with /model |
+| effort_up | effort:high\|xhigh\|max | 难题调高推理强度 / 架构和疑难调试时让它多想一会儿 / 这个问题比较难，请用更高的推理强度仔细想清楚再回答：[你的问题] | Raise reasoning effort for hard problems / Let it think longer on architecture and tricky bugs / This one is hard — use higher reasoning effort and think it through before answering: [your question] |
+| first_skill | skill_any | 用起第一个 skill / 把常干的活变成一句话能调用的能力 / 请列出我装了哪些 skill，挑一个最适合这个项目的，用它完成一个小任务 | Use your first skill / Turn a recurring job into a one-line command / List the skills I have installed, pick the best one for this project, and use it on a small task |
+| mcp | mcp | 用 MCP 连接外部工具 / 让 AI 直接读写 GitHub、文档等外部系统 / 请告诉我我已经连了哪些 MCP 工具，并用其中一个帮我完成一件小事 | Connect tools with MCP / Let the AI work directly with GitHub, docs, and other systems / Tell me which MCP tools I have connected and use one of them for a small task |
+| hook | hook | Hook：让固定动作自动发生 / 比如改完代码自动跑测试，不用每次提醒 / 请帮我配置一个 hook：每次改完文件自动运行测试。先告诉我要改什么，我确认后再写 | Hooks: automate the routine / For example, run tests after every edit without reminding it / Set up a hook that runs tests after you edit files. Tell me what you'll change first; write it after I confirm |
+| compact | compaction | 长对话压缩一下 / 会话太长时压缩，保留结论、扔掉过程 / 请用 /compact 压缩当前对话，只保留结论和待办 | Compact long chats / Compress a long session — keep conclusions, drop the noise / Use /compact to compress this conversation, keeping only conclusions and open items |
+| worktree | tool:EnterWorktree | 用 worktree 并行开发 / 两件事互不干扰地同时改，不怕弄乱 / 请在一个新的 git worktree 里完成这个改动，别动我当前的工作区：[你的任务] | Parallel work with worktrees / Change two things at once without stepping on each other / Do this change in a new git worktree and leave my current working tree alone: [your task] |
+| codex_agents | instructions:codex | 给 Codex 写 AGENTS.md / Codex 的项目说明书，作用和 CLAUDE.md 一样 / 请读一下这个项目，帮我写一份 AGENTS.md，控制在 60 行以内 | Write an AGENTS.md for Codex / Codex's project brief — same idea as CLAUDE.md / Read this project and write an AGENTS.md under 60 lines |
+| init_cmd | self | /init 自动生成说明书 / 在项目里输入 /init，AI 会自己读代码写初稿 / 在这个项目里运行 /init，然后把生成的 CLAUDE.md 给我看 | Generate a brief with /init / Type /init in a project and the AI drafts the brief from the code / Run /init in this project, then show me the generated CLAUDE.md |
+| clear_session | self | 一个任务一个会话 / 换话题就 /clear，上下文干净、回答更准 / （换新任务前输入 /clear） | One task per session / Switch topics with /clear for cleaner context and sharper answers / (type /clear before starting a new task) |
+| resume | self | 接着上次的会话 / 用 claude --resume 或 codex resume 找回昨天的对话 / （在终端输入 claude --resume，选择要继续的会话） | Pick up where you left off / Use claude --resume or codex resume to reopen yesterday's chat / (run claude --resume in your terminal and choose a session) |
+| at_mention | self | 用 @ 引用文件 / 输入 @ 加文件名，直接把文件交给 AI 看 / 请看一下 @README.md，告诉我这个项目缺什么 | Reference files with @ / Type @ plus a filename to hand that file to the AI / Look at @README.md and tell me what this project is missing |
+| paste_image | self | 贴截图让 AI 看 / 报错截图、设计稿直接粘贴进对话 / （把截图粘贴进对话）请看这张图，告诉我问题出在哪 | Paste a screenshot / Drop error screenshots or designs straight into the chat / (paste a screenshot) Look at this image and tell me what's wrong |
+| headless | self | 非交互模式跑批量活 / claude -p 或 codex exec 一行命令跑完就走 / （在终端试：claude -p "用三句话总结这个项目"） | Headless mode for batch jobs / claude -p or codex exec runs a task in one command / (try in a terminal: claude -p "summarize this project in three sentences") |
+| custom_command | self | 自定义斜杠命令 / 把常用提示词存成 /命令，一键复用 / 请帮我把"检查代码风格并修复"做成一个自定义斜杠命令 | Custom slash commands / Save a prompt you reuse as a /command / Turn "check code style and fix it" into a custom slash command for me |
+| review_diff | self | 让 AI 改完自查 / 改完先让它自己看一遍 diff，问题少一半 / 请检查你刚才的改动：列出可能的问题和遗漏，先别继续改 | Have the AI review its own diff / A self-review pass catches many problems early / Review the change you just made: list possible problems and gaps, and don't change anything yet |
+| permissions | self | 设好常用权限 / 常用的安全命令设成免确认，少被打断 / 请帮我看看哪些常用命令可以安全地加入免确认列表，先列出来不要改 | Set up permissions / Allow safe, frequent commands so you're interrupted less / Suggest which frequent commands are safe to auto-allow — list them, don't change anything |
+
+**Rankings and tips:** build from `cloud/master.py` — `SKILL_POOL` → `rankings.skill`, `AGENT_POOL` → `rankings.agent` (name, url, zh tagline = `tagline`; write a faithful short English tagline; `match`: for `anthropics/skills` use `[]`, others `[]`), and the `kind=="tip"` items of `CONTENT_POOL` → `tips` (zh title/detail as-is, faithful English translation, `source`). Do not invent projects or facts.
+
+- [ ] Step 1: write failing tests: bundled file loads and validates; `load_content(bad_path)` falls back to bundled; a file with a bad `detect` or missing `en` text is rejected; `content/daily.json` is byte-identical to `agentfit/engine/content_pool.json`; there are exactly 24 skills in the order above.
+- [ ] Step 2–4: FAIL → implement → PASS + full suite (`--basetemp=.pytest_cache/tmp`). Step 5: commit `feat(engine): bundled daily content pool and loader`.
+
+### Task 15: Engine v2 — skill codex (图鉴), today's new skill, rankings, streak, badges, usage summary
+
+**Files:** Modify `agentfit/engine/profile.py` (30-day fields), `agentfit/engine/snapshot.py` (new blocks, `--content` and `mark-tried`), `agentfit/engine/__main__.py`; create `agentfit/engine/codex_book.py`, `tests/engine/test_codex_book.py`; extend `tests/engine/test_snapshot.py`.
+
+**Profile additions (30-day window, same dedupe):** `tool_calls_30d`, `skill_calls_30d`, `sidechain_30d`, `hook_success_30d`, `compactions_30d`, `light_token_share_30d`, `efforts_30d: set[str]`, `active_dates_30d: list[str]` (sorted local `YYYY-MM-DD` with ≥1 usage event).
+
+**`codex_book.py` — Produces:**
+```python
+def detected(card: dict, p: Profile, inv: dict[str, Inventory]) -> bool | None   # None for "self"
+def update_book(content: dict, p: Profile, inv, progress_path: Path, now: datetime) -> dict
+    # progress.json gains {"lit": {id: {"at": iso, "how": "log"|"self"}}}; lighting is permanent.
+    # returns {"lit": n, "total": N, "cards": [{"id","title","why","prompt","level","lit","how"}], "today": card-dict}
+def today_skill(cards: list[dict], today: date) -> dict
+    # unlit cards in content order; pick unlit[today.toordinal() % len(unlit)]; if none, rotate all cards
+def mark_tried(card_id: str, progress_path: Path, now: datetime) -> bool   # only for detect=="self"; False otherwise
+def daily_rankings(content: dict, inv, locale, today: date, n: int = 5) -> dict
+    # {"skill": [...], "agent": [...]}: rotate each list by today.toordinal() % len, take n;
+    # item: {"name","url","tagline","installed": bool}  installed = any(m in union(skills_installed) for m in match)
+def daily_tip(content, locale, today) -> dict          # tips[today.toordinal() % len]
+def streak(active_dates: list[str], today: date) -> int  # consecutive days ending today (or yesterday if no usage yet today)
+def badges(streak_days: int, lit: int, total: int, village_passed: int, locale) -> list[dict]
+    # ids: streak_3, streak_7, streak_14, streak_30, book_5, book_10, book_20, book_all, village_done;
+    # each {"id","title","earned": bool}. zh/en titles: 连续 3 天/3-day streak, 一周修行/One-week streak,
+    # 两周修行/Two-week streak, 一月修行/30-day streak, 图鉴 5 张/5 cards lit, 图鉴 10 张/10 cards lit,
+    # 图鉴 20 张/20 cards lit, 图鉴全收集/Full collection, 新手村出师/Village graduate
+```
+Detect rules: `tool:X` → `tool_calls_30d.get(X,0)>=1`; `mcp` → `tool_calls_30d.get("mcp",0)>=1`; `skill_any` → any `skill_calls_30d`; `sidechain`/`hook`/`compaction` → respective 30d counter ≥1; `light_model` → `light_token_share_30d > 0`; `effort:a|b` → intersection with `efforts_30d`; `instructions:claude|codex` → that tool's `inventory.instructions_bytes > 200`; `self` → None.
+
+**Snapshot schema v2** (bump `"schema": 2`; keep all v1 keys): add `"book"` (update_book result, localized), `"rankings"`, `"daily_tip"`, `"streak": {"days": int}`, `"badges"`, `"usage_summary": {"tokens_7d": int, "cost_usd_7d": float, "codex_quota_pct": float|null}`. CLI: `snapshot --json [--content PATH]` (loads via `load_content`), and new subcommand `mark-tried <card_id> [--state-dir]` → prints `{"ok": true|false}`.
+
+- [ ] Step 1: failing tests — each detect kind lights a card from a crafted Profile; lit stays lit after the signal disappears; `self` cards light only via `mark_tried`, and `mark_tried` on a log card returns False; `today_skill` prefers unlit and is deterministic per date; rankings rotate daily and set `installed` from `match`; `streak` handles gaps and "no usage yet today"; badges thresholds; snapshot v2 keys present, still no content/path leaks; `mark-tried` CLI round-trip.
+- [ ] Step 2–4: FAIL → implement → PASS + full suite. Step 5: real-machine smoke into `.pytest_cache/smoke-state` (print `book.lit/total`, today skill id, streak). Step 6: commit `feat(engine): skill codex, daily skill, rankings, streak and badges`.
+
+### Task 16: App v2 — three tabs, content updater
+
+**Files:** Create `ContentUpdater.swift`, `CheckupTab.swift`, `TodaySkillTab.swift`, `TrainingTab.swift`, `RingView.swift`; modify `PopoverView.swift` (segmented tabs), `Snapshot.swift` (v2 fields, all optional), `EngineRunner.swift` (pass `--content <AppSupport>/content.json` when the file exists; add `markTried(id:)`), `SnapshotStore.swift`, `StatusItemController.swift`, `Localizable.strings`, tests, `tests/engine/test_privacy.py`. Delete `UsageSection.swift` (replaced by the one-line summary).
+
+- **ContentUpdater**: `static let url = URL(string: "https://raw.githubusercontent.com/19800104zhao-svg/365-ai-master/main/content/daily.json")!`. `refreshIfNeeded()`: if `UserDefaults "contentFetchedAt"` is today, return. Otherwise `URLRequest(url:)`, `httpMethod = "GET"`, `cachePolicy = .reloadIgnoringLocalCacheData`, **no** extra headers/body/cookies (`httpShouldHandleCookies = false`), ephemeral session, 15 s timeout; accept only HTTP 200 and ≤1 MB; parse JSON and require `version == 1` and non-empty `skills`; write atomically to `AppSupport/365AIMaster/content.json`; set `contentFetchedAt`. Any failure → keep the old file silently. Called on launch and when the popover opens.
+- **PopoverView**: `Picker` segmented control with 体检 / 今日新技能 / 修炼 (en: Check-up / New today / Training); remember last tab in UserDefaults.
+- **CheckupTab**: large `RingView(score: overall.score)` + `village.rankTitle` + "新手村第 N 关 · 连续 X 天" + four small `RingView`s with dimension labels + the today_tip card (title, why, buttons Copy prompt / Check now) + one grey caption from `usage_summary`: zh `本周 2,867 万 tokens · 折算 $577 · Codex 周额度 13%` / en `This week 28.7M tokens · ≈$577 API-equivalent · Codex weekly 13%` (format tokens with 万/亿 in zh, K/M/B in en; omit the quota part when null).
+- **TodaySkillTab**: `book.today` card with a "NEW · 你还没用过 / New for you" badge when unlit, title, why, buttons **复制试一下 / Copy and try** (copies prompt) and **试过了 / I tried it** (log-detectable → triggers refresh; `self` → `EngineRunner.markTried` then refresh); then "今日 Skill 榜 / Today's skills" and "今日 Agent 榜 / Today's agents" lists (name, tagline, right-side badge 已装/未装 · Installed/Not installed, click opens url via `NSWorkspace.shared.open` — only on explicit click); then `daily_tip` as "大师一句话 / Master's tip".
+- **TrainingTab**: village 3×3 grid (existing `VillageGrid`), "技能图鉴 N/M 已点亮 / Skill book N/M lit" grid of small tiles (lit = filled; `self`-lit shows a small 自评/self tag; unlit = dashed; tap shows the card's why + prompt), streak line, badges row (earned filled, others dimmed).
+- **Menu bar title**: `③` style quest number as now, plus `•` when today's skill is unlit.
+- **Privacy test**: allow `URLSession` only in `ContentUpdater.swift`; assert that file contains exactly one `https://` literal equal to the URL above, contains `httpMethod = "GET"`, and does not contain `httpBody`, `setValue(`, `addValue(`, or `uploadTask`.
+- **RenderPreviewTests**: render each tab to `RENDER_OUT` with suffixes `-checkup.png`, `-today.png`, `-training.png`.
+
+- [ ] Step 1: failing Swift tests — v2 snapshot fixture decodes (regenerate fixture with schema 2); token formatter (2867万 / 28.7M); ContentUpdater rejects non-200, oversize, wrong version (inject a fake loader closure — no real network in tests). Step 2–4: FAIL → implement → `swift build` + `swift test` pass; privacy test passes. Step 5: render the three tabs from a real engine run (from `macos/`: `AIMASTER_ENGINE=$PWD/../dist/365engine RENDER_OUT=$PWD/../.pytest_cache/v2 swift test --filter RenderPreviewTests` after rebuilding the engine). Step 6: commit `feat(macos): v2 three-tab popover with daily skill and skill book`.
+
+### Task 17: Repackage and verify
+
+- [ ] Rebuild with `scripts/package_app.sh` (engine includes `content_pool.json`). Launch the .app for ≤5 s, confirm with `pgrep`, kill it. Run the full Python suite and `swift test`. Commit any packaging changes as `build: repackage v2`.
