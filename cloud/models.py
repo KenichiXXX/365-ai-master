@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List, Literal, Dict, Optional
 from pydantic import BaseModel, Field
 
+from agentfit.models.checkup import CheckupIssue, DimensionScore, TimeInsight  # noqa: F401  (single source)
+
 
 class AggregatedScore(BaseModel):
     """Anonymized submission payload from AgentFit client.
@@ -110,36 +112,12 @@ class ModelRoutingAdvice(BaseModel):
     est_saving_pct: Optional[int] = None
 
 
-class TimeInsight(BaseModel):
-    """一条时间习惯洞察。"""
-    pattern: str
-    advice: str
-
-
 class ActionItem(BaseModel):
     """一条优先级行动项。"""
     priority: int = Field(ge=1, le=3)
     title: str
     detail: str
     expected_impact: str
-
-
-class DimensionScore(BaseModel):
-    """体检分项得分 (0-100)。"""
-    key: str
-    label: str
-    score: int = Field(ge=0, le=100)
-
-
-class CheckupIssue(BaseModel):
-    """一条体检发现项 (360 式: 问题 + 修复方案 + 分步执行)。"""
-    severity: Literal["critical", "warning", "info"]
-    dimension: str
-    title: str
-    detail: str
-    fix: str
-    impact: str
-    steps: List[str] = Field(default_factory=list)  # 分步执行方案 (优化方案页)
 
 
 class CoachReport(BaseModel):
