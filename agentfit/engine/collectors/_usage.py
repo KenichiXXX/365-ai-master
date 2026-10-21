@@ -14,7 +14,7 @@ def allowed(path: Path) -> bool:
     except (OSError, RuntimeError):
         return False
     return not any(word in part.lower() for part in parts
-                   for word in ("auth", "token", "credential", "keychain"))
+                   for word in ("auth", "credential", "keychain"))
 
 
 def number(value=0) -> int:

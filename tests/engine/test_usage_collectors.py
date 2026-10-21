@@ -187,11 +187,11 @@ def test_gemini_antigravity_database(tmp_path, referenced):
 def test_forbidden_filenames_never_opened(tmp_path, monkeypatch):
     for root in (".gemini/tmp/p/chats", ".qwen/usage", ".local/share/opencode/storage/message/ses_x"):
         directory = tmp_path / root; directory.mkdir(parents=True)
-        for name in ("session-auth.json", "session-token.jsonl", "msg_auth.json", "token-usage-demo.jsonl"):
+        for name in ("session-auth.json", "session-credential.jsonl", "msg_auth.json", "token-usage-oauth.jsonl"):
             (directory / name).write_text("do not read")
     original = Path.open
     def guarded(path, *args, **kwargs):
-        assert not any(word in path.name.lower() for word in ("auth", "token"))
+        assert not any(word in path.name.lower() for word in ("auth", "credential"))
         return original(path, *args, **kwargs)
     monkeypatch.setattr(Path, "open", guarded)
     for collector in (GeminiCollector(), OpenCodeCollector(), QwenCollector()):
@@ -230,3 +230,32 @@ def test_symlink_to_forbidden_file_not_opened(tmp_path, monkeypatch, kind, cls):
         return original(file, *args, **kwargs)
     monkeypatch.setattr(Path, "open", guarded)
     assert cls().scan(tmp_path, ScanState(tmp_path / "state.json")) == []
+
+
+def test_qwen_request_logs_and_summary_overlap(tmp_path):
+    from agentfit.engine.collectors._usage import allowed
+
+    summary = setup_home(tmp_path, "qwen")
+    path = tmp_path / ".qwen/usage/token-usage-2026-10.jsonl"
+    path.parent.mkdir()
+    row = {"schemaVersion": 1, "id": "r1", "sessionId": "demo-q",
+           "timestamp": "2026-10-20T12:00:00Z", "model": "qwen-example",
+           "inputTokens": 100, "cachedTokens": 40, "outputTokens": 12,
+           "thoughtsTokens": 5}
+    # Match the existing summary: neither source should be double counted.
+    row["sessionId"] = json.loads(summary.read_text())["sessionId"]
+    path.write_text(json.dumps(row) + "\n" + json.dumps(row) + "\n[]\nbroken\n")
+    assert allowed(path)
+    collector = QwenCollector(); state = ScanState(tmp_path / "state.json")
+    events = collector.scan(tmp_path, state)
+    assert [(e.input, e.output, e.cache_read) for e in events] == [(60, 17, 40)]
+    state.save()
+    assert collector.scan(tmp_path, ScanState(state.path)) == events
+    summary.unlink()
+    assert collector.scan(tmp_path, state) == events
+    with path.open("a") as f:
+        f.write(json.dumps({**row, "id": "r2"}) + "\n")
+    assert len(collector.scan(tmp_path, state)) == 2
+    path.unlink()
+    assert collector.scan(tmp_path, state) == []
+    assert state.files(collector.tool) == []
