@@ -27,10 +27,15 @@ struct EngineRunner {
         return CourseSource.catalogue(data, practiceIDs: practiceIDs)
     }
 
+    static var stateDirectoryArguments: [String] {
+        guard let path = ProcessInfo.processInfo.environment["AIMASTER_STATE_DIR"] else { return [] }
+        return ["--state-dir", path]
+    }
+
     static func snapshotArguments(locale: String, tools: [String], content: URL = contentURL) -> [String] {
         var arguments = ["snapshot", "--json", "--locale", locale, "--tools", tools.joined(separator: ",")]
         if FileManager.default.fileExists(atPath: content.path) { arguments += ["--content", content.path] }
-        return arguments
+        return arguments + stateDirectoryArguments
     }
 
     // The engine accepts self-report only for manual or currently unsupported validators.
@@ -42,7 +47,7 @@ struct EngineRunner {
         guard let url = engineURL() else { throw EngineError.missing }
         let process = Process()
         process.executableURL = url
-        process.arguments = arguments
+        process.arguments = arguments + (arguments.contains("--state-dir") ? [] : stateDirectoryArguments)
         let output = Pipe()
         process.standardOutput = output
         process.standardError = FileHandle.nullDevice

@@ -86,3 +86,15 @@
 "Renewal cancelled by provider; access continues until the paid period ends" = "Renewal cancelled by provider; access continues until the paid period ends";
 "Verified paid period ends {date}" = "Verified paid period ends {date}";
 "Buy" = "Buy";
+
+"Share my practice" = "Share my practice";
+"Preview" = "Preview";
+"Copy image" = "Copy image";
+"Save image" = "Save image";
+"Include score and coverage period" = "Include score and coverage period";
+"Local practice record, not a certification of ability" = "Local practice record, not a certification of ability";
+"Local validation" = "Local validation";
+"This installation only. Nothing is reported" = "This installation only. Nothing is reported";
+"Copied, not published" = "Copied, not published";
+"Copy sanitized feedback" = "Copy sanitized feedback";
+"Observation date has not arrived" = "Observation date has not arrived";

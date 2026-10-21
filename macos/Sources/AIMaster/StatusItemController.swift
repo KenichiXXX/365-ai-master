@@ -79,6 +79,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
     @objc private func togglePopover() {
         if popover.isShown { popover.performClose(nil) }
         else {
+            store.recordLocalEvent(.foregroundOpen)
             store.refreshContent()
             store.refresh()
             showPopover()

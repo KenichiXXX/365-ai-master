@@ -44,7 +44,30 @@ final class SnapshotStore: ObservableObject {
     }
     let purchaseConfiguration = PurchaseConfiguration.unavailable
 
-    func checkoutReturned() { renewalState = .pending }
+    func checkoutReturned() {
+        renewalState = .pending
+        recordLocalEvent(.checkoutReturn)
+    }
+
+    private(set) var localEventTask: Task<Void, Never>?
+
+    @discardableResult
+    func recordLocalEvent(_ event: LocalEvent, result: LocalEventResult = .ok) -> Task<Void, Never> {
+        let previous = localEventTask
+        let command = actionCommand
+        let task = Task {
+            await previous?.value
+            do {
+                let accepted = try await Task.detached {
+                    try command(["local-event", event.rawValue, "--result", result.rawValue])
+                }.value
+                if !accepted { localEventError = true }
+            } catch { localEventError = true }
+        }
+        localEventTask = task
+        return task
+    }
+    @Published private(set) var localEventError = false
 
     @discardableResult
     func refreshLicense(explicit: Bool = false) -> Task<Void, Never> {
@@ -55,6 +78,16 @@ final class SnapshotStore: ObservableObject {
             renewalState = .refreshing
             await licenseRenewal.refresh(explicit: explicit)
             renewalState = licenseRenewal.state
+            let metricResult: LocalEventResult?
+            switch renewalState {
+            case .active: metricResult = .active
+            case .expired: metricResult = .expired
+            case .pending: metricResult = .pending
+            case .revoked: metricResult = .revoked
+            case .unavailable: metricResult = .unavailable
+            default: metricResult = nil
+            }
+            if let metricResult { recordLocalEvent(.renewal, result: metricResult) }
             revalidateEntitlement()
             licenseRefreshTask = nil
         }
@@ -124,6 +157,7 @@ final class SnapshotStore: ObservableObject {
             defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "licenseKey")
             defaults.set(false, forKey: "manualLicense")
             licenseRenewal.importedKey()
+            recordLocalEvent(.activation, result: .importedVerified)
             renewalState = .idle
             licenseError = nil
             updateWeeklyNotifications()
@@ -168,7 +202,9 @@ final class SnapshotStore: ObservableObject {
 
     func startProTrial() {
         guard license == nil else { return }
-        proTrial.start()
+        let wasEligible = proTrial.evaluate() == .eligible
+        let status = proTrial.start()
+        if wasEligible, case .active = status { recordLocalEvent(.trialStart) }
         updateWeeklyNotifications()
     }
 

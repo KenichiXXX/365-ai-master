@@ -39,12 +39,22 @@ def main(argv: list[str] | None = None) -> int:
         for command in (feedback, reset):
             command.add_argument("--state-dir", type=Path,
                                  default=Path.home() / "Library/Application Support/365AIMaster")
+        from agentfit.engine.local_metrics import EVENTS, RESULTS, LocalMetrics
+        local = commands.add_parser("local-event")
+        local.add_argument("event", choices=EVENTS)
+        local.add_argument("--result", choices=sorted(RESULTS), default="ok")
+        local.add_argument("--state-dir", type=Path,
+                           default=Path.home() / "Library/Application Support/365AIMaster")
         args = parser.parse_args(argv)
         args.state_dir.mkdir(parents=True, exist_ok=True)
         # Every CLI mutation, including snapshots, uses the same local command lock.
         lock = (args.state_dir / "engine.lock").open("a")
         fcntl.flock(lock, fcntl.LOCK_EX)
-        if args.command == "practice":
+        if args.command == "local-event":
+            now = datetime.now(timezone.utc)
+            LocalMetrics(args.state_dir, now).record(args.event, now, args.result)
+            result = {"ok": True}
+        elif args.command == "practice":
             from agentfit.engine.codex_book import practice_command
             result = {"ok": practice_command(args.card_id, args.operation,
                        args.state_dir / "progress.json", datetime.now(timezone.utc))}

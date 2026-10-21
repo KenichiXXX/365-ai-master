@@ -33,6 +33,8 @@ def build_snapshot(
     enabled: set[str] | None = None, content: Path | None = None,
 ) -> dict:
     now = now or datetime.now(timezone.utc)
+    from agentfit.engine.local_metrics import LocalMetrics
+    metrics = LocalMetrics(state_dir, now)
     state = ScanState(state_dir / "scan.json")
     events, tools, collectors = [], [], []
     coverage = {}
@@ -134,7 +136,11 @@ def build_snapshot(
         _save_progress(state_dir / "progress.json", persisted)
     notices = [] if any(row["tier"] == "deep" and row["detected"] for row in tools) else ["no_tools"]
     notices.extend(f"regressed:{key}" for key in progress["regressed"])
+    from agentfit.engine.content import local_validation_labels
+    validation = metrics.summary(persisted, coverage, now)
+    validation["labels"] = local_validation_labels(locale)
     return {
+        "local_validation": validation,
         "schema": 3, "coverage": coverage, "generated_at": now.isoformat(), "locale": locale,
         "tools": tools, "quota": {"codex": quota},
         "dimensions": [{"key": d.key, "label": d.label, "score": d.score,

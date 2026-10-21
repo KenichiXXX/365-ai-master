@@ -16,12 +16,13 @@ struct CopyButton: View {
     let prompt: String
     let title: String
     let locale: String
+    var copiedTitle: String? = nil
     var onCopied: (() -> Void)? = nil
     @State private var feedback = CopyFeedback()
     @State private var copied = false
 
     var body: some View {
-        Button(copied ? (locale == "zh" ? "已复制 ✓" : "Copied ✓") : title) {
+        Button(copied ? (copiedTitle ?? (locale == "zh" ? "已复制 ✓" : "Copied ✓")) : title) {
             NSPasteboard.general.clearContents()
             if NSPasteboard.general.setString(prompt, forType: .string) {
                 feedback.markCopied()

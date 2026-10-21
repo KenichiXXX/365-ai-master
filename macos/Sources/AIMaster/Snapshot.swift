@@ -1,6 +1,7 @@
 import Foundation
 
 struct Snapshot: Decodable {
+    let localValidation: LocalValidation?
     let coverage: [String: SourceCoverage]?
     let firstPractice: FirstPractice?
     let schema: Int

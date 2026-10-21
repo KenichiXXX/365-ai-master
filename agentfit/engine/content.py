@@ -565,3 +565,10 @@ def practice_calendar_labels(locale):
         "streak": ("连续有 AI 使用记录 {n} 天", "AI usage recorded for {n} consecutive days"),
     }
     return {key: values[0 if locale == "zh" else 1] for key, values in rows.items()}
+
+
+def local_validation_labels(locale):
+    zh = locale == "zh"
+    return {"title": "本机验证面板" if zh else "Local validation",
+            "privacy": "仅代表本次安装，不会上报" if zh else "This installation only. Nothing is reported",
+            "not_yet": "尚未到观察日期" if zh else "Observation date has not arrived"}

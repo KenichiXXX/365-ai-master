@@ -3,11 +3,14 @@ import SwiftUI
 struct TrainingTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
+    @State private var showShareCard = false
     @State private var selected: String?
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
+            Button(shareCopy("Share my practice", snapshot.locale ?? "en")) { showShareCard = true }
+                .sheet(isPresented: $showShareCard) { ShareCard(snapshot: snapshot, store: store) }
             HStack(spacing: 8) {
                 stat(zh ? "新手村" : "Village",
                      value: "\(snapshot.village?.quests.filter { $0.status == "passed" }.count ?? 0)/9")

@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginError = false
     @State private var showSnapshot = false
+    @State private var showLocalValidation = false
 
     var body: some View {
         ScrollView {
@@ -36,6 +37,10 @@ struct SettingsView: View {
                 if loginError { Text("Login item unavailable", bundle: .module).font(.system(size: 11)).foregroundStyle(.orange) }
                 Button(action: { showSnapshot = true }) { Text("View my snapshot", bundle: .module) }
                     .disabled(store.snapshot == nil)
+                Button(shareCopy("Local validation", store.locale)) {
+                    store.refresh()
+                    showLocalValidation = true
+                }.disabled(store.snapshot == nil)
                 OptionalPracticePreferences(store: store)
                 Text(store.locale == "zh" ? "关闭后停止上报，服务器上已有的排名记录仍会保留。"
                      : "Turning sharing off stops reporting. Your existing ranking record stays on the server.")
@@ -49,6 +54,9 @@ struct SettingsView: View {
             }
             .padding(20)
         }.frame(width: 380, height: 660)
+        .sheet(isPresented: $showLocalValidation) {
+            if let snapshot = store.snapshot { LocalValidationView(snapshot: snapshot, store: store) }
+        }
         .sheet(isPresented: $showSnapshot) {
             VStack {
                 ScrollView([.horizontal, .vertical]) {

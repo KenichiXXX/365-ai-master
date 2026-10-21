@@ -6,6 +6,45 @@ import CryptoKit
 // Opt-in local preview; real usage and generated PNGs must never be committed.
 @MainActor
 final class RenderPreviewTests: XCTestCase {
+    func testRenderLocalValidationAndShareCards() async throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        let root = URL(fileURLWithPath: out + "-local-fixture")
+        let home = root.appendingPathComponent("home")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        let period = try SharePeriod(start: "2026-10-01", end: "2026-10-21")
+        for locale in ["zh", "en"] {
+            let process = Process()
+            process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
+            process.arguments = ["snapshot", "--json", "--home", home.path, "--tools", "", "--locale", locale,
+                                 "--state-dir", root.appendingPathComponent(locale).path]
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = FileHandle.nullDevice
+            try process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            let result = try EngineRunner.decode(data, status: process.terminationStatus)
+            XCTAssertNotNil(result.snapshot.localValidation)
+            let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, load: { _, _ in result })
+            await store.refresh()?.value
+            let hosting = NSHostingView(rootView: LocalValidationView(snapshot: result.snapshot, store: store)
+                .background(Color(nsColor: .windowBackgroundColor)).environment(\.colorScheme, .light))
+            hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+            hosting.layoutSubtreeIfNeeded()
+            let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+            hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+            try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                .write(to: URL(fileURLWithPath: out + "-local-validation-" + locale + ".png"))
+            for withScore in [false, true] {
+                let card = ShareCardInput(period: period, capabilities: ReviewedCapability.allCases.map {
+                    ShareCardInput.Entry(capability: $0, evidence: .reuse)
+                }, score: withScore ? try ShareScore(value: 82, coverage: period) : nil)
+                let png = try ShareCardRenderer.png(card, locale: locale)
+                try png.write(to: URL(fileURLWithPath: out + "-share-" + locale + "-" + String(withScore) + ".png"))
+            }
+        }
+    }
+
     func testRenderSubscriptionPaywallStatesInBothLanguages() async throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         let signer = Curve25519.Signing.PrivateKey()

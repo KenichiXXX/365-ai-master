@@ -86,3 +86,15 @@
 "Renewal cancelled by provider; access continues until the paid period ends" = "支付服务已确认停止续费；可使用至已付费期限结束";
 "Verified paid period ends {date}" = "已验证付费期限结束于 {date}";
 "Buy" = "购买";
+
+"Share my practice" = "分享我的练习";
+"Preview" = "预览";
+"Copy image" = "复制图片";
+"Save image" = "保存图片";
+"Include score and coverage period" = "包含分数与覆盖期";
+"Local practice record, not a certification of ability" = "仅本机验证记录，不代表能力认证";
+"Local validation" = "本机验证面板";
+"This installation only. Nothing is reported" = "仅代表本次安装，不会上报";
+"Copied, not published" = "已复制，尚未发布";
+"Copy sanitized feedback" = "复制脱敏反馈";
+"Observation date has not arrived" = "尚未到观察日期";
