@@ -5,6 +5,8 @@ from pathlib import Path
 import shutil
 import subprocess
 
+import pytest
+
 from agentfit.engine.__main__ import main
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -21,6 +23,7 @@ def test_main_accepts_argv(tmp_path, capsys):
     assert len(snapshot["tools"]) == 5
 
 
+@pytest.mark.skipif(os.environ.get('RUN_BUILD_TESTS') != '1', reason='slow: rebuilds the binary; set RUN_BUILD_TESTS=1')
 def test_standalone_engine_without_python_on_path(tmp_path):
     build = subprocess.run(
         [str(ROOT / "scripts/build_engine.sh")], cwd=tmp_path,
