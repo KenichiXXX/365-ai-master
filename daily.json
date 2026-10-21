@@ -1,0 +1,1017 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-21",
+  "skills": [
+    {
+      "id": "rules_file",
+      "level": 1,
+      "detect": "instructions:claude",
+      "title": {
+        "zh": "写一份 CLAUDE.md",
+        "en": "Write a CLAUDE.md"
+      },
+      "why": {
+        "zh": "AI 每次开工先读它，写一次长期省事",
+        "en": "Your AI reads it before every task — write once, save time forever"
+      },
+      "prompt": {
+        "zh": "请读一下这个项目，帮我写一份 60 行以内的 CLAUDE.md，写完给我看",
+        "en": "Read this project and write a CLAUDE.md under 60 lines, then show me"
+      }
+    },
+    {
+      "id": "web_search",
+      "level": 1,
+      "detect": "tool:WebSearch",
+      "title": {
+        "zh": "让 AI 联网搜索",
+        "en": "Let the AI search the web"
+      },
+      "why": {
+        "zh": "问最新的东西时让它先查再答，少编造",
+        "en": "For anything recent, have it look things up first — fewer made-up answers"
+      },
+      "prompt": {
+        "zh": "请先联网搜索这个问题的最新资料，再给我结论和出处：[你的问题]",
+        "en": "Search the web for the latest on this, then give me a conclusion with sources: [your question]"
+      }
+    },
+    {
+      "id": "web_fetch",
+      "level": 1,
+      "detect": "tool:WebFetch",
+      "title": {
+        "zh": "让 AI 读一个网页",
+        "en": "Have the AI read a page"
+      },
+      "why": {
+        "zh": "贴个链接让它读完再总结，省得你自己翻",
+        "en": "Paste a link and let it read and summarize for you"
+      },
+      "prompt": {
+        "zh": "请读这个网页并用 5 条要点总结：[链接]",
+        "en": "Read this page and summarize it in 5 bullet points: [link]"
+      }
+    },
+    {
+      "id": "plan_mode",
+      "level": 1,
+      "detect": "tool:ExitPlanMode",
+      "title": {
+        "zh": "Plan 模式：先出方案再动手",
+        "en": "Plan mode: plan before acting"
+      },
+      "why": {
+        "zh": "大改动前先看步骤，你点头再执行，返工更少",
+        "en": "See the steps before big changes and approve them — less rework"
+      },
+      "prompt": {
+        "zh": "进入 Plan 模式（Shift+Tab 切换），先给我方案，不要改文件：[你的任务]",
+        "en": "Enter plan mode (Shift+Tab), give me a plan first and don't edit files: [your task]"
+      }
+    },
+    {
+      "id": "todo_list",
+      "level": 1,
+      "detect": "tool:TodoWrite",
+      "title": {
+        "zh": "让 AI 列任务清单",
+        "en": "Let the AI keep a to-do list"
+      },
+      "why": {
+        "zh": "长任务拆成清单逐项打勾，不容易漏",
+        "en": "Long tasks get split into a checklist so nothing is missed"
+      },
+      "prompt": {
+        "zh": "请先把这个任务拆成一个待办清单，再一项项完成：[你的任务]",
+        "en": "Break this task into a to-do list first, then work through it item by item: [your task]"
+      }
+    },
+    {
+      "id": "ask_first",
+      "level": 1,
+      "detect": "tool:AskUserQuestion",
+      "title": {
+        "zh": "让 AI 先问你",
+        "en": "Let the AI ask first"
+      },
+      "why": {
+        "zh": "需求不清时让它先提问，比猜错再改快",
+        "en": "When the request is fuzzy, questions beat wrong guesses"
+      },
+      "prompt": {
+        "zh": "开始之前，如果有任何不确定的地方，先用选择题问我",
+        "en": "Before you start, ask me multiple-choice questions about anything unclear"
+      }
+    },
+    {
+      "id": "subagent",
+      "level": 1,
+      "detect": "sidechain",
+      "title": {
+        "zh": "子代理：同时开几条线",
+        "en": "Sub-agents: work in parallel"
+      },
+      "why": {
+        "zh": "让子代理并行查资料，主对话保持清爽",
+        "en": "Sub-agents research side by side and keep your main chat clean"
+      },
+      "prompt": {
+        "zh": "请用子代理并行完成：A 梳理目录结构，B 找出所有 TODO，最后汇总给我",
+        "en": "Use sub-agents in parallel: A) map the project structure, B) find all TODOs, then summarize"
+      }
+    },
+    {
+      "id": "light_model",
+      "level": 1,
+      "detect": "light_model",
+      "title": {
+        "zh": "机械活交给轻量模型",
+        "en": "Give chores to a light model"
+      },
+      "why": {
+        "zh": "格式转换这类活用轻量档更快更省",
+        "en": "Formatting-type work is faster and cheaper on a light tier"
+      },
+      "prompt": {
+        "zh": "这个任务是机械性的，请用最轻量的模型完成；如果当前不是，告诉我怎么用 /model 切换",
+        "en": "This task is mechanical — use the lightest model; if you aren't on one, tell me how to switch with /model"
+      }
+    },
+    {
+      "id": "effort_up",
+      "level": 1,
+      "detect": "effort:high|xhigh|max",
+      "title": {
+        "zh": "难题调高推理强度",
+        "en": "Raise reasoning effort for hard problems"
+      },
+      "why": {
+        "zh": "架构和疑难调试时让它多想一会儿",
+        "en": "Let it think longer on architecture and tricky bugs"
+      },
+      "prompt": {
+        "zh": "这个问题比较难，请用更高的推理强度仔细想清楚再回答：[你的问题]",
+        "en": "This one is hard — use higher reasoning effort and think it through before answering: [your question]"
+      }
+    },
+    {
+      "id": "first_skill",
+      "level": 1,
+      "detect": "skill_any",
+      "title": {
+        "zh": "用起第一个 skill",
+        "en": "Use your first skill"
+      },
+      "why": {
+        "zh": "把常干的活变成一句话能调用的能力",
+        "en": "Turn a recurring job into a one-line command"
+      },
+      "prompt": {
+        "zh": "请列出我装了哪些 skill，挑一个最适合这个项目的，用它完成一个小任务",
+        "en": "List the skills I have installed, pick the best one for this project, and use it on a small task"
+      }
+    },
+    {
+      "id": "mcp",
+      "level": 1,
+      "detect": "mcp",
+      "title": {
+        "zh": "用 MCP 连接外部工具",
+        "en": "Connect tools with MCP"
+      },
+      "why": {
+        "zh": "让 AI 直接读写 GitHub、文档等外部系统",
+        "en": "Let the AI work directly with GitHub, docs, and other systems"
+      },
+      "prompt": {
+        "zh": "请告诉我我已经连了哪些 MCP 工具，并用其中一个帮我完成一件小事",
+        "en": "Tell me which MCP tools I have connected and use one of them for a small task"
+      }
+    },
+    {
+      "id": "hook",
+      "level": 1,
+      "detect": "hook",
+      "title": {
+        "zh": "Hook：让固定动作自动发生",
+        "en": "Hooks: automate the routine"
+      },
+      "why": {
+        "zh": "比如改完代码自动跑测试，不用每次提醒",
+        "en": "For example, run tests after every edit without reminding it"
+      },
+      "prompt": {
+        "zh": "请帮我配置一个 hook：每次改完文件自动运行测试。先告诉我要改什么，我确认后再写",
+        "en": "Set up a hook that runs tests after you edit files. Tell me what you'll change first; write it after I confirm"
+      }
+    },
+    {
+      "id": "compact",
+      "level": 1,
+      "detect": "compaction",
+      "title": {
+        "zh": "长对话压缩一下",
+        "en": "Compact long chats"
+      },
+      "why": {
+        "zh": "会话太长时压缩，保留结论、扔掉过程",
+        "en": "Compress a long session — keep conclusions, drop the noise"
+      },
+      "prompt": {
+        "zh": "请用 /compact 压缩当前对话，只保留结论和待办",
+        "en": "Use /compact to compress this conversation, keeping only conclusions and open items"
+      }
+    },
+    {
+      "id": "worktree",
+      "level": 1,
+      "detect": "tool:EnterWorktree",
+      "title": {
+        "zh": "用 worktree 并行开发",
+        "en": "Parallel work with worktrees"
+      },
+      "why": {
+        "zh": "两件事互不干扰地同时改，不怕弄乱",
+        "en": "Change two things at once without stepping on each other"
+      },
+      "prompt": {
+        "zh": "请在一个新的 git worktree 里完成这个改动，别动我当前的工作区：[你的任务]",
+        "en": "Do this change in a new git worktree and leave my current working tree alone: [your task]"
+      }
+    },
+    {
+      "id": "codex_agents",
+      "level": 1,
+      "detect": "instructions:codex",
+      "title": {
+        "zh": "给 Codex 写 AGENTS.md",
+        "en": "Write an AGENTS.md for Codex"
+      },
+      "why": {
+        "zh": "Codex 的项目说明书，作用和 CLAUDE.md 一样",
+        "en": "Codex's project brief — same idea as CLAUDE.md"
+      },
+      "prompt": {
+        "zh": "请读一下这个项目，帮我写一份 AGENTS.md，控制在 60 行以内",
+        "en": "Read this project and write an AGENTS.md under 60 lines"
+      }
+    },
+    {
+      "id": "init_cmd",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "/init 自动生成说明书",
+        "en": "Generate a brief with /init"
+      },
+      "why": {
+        "zh": "在项目里输入 /init，AI 会自己读代码写初稿",
+        "en": "Type /init in a project and the AI drafts the brief from the code"
+      },
+      "prompt": {
+        "zh": "在这个项目里运行 /init，然后把生成的 CLAUDE.md 给我看",
+        "en": "Run /init in this project, then show me the generated CLAUDE.md"
+      }
+    },
+    {
+      "id": "clear_session",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "一个任务一个会话",
+        "en": "One task per session"
+      },
+      "why": {
+        "zh": "换话题就 /clear，上下文干净、回答更准",
+        "en": "Switch topics with /clear for cleaner context and sharper answers"
+      },
+      "prompt": {
+        "zh": "（换新任务前输入 /clear）",
+        "en": "(type /clear before starting a new task)"
+      }
+    },
+    {
+      "id": "resume",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "接着上次的会话",
+        "en": "Pick up where you left off"
+      },
+      "why": {
+        "zh": "用 claude --resume 或 codex resume 找回昨天的对话",
+        "en": "Use claude --resume or codex resume to reopen yesterday's chat"
+      },
+      "prompt": {
+        "zh": "（在终端输入 claude --resume，选择要继续的会话）",
+        "en": "(run claude --resume in your terminal and choose a session)"
+      }
+    },
+    {
+      "id": "at_mention",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "用 @ 引用文件",
+        "en": "Reference files with @"
+      },
+      "why": {
+        "zh": "输入 @ 加文件名，直接把文件交给 AI 看",
+        "en": "Type @ plus a filename to hand that file to the AI"
+      },
+      "prompt": {
+        "zh": "请看一下 @README.md，告诉我这个项目缺什么",
+        "en": "Look at @README.md and tell me what this project is missing"
+      }
+    },
+    {
+      "id": "paste_image",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "贴截图让 AI 看",
+        "en": "Paste a screenshot"
+      },
+      "why": {
+        "zh": "报错截图、设计稿直接粘贴进对话",
+        "en": "Drop error screenshots or designs straight into the chat"
+      },
+      "prompt": {
+        "zh": "（把截图粘贴进对话）请看这张图，告诉我问题出在哪",
+        "en": "(paste a screenshot) Look at this image and tell me what's wrong"
+      }
+    },
+    {
+      "id": "headless",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "非交互模式跑批量活",
+        "en": "Headless mode for batch jobs"
+      },
+      "why": {
+        "zh": "claude -p 或 codex exec 一行命令跑完就走",
+        "en": "claude -p or codex exec runs a task in one command"
+      },
+      "prompt": {
+        "zh": "（在终端试：claude -p \"用三句话总结这个项目\"）",
+        "en": "(try in a terminal: claude -p \"summarize this project in three sentences\")"
+      }
+    },
+    {
+      "id": "custom_command",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "自定义斜杠命令",
+        "en": "Custom slash commands"
+      },
+      "why": {
+        "zh": "把常用提示词存成 /命令，一键复用",
+        "en": "Save a prompt you reuse as a /command"
+      },
+      "prompt": {
+        "zh": "请帮我把\"检查代码风格并修复\"做成一个自定义斜杠命令",
+        "en": "Turn \"check code style and fix it\" into a custom slash command for me"
+      }
+    },
+    {
+      "id": "review_diff",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "让 AI 改完自查",
+        "en": "Have the AI review its own diff"
+      },
+      "why": {
+        "zh": "改完先让它自己看一遍 diff，问题少一半",
+        "en": "A self-review pass catches many problems early"
+      },
+      "prompt": {
+        "zh": "请检查你刚才的改动：列出可能的问题和遗漏，先别继续改",
+        "en": "Review the change you just made: list possible problems and gaps, and don't change anything yet"
+      }
+    },
+    {
+      "id": "permissions",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "设好常用权限",
+        "en": "Set up permissions"
+      },
+      "why": {
+        "zh": "常用的安全命令设成免确认，少被打断",
+        "en": "Allow safe, frequent commands so you're interrupted less"
+      },
+      "prompt": {
+        "zh": "请帮我看看哪些常用命令可以安全地加入免确认列表，先列出来不要改",
+        "en": "Suggest which frequent commands are safe to auto-allow — list them, don't change anything"
+      }
+    }
+  ],
+  "rankings": {
+    "skill": [
+      {
+        "name": "wheresryan22/anatomy",
+        "url": "https://github.com/wheresryan22/anatomy",
+        "tagline": {
+          "en": "Transforms technical concepts into detailed, interactive isometric SVG illustrations.",
+          "zh": "Transforms technical concepts into detailed, interactive isometric SVG illustrations."
+        },
+        "match": [
+          "anatomy"
+        ],
+        "stars": 17262,
+        "stars7d": 9955
+      },
+      {
+        "name": "mattpocock/skills",
+        "url": "https://github.com/mattpocock/skills",
+        "tagline": {
+          "en": "A library of specialized engineering flows for codebase design and technical diagnosis",
+          "zh": "A library of specialized engineering flows for codebase design and technical diagnosis"
+        },
+        "match": [
+          "skills"
+        ],
+        "stars": 298094,
+        "stars7d": 9302
+      },
+      {
+        "name": "DietrichGebert/ponytail",
+        "url": "https://github.com/DietrichGebert/ponytail",
+        "tagline": {
+          "en": "A quality audit framework for identifying technical debt and repository vulnerabilities",
+          "zh": "A quality audit framework for identifying technical debt and repository vulnerabilities"
+        },
+        "match": [
+          "ponytail"
+        ],
+        "stars": 168649,
+        "stars7d": 6392
+      },
+      {
+        "name": "cathrynlavery/diagram-design",
+        "url": "https://github.com/cathrynlavery/diagram-design",
+        "tagline": {
+          "en": "A comprehensive system for generating branded technical architecture and data flow diagrams.",
+          "zh": "A comprehensive system for generating branded technical architecture and data flow diagrams."
+        },
+        "match": [
+          "diagram-design"
+        ],
+        "stars": 58755,
+        "stars7d": 5386
+      },
+      {
+        "name": "K-Dense-AI/scientific-agent-skills",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "tagline": {
+          "en": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs",
+          "zh": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs"
+        },
+        "match": [
+          "scientific-agent-skills"
+        ],
+        "stars": 53129,
+        "stars7d": 4457
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "A system for generating high-end brand guidelines and visual identity decks.",
+          "zh": "A system for generating high-end brand guidelines and visual identity decks."
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 99628,
+        "stars7d": 4278
+      },
+      {
+        "name": "cloudflare/security-audit-skill",
+        "url": "https://github.com/cloudflare/security-audit-skill",
+        "tagline": {
+          "en": "Automated vulnerability research and security reviews for codebases, APIs, and system services",
+          "zh": "Automated vulnerability research and security reviews for codebases, APIs, and system services"
+        },
+        "match": [
+          "security-audit-skill"
+        ],
+        "stars": 33067,
+        "stars7d": 3997
+      },
+      {
+        "name": "obra/superpowers",
+        "url": "https://github.com/obra/superpowers",
+        "tagline": {
+          "en": "A framework for orchestrating agentic workflows through structured software development methodologies",
+          "zh": "A framework for orchestrating agentic workflows through structured software development methodologies"
+        },
+        "match": [
+          "superpowers"
+        ],
+        "stars": 302383,
+        "stars7d": 3946
+      },
+      {
+        "name": "Graphify-Labs/graphify",
+        "url": "https://github.com/Graphify-Labs/graphify",
+        "tagline": {
+          "en": "Transforms codebases and documentation into persistent, queryable knowledge graphs.",
+          "zh": "Transforms codebases and documentation into persistent, queryable knowledge graphs."
+        },
+        "match": [
+          "graphify"
+        ],
+        "stars": 129511,
+        "stars7d": 3485
+      },
+      {
+        "name": "pbakaus/impeccable",
+        "url": "https://github.com/pbakaus/impeccable",
+        "tagline": {
+          "en": "Turns standard frontend interfaces into high-fidelity, production-grade design craft.",
+          "zh": "Turns standard frontend interfaces into high-fidelity, production-grade design craft."
+        },
+        "match": [
+          "impeccable"
+        ],
+        "stars": 83511,
+        "stars7d": 2987
+      },
+      {
+        "name": "addyosmani/agent-skills",
+        "url": "https://github.com/addyosmani/agent-skills",
+        "tagline": {
+          "en": "A library of production-grade engineering capabilities for AI coding agents",
+          "zh": "A library of production-grade engineering capabilities for AI coding agents"
+        },
+        "match": [
+          "agent-skills"
+        ],
+        "stars": 108791,
+        "stars7d": 2864
+      },
+      {
+        "name": "nextlevelbuilder/ui-ux-pro-max-skill",
+        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "tagline": {
+          "en": "A systematic approach to creating multi-platform creative assets and digital banners.",
+          "zh": "A systematic approach to creating multi-platform creative assets and digital banners."
+        },
+        "match": [
+          "ui-ux-pro-max-skill"
+        ],
+        "stars": 137799,
+        "stars7d": 2448
+      },
+      {
+        "name": "JuliusBrussee/caveman",
+        "url": "https://github.com/JuliusBrussee/caveman",
+        "tagline": {
+          "en": "Reduces token consumption for coding agents through compressed communication and specialized roles.",
+          "zh": "Reduces token consumption for coding agents through compressed communication and specialized roles."
+        },
+        "match": [
+          "caveman"
+        ],
+        "stars": 113767,
+        "stars7d": 2425
+      },
+      {
+        "name": "blader/humanizer",
+        "url": "https://github.com/blader/humanizer",
+        "tagline": {
+          "en": "Removes the structural patterns and predictable phrasing of AI-generated prose.",
+          "zh": "Removes the structural patterns and predictable phrasing of AI-generated prose."
+        },
+        "match": [
+          "humanizer"
+        ],
+        "stars": 58704,
+        "stars7d": 2304
+      },
+      {
+        "name": "earthtojake/text-to-cad",
+        "url": "https://github.com/earthtojake/text-to-cad",
+        "tagline": {
+          "en": "Translates text prompts into parametric 3D models and printable CAD files",
+          "zh": "Translates text prompts into parametric 3D models and printable CAD files"
+        },
+        "match": [
+          "text-to-cad"
+        ],
+        "stars": 21861,
+        "stars7d": 2052
+      },
+      {
+        "name": "lemomo-ai/lemo-opuscar",
+        "url": "https://github.com/lemomo-ai/lemo-opuscar",
+        "tagline": {
+          "en": "Directs and produces short films generated entirely through code-based animation.",
+          "zh": "Directs and produces short films generated entirely through code-based animation."
+        },
+        "match": [
+          "lemo-opuscar"
+        ],
+        "stars": 4158,
+        "stars7d": 2033
+      },
+      {
+        "name": "emilkowalski/skills",
+        "url": "https://github.com/emilkowalski/skills",
+        "tagline": {
+          "en": "A framework for building fluid mobile animations and gestures in React Native and Expo",
+          "zh": "A framework for building fluid mobile animations and gestures in React Native and Expo"
+        },
+        "match": [
+          "skills"
+        ],
+        "stars": 47850,
+        "stars7d": 2025
+      },
+      {
+        "name": "multica-ai/andrej-karpathy-skills",
+        "url": "https://github.com/multica-ai/andrej-karpathy-skills",
+        "tagline": {
+          "en": "Practical coding guardrails for simpler, surgical AI-assisted changes",
+          "zh": "Practical coding guardrails for simpler, surgical AI-assisted changes"
+        },
+        "match": [
+          "andrej-karpathy-skills"
+        ],
+        "stars": 221366,
+        "stars7d": 1996
+      },
+      {
+        "name": "anthropics/skills",
+        "url": "https://github.com/anthropics/skills",
+        "tagline": {
+          "en": "A collection of specialized capabilities for extending the functionality of LLM agents.",
+          "zh": "A collection of specialized capabilities for extending the functionality of LLM agents."
+        },
+        "match": [
+          "skills"
+        ],
+        "stars": 182378,
+        "stars7d": 1545
+      },
+      {
+        "name": "latent-spaces/brag",
+        "url": "https://github.com/latent-spaces/brag",
+        "tagline": {
+          "en": "Transforms project directories and website URLs into shareable launch videos.",
+          "zh": "Transforms project directories and website URLs into shareable launch videos."
+        },
+        "match": [
+          "brag"
+        ],
+        "stars": 17065,
+        "stars7d": 1468
+      }
+    ],
+    "agent": [
+      {
+        "name": "morluto/rea",
+        "url": "https://github.com/morluto/rea",
+        "tagline": {
+          "en": "Reverse engineer anything with agents, from app behavior down to native binaries.",
+          "zh": "Reverse engineer anything with agents, from app behavior down to native binaries."
+        },
+        "match": [
+          "rea"
+        ],
+        "stars": 350320,
+        "stars7d": null
+      },
+      {
+        "name": "affaan-m/ECC",
+        "url": "https://github.com/affaan-m/ECC",
+        "tagline": {
+          "en": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
+          "zh": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond."
+        },
+        "match": [
+          "ecc"
+        ],
+        "stars": 285034,
+        "stars7d": null
+      },
+      {
+        "name": "deepseek-ai/deepseek-harness",
+        "url": "https://github.com/deepseek-ai/deepseek-harness",
+        "tagline": {
+          "en": "DeepSeek Harness: Everything is a Plugin.",
+          "zh": "DeepSeek Harness: Everything is a Plugin."
+        },
+        "match": [
+          "deepseek-harness"
+        ],
+        "stars": 256161,
+        "stars7d": null
+      },
+      {
+        "name": "NousResearch/hermes-agent",
+        "url": "https://github.com/NousResearch/hermes-agent",
+        "tagline": {
+          "en": "The agent that grows with you",
+          "zh": "The agent that grows with you"
+        },
+        "match": [
+          "hermes-agent"
+        ],
+        "stars": 255656,
+        "stars7d": null
+      },
+      {
+        "name": "firecrawl/firecrawl",
+        "url": "https://github.com/firecrawl/firecrawl",
+        "tagline": {
+          "en": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥",
+          "zh": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥"
+        },
+        "match": [
+          "firecrawl"
+        ],
+        "stars": 193550,
+        "stars7d": null
+      },
+      {
+        "name": "DietrichGebert/ponytail",
+        "url": "https://github.com/DietrichGebert/ponytail",
+        "tagline": {
+          "en": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
+          "zh": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote."
+        },
+        "match": [
+          "ponytail"
+        ],
+        "stars": 170155,
+        "stars7d": null
+      },
+      {
+        "name": "langchain-ai/langchain",
+        "url": "https://github.com/langchain-ai/langchain",
+        "tagline": {
+          "en": "The agent engineering platform.",
+          "zh": "The agent engineering platform."
+        },
+        "match": [
+          "langchain"
+        ],
+        "stars": 148175,
+        "stars7d": null
+      },
+      {
+        "name": "Graphify-Labs/graphify",
+        "url": "https://github.com/Graphify-Labs/graphify",
+        "tagline": {
+          "en": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store.",
+          "zh": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store."
+        },
+        "match": [
+          "graphify"
+        ],
+        "stars": 130549,
+        "stars7d": null
+      },
+      {
+        "name": "browser-use/browser-use",
+        "url": "https://github.com/browser-use/browser-use",
+        "tagline": {
+          "en": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API.",
+          "zh": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API."
+        },
+        "match": [
+          "browser-use"
+        ],
+        "stars": 118696,
+        "stars7d": null
+      },
+      {
+        "name": "google-gemini/gemini-cli",
+        "url": "https://github.com/google-gemini/gemini-cli",
+        "tagline": {
+          "en": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
+          "zh": "An open-source AI agent that brings the power of Gemini directly into your terminal."
+        },
+        "match": [
+          "gemini-cli"
+        ],
+        "stars": 107478,
+        "stars7d": null
+      },
+      {
+        "name": "paperclipai/paperclip",
+        "url": "https://github.com/paperclipai/paperclip",
+        "tagline": {
+          "en": "The open-source app everyone uses to manage agents at work",
+          "zh": "The open-source app everyone uses to manage agents at work"
+        },
+        "match": [
+          "paperclip"
+        ],
+        "stars": 105326,
+        "stars7d": null
+      },
+      {
+        "name": "thedotmack/claude-mem",
+        "url": "https://github.com/thedotmack/claude-mem",
+        "tagline": {
+          "en": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
+          "zh": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More"
+        },
+        "match": [
+          "claude-mem"
+        ],
+        "stars": 102006,
+        "stars7d": null
+      },
+      {
+        "name": "Panniantong/Agent-Reach",
+        "url": "https://github.com/Panniantong/Agent-Reach",
+        "tagline": {
+          "en": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
+          "zh": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees."
+        },
+        "match": [
+          "agent-reach"
+        ],
+        "stars": 100377,
+        "stars7d": null
+      },
+      {
+        "name": "stablyai/orca",
+        "url": "https://github.com/stablyai/orca",
+        "tagline": {
+          "en": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
+          "zh": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime."
+        },
+        "match": [
+          "orca"
+        ],
+        "stars": 100074,
+        "stars7d": null
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages",
+          "zh": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages"
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 100001,
+        "stars7d": null
+      },
+      {
+        "name": "infiniflow/ragflow",
+        "url": "https://github.com/infiniflow/ragflow",
+        "tagline": {
+          "en": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs",
+          "zh": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs"
+        },
+        "match": [
+          "ragflow"
+        ],
+        "stars": 92569,
+        "stars7d": null
+      },
+      {
+        "name": "tt-a1i/archify",
+        "url": "https://github.com/tt-a1i/archify",
+        "tagline": {
+          "en": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
+          "zh": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more."
+        },
+        "match": [
+          "archify"
+        ],
+        "stars": 86605,
+        "stars7d": null
+      },
+      {
+        "name": "unclecode/crawl4ai",
+        "url": "https://github.com/unclecode/crawl4ai",
+        "tagline": {
+          "en": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf",
+          "zh": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf"
+        },
+        "match": [
+          "crawl4ai"
+        ],
+        "stars": 85949,
+        "stars7d": null
+      },
+      {
+        "name": "bytedance/deer-flow",
+        "url": "https://github.com/bytedance/deer-flow",
+        "tagline": {
+          "en": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours.",
+          "zh": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours."
+        },
+        "match": [
+          "deer-flow"
+        ],
+        "stars": 84224,
+        "stars7d": null
+      },
+      {
+        "name": "diegosouzapw/OmniRoute",
+        "url": "https://github.com/diegosouzapw/OmniRoute",
+        "tagline": {
+          "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
+          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
+        },
+        "match": [
+          "omniroute"
+        ],
+        "stars": 79058,
+        "stars7d": null
+      }
+    ],
+    "rotate": false,
+    "source": "The Skill Leaderboard · GitHub",
+    "updated_at": "2026-10-21"
+  },
+  "tips": [
+    {
+      "id": "project_brief",
+      "title": {
+        "zh": "给项目写一个 CLAUDE.md(AI 的项目说明书),它从此记住你的规矩",
+        "en": "Write a CLAUDE.md (a project brief for AI) so it remembers your rules"
+      },
+      "detail": {
+        "zh": "CLAUDE.md 是放在项目文件夹里的规则文件(Claude Code 认这个名字,Codex 认 AGENTS.md)。写清楚项目结构、常用命令、你的规矩,AI 每次对话都会自动先读,不用再重复交代。",
+        "en": "CLAUDE.md is a rules file in your project folder (Claude Code recognizes this name; Codex recognizes AGENTS.md). Describe the project structure, common commands, and your rules. The AI reads it automatically before every conversation, so you do not have to repeat yourself."
+      },
+      "source": "官方文档 docs.anthropic.com"
+    },
+    {
+      "id": "fresh_session",
+      "title": {
+        "zh": "长会话记得开新会话,省钱又提质",
+        "en": "Start fresh sessions during long conversations to cut costs and improve quality"
+      },
+      "detail": {
+        "zh": "会话越长,每次请求都在为历史内容付费,而且模型注意力被稀释。一个任务结束就开新会话,大任务拆成多个会话。",
+        "en": "The longer the conversation, the more you pay for its history on every request, and the more the model's attention is diluted. Start a new session when a task ends, and split large tasks across sessions."
+      },
+      "source": "官方计费文档 + 社区共识"
+    },
+    {
+      "id": "plan_first",
+      "title": {
+        "zh": "先让 AI 出计划,你点头后再让它动手",
+        "en": "Ask the AI for a plan first, then approve it before it acts"
+      },
+      "detail": {
+        "zh": "复杂任务先说「先给我一个计划,先不要改代码」。看过计划再让它动手,返工大幅减少。Claude Code 里有专门的『计划模式』(Plan Mode)。",
+        "en": "For complex tasks, say \"Give me a plan first; do not change code yet.\" Review the plan before letting it act to greatly reduce rework. Claude Code has a dedicated Plan Mode."
+      },
+      "source": "官方文档 + 社区实践"
+    },
+    {
+      "id": "prompt_caching",
+      "title": {
+        "zh": "用好提示词缓存,重复内容只按 1 折计费",
+        "en": "Use prompt caching: repeated content costs just 10% of the usual rate"
+      },
+      "detail": {
+        "zh": "固定的要求、参考资料放在每次提问的开头,变化的问题放末尾——AI 认出重复部分后,这部分只收约 1 折的钱。",
+        "en": "Put fixed requirements and reference materials at the beginning of each prompt, and changing questions at the end. When the AI recognizes the repeated portion, that part costs about 10% of the usual rate."
+      },
+      "source": "官方定价文档"
+    },
+    {
+      "id": "summarize_progress",
+      "title": {
+        "zh": "用 /compact 或开新会话前,先让 AI 总结当前进度",
+        "en": "Before using /compact or starting a new session, ask the AI to summarize progress"
+      },
+      "detail": {
+        "zh": "长会话结束前说「把已完成的结论和待办总结成一段」,存进项目笔记再开新会话——上下文清爽了,进度一点不丢。",
+        "en": "Before ending a long conversation, say \"Summarize the completed conclusions and open items in a paragraph.\" Save it in your project notes before starting a new session to keep the context clean without losing progress."
+      },
+      "source": "官方文档 + 社区共识"
+    },
+    {
+      "id": "stop_retrying",
+      "title": {
+        "zh": "连续失败两次就停,改问法而不是重发",
+        "en": "After two consecutive failures, stop and rephrase instead of resending"
+      },
+      "detail": {
+        "zh": "AI 连续两次没做对,原样重发第三次几乎必然还是错的。停下来: 缩小任务范围、补充关键信息、或者换一种问法。",
+        "en": "If the AI gets it wrong twice in a row, resending the same request a third time will almost certainly fail again. Stop: narrow the task, add key information, or ask in a different way."
+      },
+      "source": "社区共识"
+    }
+  ]
+}
