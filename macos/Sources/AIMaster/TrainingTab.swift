@@ -125,11 +125,30 @@ struct TrainingTab: View {
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain)
             if selected == card.id {
-                Text(card.why).font(.callout).foregroundStyle(.secondary)
-                Text(card.prompt).font(.callout).textSelection(.enabled)
-                CopyButton(prompt: card.prompt, title: zh ? "复制指令" : "Copy prompt",
-                           locale: snapshot.locale ?? store.locale)
+                SkillCardDetails(card: card, todayID: snapshot.book?.today?.id,
+                                 store: store, locale: snapshot.locale ?? store.locale)
             }
         }.padding(.vertical, 4)
+    }
+}
+
+struct SkillCardDetails: View {
+    let card: SkillCard
+    let todayID: String?
+    @ObservedObject var store: SnapshotStore
+    let locale: String
+
+    var body: some View {
+        if store.features.canLearn(card, todayID: todayID) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(card.why).font(.callout).foregroundStyle(.secondary)
+                Text(card.prompt).font(.callout).textSelection(.enabled)
+                CopyButton(prompt: card.prompt, title: locale == "zh" ? "复制指令" : "Copy prompt", locale: locale)
+            }
+        } else {
+            Button(locale == "zh" ? "Pro 可随时选学这张卡" : "Pro: learn any card anytime") {
+                store.showProSettings = true
+            }.buttonStyle(.plain).foregroundStyle(.tint)
+        }
     }
 }

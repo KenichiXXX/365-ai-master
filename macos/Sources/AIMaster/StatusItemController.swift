@@ -1,17 +1,19 @@
 import AppKit
 import Combine
 import SwiftUI
+import UserNotifications
 
 @MainActor
-final class StatusItemController: NSObject, NSPopoverDelegate {
+final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificationCenterDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
-    private let store = SnapshotStore()
+    private let store = SnapshotStore(weeklyNotifications: WeeklyNotifications())
     private var clickMonitor: Any?
     private var subscription: AnyCancellable?
 
     override init() {
         super.init()
+        UNUserNotificationCenter.current().delegate = self
         popover.contentSize = NSSize(width: 440, height: 720)
         popover.behavior = .transient
         popover.delegate = self
@@ -46,20 +48,41 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         clickMonitor = nil
     }
 
-    @objc private func togglePopover() {
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        Task { @MainActor in
+            if response.notification.request.identifier == WeeklyNotifications.identifier {
+                await self.store.refresh()?.value
+                self.store.openWeeklyReview()
+                if self.store.showWeeklyReview { self.showPopover() }
+            }
+            completionHandler()
+        }
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
+
+    private func showPopover() {
         guard let button = statusItem.button else { return }
+        NSApp.activate(ignoringOtherApps: true)
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        popover.contentViewController?.view.window?.makeKey()
+        if clickMonitor == nil {
+            clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                Task { @MainActor in self?.popover.performClose(nil) }
+            }
+        }
+    }
+
+    @objc private func togglePopover() {
         if popover.isShown { popover.performClose(nil) }
         else {
             store.refreshContent()
             store.refresh()
-            NSApp.activate(ignoringOtherApps: true)
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
-            if clickMonitor == nil {
-                clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-                    Task { @MainActor in self?.popover.performClose(nil) }
-                }
-            }
+            showPopover()
         }
     }
 }

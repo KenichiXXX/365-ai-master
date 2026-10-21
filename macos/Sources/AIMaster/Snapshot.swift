@@ -19,6 +19,8 @@ struct Snapshot: Decodable {
     let streak: Streak?
     let badges: [Badge]?
     let usageSummary: UsageSummary?
+    let growth: Growth?
+    let weekly: WeeklyReview?
 }
 
 struct ToolUsage: Decodable, Identifiable {
@@ -229,5 +231,32 @@ struct UsageSummary: Decodable {
             text += zh ? " · Codex 周额度 \(pct)%" : " · Codex weekly \(pct)%"
         }
         return text
+    }
+}
+
+struct Growth: Decodable {
+    let days: [ScoreDay]
+    let weekDelta: Int?
+}
+
+struct ScoreDay: Decodable, Identifiable {
+    var id: String { date }
+    let date: String
+    let score: Int
+}
+
+struct WeeklyReview: Decodable {
+    let weekStart: String
+    let scoreDelta: Int?
+    let cardsLitThisWeek: [String]
+    let questsPassedThisWeek: [String]
+    let daysActive: Int
+
+    func summary(locale: String) -> String {
+        let change = scoreDelta.map { $0 >= 0 ? "+\($0)" : String($0) }
+        if locale == "zh" {
+            return "活跃 \(daysActive) 天 · 新点亮 \(cardsLitThisWeek.count) 张 · " + (change.map { "分数 \($0)" } ?? "暂无上周数据")
+        }
+        return "\(daysActive) active days · \(cardsLitThisWeek.count) new skills · " + (change.map { "Score \($0)" } ?? "No data last week")
     }
 }

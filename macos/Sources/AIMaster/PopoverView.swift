@@ -48,6 +48,17 @@ struct PopoverView: View {
         }
         .padding(16)
         .frame(width: 440, height: 720)
+        .sheet(isPresented: $store.showWeeklyReview) {
+            if let snapshot = store.snapshot, store.features.weeklyReview {
+                WeeklyReviewSheet(snapshot: snapshot)
+            }
+        }
+        .sheet(isPresented: $store.showProSettings) {
+            VStack {
+                ScrollView { ProSettingsSection(store: store, zh: store.locale == "zh").padding(20) }
+                Button(store.locale == "zh" ? "完成" : "Done") { store.showProSettings = false }.padding()
+            }.frame(width: 380, height: 480)
+        }
         .sheet(isPresented: $settings) { SettingsView(store: store) }
     }
 }

@@ -7,6 +7,31 @@ final class SnapshotStore: ObservableObject {
     @Published private(set) var license: License.Payload?
     @Published private(set) var licenseError: License.Failure?
     private let licensePublicKeyBase64: String
+    private let weeklyNotifications: WeeklyNotificationScheduling?
+    private(set) var notificationTask: Task<Void, Never>?
+    @Published var showWeeklyReview = false
+    @Published var showProSettings = false
+    var features: ProFeatures { ProFeatures(isPro: isPro) }
+
+    func openWeeklyReview() {
+        revalidateLicense()
+        if features.weeklyReview { showWeeklyReview = true }
+    }
+
+    private func updateWeeklyNotifications(requestPermission: Bool = false) {
+        guard let weeklyNotifications else { return }
+        let previous = notificationTask
+        notificationTask = Task {
+            await previous?.value
+            guard isPro else { weeklyNotifications.cancel(); return }
+            if requestPermission, !defaults.bool(forKey: "weeklyPermissionRequested") {
+                defaults.set(true, forKey: "weeklyPermissionRequested")
+                guard await weeklyNotifications.requestPermission() else { return }
+            }
+            guard isPro else { weeklyNotifications.cancel(); return }
+            await weeklyNotifications.schedule(review: snapshot?.weekly, locale: locale)
+        }
+    }
 
     @discardableResult
     func activateLicense(_ key: String) -> Bool {
@@ -15,8 +40,10 @@ final class SnapshotStore: ObservableObject {
                                              publicKeyBase64: licensePublicKeyBase64)
             defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "licenseKey")
             license = payload
+            let wasPro = isPro
             isPro = true
             licenseError = nil
+            updateWeeklyNotifications(requestPermission: !wasPro)
             return true
         } catch {
             licenseError = error as? License.Failure ?? .format
@@ -37,6 +64,10 @@ final class SnapshotStore: ObservableObject {
             try? License.verify($0, publicKeyBase64: licensePublicKeyBase64)
         }
         isPro = license != nil
+        if !isPro {
+            showWeeklyReview = false
+            weeklyNotifications?.cancel()
+        }
     }
 
     @Published var shareAnonymousScore: Bool {
@@ -149,7 +180,9 @@ final class SnapshotStore: ObservableObject {
          load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) },
          tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) },
          scoreReporter: ScoreReporter? = nil,
-         licensePublicKeyBase64: String = License.publicKeyBase64) {
+         licensePublicKeyBase64: String = License.publicKeyBase64,
+         weeklyNotifications: WeeklyNotificationScheduling? = nil) {
+        self.weeklyNotifications = weeklyNotifications
         self.licensePublicKeyBase64 = licensePublicKeyBase64
         self.defaults = defaults
         let reporter = scoreReporter ?? ScoreReporter(defaults: defaults)
@@ -163,6 +196,7 @@ final class SnapshotStore: ObservableObject {
         let interval = defaults.integer(forKey: "refreshSeconds")
         refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
         revalidateLicense()
+        updateWeeklyNotifications(requestPermission: isPro)
     }
 
     func startTimer() {
@@ -187,6 +221,7 @@ final class SnapshotStore: ObservableObject {
                 snapshotJSON = result.json
                 lastRun = Date()
                 lastError = nil
+                updateWeeklyNotifications()
                 await refreshRanking()
             } catch {
                 lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")

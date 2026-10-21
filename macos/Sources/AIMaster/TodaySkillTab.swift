@@ -4,6 +4,7 @@ import AppKit
 struct TodaySkillTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
+    @State private var expandedRankings: Set<String> = []
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
@@ -47,7 +48,7 @@ struct TodaySkillTab: View {
     private func rankingList(_ title: String, rows: [Ranking]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title).font(.headline)
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+            ForEach(Array(store.features.rankings(rows, expanded: expandedRankings.contains(title)).enumerated()), id: \.offset) { _, row in
                 Button(action: {
                     if let url = URL(string: row.url), ["https", "http"].contains(url.scheme?.lowercased() ?? "") {
                         NSWorkspace.shared.open(url)
@@ -72,6 +73,14 @@ struct TodaySkillTab: View {
                     }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
                 }.buttonStyle(.plain)
                 Divider()
+            }
+            if rows.count > 5 {
+                Button(expandedRankings.contains(title) && store.isPro ? (zh ? "收起" : "Show less") : (zh ? "展开全部" : "Show all")) {
+                    if store.isPro {
+                        if expandedRankings.contains(title) { expandedRankings.remove(title) }
+                        else { expandedRankings.insert(title) }
+                    } else { store.showProSettings = true }
+                }.buttonStyle(.plain).foregroundStyle(.tint)
             }
             if let source = snapshot.rankings?.source, !source.isEmpty {
                 Text((zh ? "数据：" : "Data: ") + source)

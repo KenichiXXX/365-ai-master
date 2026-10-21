@@ -9,6 +9,7 @@ from agentfit.engine.codex_book import (
     badges, book_groups, daily_rankings, daily_tip, next_badge, streak, update_book,
 )
 from agentfit.engine.content_pool import load_content
+from agentfit.engine.history import record_history
 from agentfit.engine.content import label
 from agentfit.engine.profile import build_profile, dimensions
 from agentfit.engine.scan_state import ScanState
@@ -75,6 +76,10 @@ def build_snapshot(
     book["groups"] = book_groups(book["cards"], locale)
     book["next_badge"] = next_badge(streak_days, book["lit"], book["total"],
                                     len(progress["passed"]), locale)
+    growth, weekly = record_history(
+        state_dir / "progress.json", now, score, {d.key: d.score for d in dims},
+        profile.active_dates_30d,
+    )
     notices = [] if any(row["tier"] == "deep" and row["detected"] for row in tools) else ["no_tools"]
     notices.extend(f"regressed:{key}" for key in progress["regressed"])
     return {
@@ -86,7 +91,8 @@ def build_snapshot(
         "today_tip": today_tip(progress, dims, locale, now.astimezone().date()),
         "inventory": {tool: inv.to_public() for tool, inv in inventories.items()},
         "book": book,
-        "rankings": daily_rankings(pool, inventories, locale, today),
+        "rankings": daily_rankings(pool, inventories, locale, today, n=20),
+        "growth": growth, "weekly": weekly,
         "daily_tip": daily_tip(pool, locale, today),
         "streak": {"days": streak_days},
         "badges": badges(streak_days, book["lit"], book["total"], len(progress["passed"]), locale),

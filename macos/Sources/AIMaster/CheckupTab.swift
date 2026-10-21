@@ -34,6 +34,12 @@ struct CheckupTab: View {
                 }
             }.frame(maxWidth: .infinity).padding(.top, 8)
             DimensionRings(dimensions: snapshot.dimensions ?? [])
+            if store.features.growthCurve, let growth = snapshot.growth {
+                GrowthCurve(growth: growth, zh: zh)
+            }
+            if store.features.weeklyReview {
+                Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
+            }
             Divider()
             if let tip = snapshot.todayTip { TipCard(tip: tip, store: store) }
             if let usage = snapshot.usageSummary {
