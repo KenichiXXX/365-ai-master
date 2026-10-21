@@ -11,13 +11,47 @@
         "en": "Write a CLAUDE.md"
       },
       "why": {
-        "zh": "AI 每次开工先读它，写一次长期省事",
-        "en": "Your AI reads it before every task — write once, save time forever"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请读一下这个项目，帮我写一份 60 行以内的 CLAUDE.md，写完给我看",
         "en": "Read this project and write a CLAUDE.md under 60 lines, then show me"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "web_search",
@@ -28,13 +62,41 @@
         "en": "Let the AI search the web"
       },
       "why": {
-        "zh": "问最新的东西时让它先查再答，少编造",
-        "en": "For anything recent, have it look things up first — fewer made-up answers"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请先联网搜索这个问题的最新资料，再给我结论和出处：[你的问题]",
         "en": "Search the web for the latest on this, then give me a conclusion with sources: [your question]"
-      }
+      },
+      "validator": "tool:WebSearch",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（tool:WebSearch）；配置存在不证明使用成功。",
+        "en": "A structured capability record (tool:WebSearch); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "web_fetch",
@@ -45,13 +107,41 @@
         "en": "Have the AI read a page"
       },
       "why": {
-        "zh": "贴个链接让它读完再总结，省得你自己翻",
-        "en": "Paste a link and let it read and summarize for you"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请读这个网页并用 5 条要点总结：[链接]",
         "en": "Read this page and summarize it in 5 bullet points: [link]"
-      }
+      },
+      "validator": "tool:WebFetch",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（tool:WebFetch）；配置存在不证明使用成功。",
+        "en": "A structured capability record (tool:WebFetch); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "plan_mode",
@@ -62,13 +152,41 @@
         "en": "Plan mode: plan before acting"
       },
       "why": {
-        "zh": "大改动前先看步骤，你点头再执行，返工更少",
-        "en": "See the steps before big changes and approve them — less rework"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "进入 Plan 模式（Shift+Tab 切换），先给我方案，不要改文件：[你的任务]",
         "en": "Enter plan mode (Shift+Tab), give me a plan first and don't edit files: [your task]"
-      }
+      },
+      "validator": "tool:ExitPlanMode",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（tool:ExitPlanMode）；配置存在不证明使用成功。",
+        "en": "A structured capability record (tool:ExitPlanMode); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "todo_list",
@@ -79,13 +197,41 @@
         "en": "Let the AI keep a to-do list"
       },
       "why": {
-        "zh": "长任务拆成清单逐项打勾，不容易漏",
-        "en": "Long tasks get split into a checklist so nothing is missed"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请先把这个任务拆成一个待办清单，再一项项完成：[你的任务]",
         "en": "Break this task into a to-do list first, then work through it item by item: [your task]"
-      }
+      },
+      "validator": "tool:TodoWrite",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（tool:TodoWrite）；配置存在不证明使用成功。",
+        "en": "A structured capability record (tool:TodoWrite); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "ask_first",
@@ -96,13 +242,41 @@
         "en": "Let the AI ask first"
       },
       "why": {
-        "zh": "需求不清时让它先提问，比猜错再改快",
-        "en": "When the request is fuzzy, questions beat wrong guesses"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "开始之前，如果有任何不确定的地方，先用选择题问我",
         "en": "Before you start, ask me multiple-choice questions about anything unclear"
-      }
+      },
+      "validator": "tool:AskUserQuestion",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（tool:AskUserQuestion）；配置存在不证明使用成功。",
+        "en": "A structured capability record (tool:AskUserQuestion); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "subagent",
@@ -113,13 +287,47 @@
         "en": "Sub-agents: work in parallel"
       },
       "why": {
-        "zh": "让子代理并行查资料，主对话保持清爽",
-        "en": "Sub-agents research side by side and keep your main chat clean"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请用子代理并行完成：A 梳理目录结构，B 找出所有 TODO，最后汇总给我",
         "en": "Use sub-agents in parallel: A) map the project structure, B) find all TODOs, then summarize"
-      }
+      },
+      "validator": "sidechain",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（sidechain）；配置存在不证明使用成功。",
+        "en": "A structured capability record (sidechain); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "light_model",
@@ -130,13 +338,47 @@
         "en": "Give chores to a light model"
       },
       "why": {
-        "zh": "格式转换这类活用轻量档更快更省",
-        "en": "Formatting-type work is faster and cheaper on a light tier"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "这个任务是机械性的，请用最轻量的模型完成；如果当前不是，告诉我怎么用 /model 切换",
         "en": "This task is mechanical — use the lightest model; if you aren't on one, tell me how to switch with /model"
-      }
+      },
+      "validator": "light_model",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（light_model）；配置存在不证明使用成功。",
+        "en": "A structured capability record (light_model); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "effort_up",
@@ -147,13 +389,47 @@
         "en": "Raise reasoning effort for hard problems"
       },
       "why": {
-        "zh": "架构和疑难调试时让它多想一会儿",
-        "en": "Let it think longer on architecture and tricky bugs"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "这个问题比较难，请用更高的推理强度仔细想清楚再回答：[你的问题]",
         "en": "This one is hard — use higher reasoning effort and think it through before answering: [your question]"
-      }
+      },
+      "validator": "effort:high|xhigh|max",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（effort:high|xhigh|max）；配置存在不证明使用成功。",
+        "en": "A structured capability record (effort:high|xhigh|max); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "first_skill",
@@ -164,13 +440,41 @@
         "en": "Use your first skill"
       },
       "why": {
-        "zh": "把常干的活变成一句话能调用的能力",
-        "en": "Turn a recurring job into a one-line command"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请列出我装了哪些 skill，挑一个最适合这个项目的，用它完成一个小任务",
         "en": "List the skills I have installed, pick the best one for this project, and use it on a small task"
-      }
+      },
+      "validator": "skill_any",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（skill_any）；配置存在不证明使用成功。",
+        "en": "A structured capability record (skill_any); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "mcp",
@@ -181,13 +485,41 @@
         "en": "Connect tools with MCP"
       },
       "why": {
-        "zh": "让 AI 直接读写 GitHub、文档等外部系统",
-        "en": "Let the AI work directly with GitHub, docs, and other systems"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请告诉我我已经连了哪些 MCP 工具，并用其中一个帮我完成一件小事",
         "en": "Tell me which MCP tools I have connected and use one of them for a small task"
-      }
+      },
+      "validator": "mcp",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（mcp）；配置存在不证明使用成功。",
+        "en": "A structured capability record (mcp); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "hook",
@@ -198,13 +530,41 @@
         "en": "Hooks: automate the routine"
       },
       "why": {
-        "zh": "比如改完代码自动跑测试，不用每次提醒",
-        "en": "For example, run tests after every edit without reminding it"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请帮我配置一个 hook：每次改完文件自动运行测试。先告诉我要改什么，我确认后再写",
         "en": "Set up a hook that runs tests after you edit files. Tell me what you'll change first; write it after I confirm"
-      }
+      },
+      "validator": "hook",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（hook）；配置存在不证明使用成功。",
+        "en": "A structured capability record (hook); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "compact",
@@ -215,13 +575,47 @@
         "en": "Compact long chats"
       },
       "why": {
-        "zh": "会话太长时压缩，保留结论、扔掉过程",
-        "en": "Compress a long session — keep conclusions, drop the noise"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请用 /compact 压缩当前对话，只保留结论和待办",
         "en": "Use /compact to compress this conversation, keeping only conclusions and open items"
-      }
+      },
+      "validator": "compaction",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（compaction）；配置存在不证明使用成功。",
+        "en": "A structured capability record (compaction); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "worktree",
@@ -232,13 +626,41 @@
         "en": "Parallel work with worktrees"
       },
       "why": {
-        "zh": "两件事互不干扰地同时改，不怕弄乱",
-        "en": "Change two things at once without stepping on each other"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请在一个新的 git worktree 里完成这个改动，别动我当前的工作区：[你的任务]",
         "en": "Do this change in a new git worktree and leave my current working tree alone: [your task]"
-      }
+      },
+      "validator": "tool:EnterWorktree",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "对应的结构化能力记录（tool:EnterWorktree）；配置存在不证明使用成功。",
+        "en": "A structured capability record (tool:EnterWorktree); configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "codex_agents",
@@ -249,13 +671,47 @@
         "en": "Write an AGENTS.md for Codex"
       },
       "why": {
-        "zh": "Codex 的项目说明书，作用和 CLAUDE.md 一样",
-        "en": "Codex's project brief — same idea as CLAUDE.md"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请读一下这个项目，帮我写一份 AGENTS.md，控制在 60 行以内",
         "en": "Read this project and write an AGENTS.md under 60 lines"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "init_cmd",
@@ -266,13 +722,47 @@
         "en": "Generate a brief with /init"
       },
       "why": {
-        "zh": "在项目里输入 /init，AI 会自己读代码写初稿",
-        "en": "Type /init in a project and the AI drafts the brief from the code"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "在这个项目里运行 /init，然后把生成的 CLAUDE.md 给我看",
         "en": "Run /init in this project, then show me the generated CLAUDE.md"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "clear_session",
@@ -283,13 +773,47 @@
         "en": "One task per session"
       },
       "why": {
-        "zh": "换话题就 /clear，上下文干净、回答更准",
-        "en": "Switch topics with /clear for cleaner context and sharper answers"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "（换新任务前输入 /clear）",
         "en": "(type /clear before starting a new task)"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "resume",
@@ -300,13 +824,47 @@
         "en": "Pick up where you left off"
       },
       "why": {
-        "zh": "用 claude --resume 或 codex resume 找回昨天的对话",
-        "en": "Use claude --resume or codex resume to reopen yesterday's chat"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "（在终端输入 claude --resume，选择要继续的会话）",
         "en": "(run claude --resume in your terminal and choose a session)"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "at_mention",
@@ -317,13 +875,47 @@
         "en": "Reference files with @"
       },
       "why": {
-        "zh": "输入 @ 加文件名，直接把文件交给 AI 看",
-        "en": "Type @ plus a filename to hand that file to the AI"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请看一下 @README.md，告诉我这个项目缺什么",
         "en": "Look at @README.md and tell me what this project is missing"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "paste_image",
@@ -334,13 +926,47 @@
         "en": "Paste a screenshot"
       },
       "why": {
-        "zh": "报错截图、设计稿直接粘贴进对话",
-        "en": "Drop error screenshots or designs straight into the chat"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "（把截图粘贴进对话）请看这张图，告诉我问题出在哪",
         "en": "(paste a screenshot) Look at this image and tell me what's wrong"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "headless",
@@ -351,13 +977,47 @@
         "en": "Headless mode for batch jobs"
       },
       "why": {
-        "zh": "claude -p 或 codex exec 一行命令跑完就走",
-        "en": "claude -p or codex exec runs a task in one command"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "（在终端试：claude -p \"用三句话总结这个项目\"）",
         "en": "(try in a terminal: claude -p \"summarize this project in three sentences\")"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "custom_command",
@@ -368,13 +1028,47 @@
         "en": "Custom slash commands"
       },
       "why": {
-        "zh": "把常用提示词存成 /命令，一键复用",
-        "en": "Save a prompt you reuse as a /command"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请帮我把\"检查代码风格并修复\"做成一个自定义斜杠命令",
         "en": "Turn \"check code style and fix it\" into a custom slash command for me"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "review_diff",
@@ -385,13 +1079,47 @@
         "en": "Have the AI review its own diff"
       },
       "why": {
-        "zh": "改完先让它自己看一遍 diff，问题少一半",
-        "en": "A self-review pass catches many problems early"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请检查你刚才的改动：列出可能的问题和遗漏，先别继续改",
         "en": "Review the change you just made: list possible problems and gaps, and don't change anything yet"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     },
     {
       "id": "permissions",
@@ -402,13 +1130,47 @@
         "en": "Set up permissions"
       },
       "why": {
-        "zh": "常用的安全命令设成免确认，少被打断",
-        "en": "Allow safe, frequent commands so you're interrupted less"
+        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
+        "en": "Try this capability in a suitable task, then check for a corresponding new record."
       },
       "prompt": {
         "zh": "请帮我看看哪些常用命令可以安全地加入免确认列表，先列出来不要改",
         "en": "Suggest which frequent commands are safe to auto-allow — list them, don't change anything"
-      }
+      },
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "只能记录已尝试（自报），不授予自动验证。",
+        "en": "Record a self-reported attempt only; no automatic verification."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     }
   ],
   "rankings": {
@@ -601,74 +1363,127 @@
     {
       "id": "project_brief",
       "title": {
-        "zh": "给项目写一个 CLAUDE.md(AI 的项目说明书),它从此记住你的规矩",
-        "en": "Write a CLAUDE.md (a project brief for AI) so it remembers your rules"
+        "zh": "为项目整理规则文件",
+        "en": "Write project instructions"
       },
       "detail": {
-        "zh": "CLAUDE.md 是放在项目文件夹里的规则文件(Claude Code 认这个名字,Codex 认 AGENTS.md)。写清楚项目结构、常用命令、你的规矩,AI 每次对话都会自动先读,不用再重复交代。",
-        "en": "CLAUDE.md is a rules file in your project folder (Claude Code recognizes this name; Codex recognizes AGENTS.md). Describe the project structure, common commands, and your rules. The AI reads it automatically before every conversation, so you do not have to repeat yourself."
+        "zh": "记录项目结构、常用命令和约定；检查生成的文件，再决定是否采用。配置存在不证明后续遵守。",
+        "en": "Record project structure, commands and conventions. Inspect the file before adopting it; its presence does not prove later compliance."
       },
       "source": "官方文档 docs.anthropic.com"
     },
     {
       "id": "fresh_session",
       "title": {
-        "zh": "长会话记得开新会话,省钱又提质",
-        "en": "Start fresh sessions during long conversations to cut costs and improve quality"
+        "zh": "新任务先检查上下文",
+        "en": "Review context before a new task"
       },
       "detail": {
-        "zh": "会话越长,每次请求都在为历史内容付费,而且模型注意力被稀释。一个任务结束就开新会话,大任务拆成多个会话。",
-        "en": "The longer the conversation, the more you pay for its history on every request, and the more the model's attention is diluted. Start a new session when a task ends, and split large tasks across sessions."
+        "zh": "确认哪些历史信息仍相关，再决定继续会话或开启新会话。这里不估算节省费用或质量变化。",
+        "en": "Check which history is still relevant before continuing or opening a new session. No cost or quality improvement is measured here."
       },
       "source": "官方计费文档 + 社区共识"
     },
     {
       "id": "plan_first",
       "title": {
-        "zh": "先让 AI 出计划,你点头后再让它动手",
-        "en": "Ask the AI for a plan first, then approve it before it acts"
+        "zh": "先审阅计划",
+        "en": "Review the plan first"
       },
       "detail": {
-        "zh": "复杂任务先说「先给我一个计划,先不要改代码」。看过计划再让它动手,返工大幅减少。Claude Code 里有专门的『计划模式』(Plan Mode)。",
-        "en": "For complex tasks, say \"Give me a plan first; do not change code yet.\" Review the plan before letting it act to greatly reduce rework. Claude Code has a dedicated Plan Mode."
+        "zh": "让 AI 先列步骤和待确认项，审阅后再决定执行。检查改动，不保证减少返工。",
+        "en": "Ask for steps and open questions, then decide whether to proceed. Inspect changes; reduced rework is not guaranteed."
       },
       "source": "官方文档 + 社区实践"
     },
     {
       "id": "prompt_caching",
       "title": {
-        "zh": "用好提示词缓存,重复内容只按 1 折计费",
-        "en": "Use prompt caching: repeated content costs just 10% of the usual rate"
+        "zh": "检查缓存记录",
+        "en": "Inspect cache records"
       },
       "detail": {
-        "zh": "固定的要求、参考资料放在每次提问的开头,变化的问题放末尾——AI 认出重复部分后,这部分只收约 1 折的钱。",
-        "en": "Put fixed requirements and reference materials at the beginning of each prompt, and changing questions at the end. When the AI recognizes the repeated portion, that part costs about 10% of the usual rate."
+        "zh": "检查工具日志是否提供缓存读取量。缓存条件和计费依模型及供应商而异，不推定折扣。",
+        "en": "Check whether tool logs include cache reads. Cache conditions and billing vary by model and provider; no discount is assumed."
       },
       "source": "官方定价文档"
     },
     {
       "id": "summarize_progress",
       "title": {
-        "zh": "用 /compact 或开新会话前,先让 AI 总结当前进度",
-        "en": "Before using /compact or starting a new session, ask the AI to summarize progress"
+        "zh": "压缩前保存必要结论",
+        "en": "Save key conclusions before compaction"
       },
       "detail": {
-        "zh": "长会话结束前说「把已完成的结论和待办总结成一段」,存进项目笔记再开新会话——上下文清爽了,进度一点不丢。",
-        "en": "Before ending a long conversation, say \"Summarize the completed conclusions and open items in a paragraph.\" Save it in your project notes before starting a new session to keep the context clean without losing progress."
+        "zh": "先整理结论和待办，检查摘要是否完整，再压缩或开新会话。",
+        "en": "Summarize conclusions and next steps, check the summary, then compact or open a new session."
       },
       "source": "官方文档 + 社区共识"
     },
     {
       "id": "stop_retrying",
       "title": {
-        "zh": "连续失败两次就停,改问法而不是重发",
-        "en": "After two consecutive failures, stop and rephrase instead of resending"
+        "zh": "重复失败后重新检查条件",
+        "en": "Recheck conditions after repeated failure"
       },
       "detail": {
-        "zh": "AI 连续两次没做对,原样重发第三次几乎必然还是错的。停下来: 缩小任务范围、补充关键信息、或者换一种问法。",
-        "en": "If the AI gets it wrong twice in a row, resending the same request a third time will almost certainly fail again. Stop: narrow the task, add key information, or ask in a different way."
+        "zh": "检查失败原因，缩小任务或补充相关信息，再决定下一次尝试。",
+        "en": "Inspect the failure, narrow the task or add relevant information, then decide on another attempt."
       },
       "source": "社区共识"
+    }
+  ],
+  "review_exercises": [
+    {
+      "id": "review_capability_v1",
+      "title": {
+        "zh": "复习已有能力",
+        "en": "Review a capability"
+      },
+      "why": {
+        "zh": "选择一项已学能力，在另一个任务中练习。",
+        "en": "Choose a learned capability to practise in another task."
+      },
+      "prompt": {
+        "zh": "在另一个适合的任务中再次使用这项能力，完成后检查新记录。",
+        "en": "Use this capability again in another suitable task, then check the new records."
+      },
+      "level": 1,
+      "detect": "self",
+      "validator": "self",
+      "compatibility": {
+        "claude_code": {
+          "format": "claude-jsonl-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        },
+        "codex": {
+          "format": "codex-response-usage-v1",
+          "adapter_versions": [
+            "1"
+          ]
+        }
+      },
+      "steps": {
+        "zh": [
+          "在适合的任务中阅读并使用下面的指令。",
+          "完成后检查新记录；没有记录时只能自报尝试。"
+        ],
+        "en": [
+          "Read and use the prompt in a suitable task.",
+          "Check new records afterwards; without coverage, report only a personal attempt."
+        ]
+      },
+      "expected_signal": {
+        "zh": "检查对应能力的新结构化记录；配置存在不证明使用成功。",
+        "en": "Look for a new structured capability record; configuration does not prove successful use."
+      },
+      "limitations": {
+        "zh": "不验证回答正确性或 shell 测试成功；日志支持依工具和格式而异。",
+        "en": "Does not verify answer correctness or shell test success; log support varies by tool and format."
+      },
+      "review_id": "practice-review-2026-10-21"
     }
   ]
 }

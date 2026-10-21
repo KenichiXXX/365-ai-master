@@ -11,26 +11,32 @@ struct TodaySkillTab: View {
         VStack(alignment: .leading, spacing: 18) {
             if let card = snapshot.book?.today {
                 VStack(alignment: .leading, spacing: 10) {
-                    if !card.lit {
-                        Text(zh ? "NEW · 你还没用过" : "New for you")
-                            .font(.system(size: 11).bold()).foregroundStyle(Color.accentColor)
-                    }
+                    Text(card.mode == "review" ? (zh ? "复习" : "Review") : (zh ? "新技能" : "New skill"))
+                        .font(.system(size: 11).bold()).foregroundStyle(Color.accentColor)
                     Text(card.title).font(.title2.bold())
                     Text(card.why).font(.body).foregroundStyle(.secondary)
-                    HStack {
-                        CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy and try",
-                                   locale: snapshot.locale ?? store.locale)
-                        Button(zh ? "试过了" : "I tried it") { store.markTried(card) }
-                            .disabled(store.isRefreshing)
-                    }.controlSize(.small)
-                    if let feedback = store.triedFeedback {
-                        Text(feedback == .lit ? (zh ? "已点亮 ✓" : "Lit ✓")
-                             : (zh ? "还没在日志里看到它——真正用一次后会自动点亮"
-                                : "Not seen in your logs yet — it lights up automatically after you use it once"))
-                            .font(.callout).foregroundStyle(.secondary)
-                    }
+                    PracticeControls(card: card, store: store, locale: snapshot.locale ?? store.locale)
+                    Button(zh ? "换一个" : "Skip once") { store.practice(id: card.id, operation: "skip") }
+                        .disabled(store.isRefreshing)
                 }.padding(12).frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            }
+            if snapshot.book?.today == nil {
+                Text(zh ? "暂无适配练习，可复习已有内容" : "No compatible exercise is available. Review an existing skill.")
+            }
+            ForEach(snapshot.book?.yesterday ?? []) { attempt in
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(snapshot.book?.cards.first { $0.id == attempt.skillId }?.title ?? (zh ? "复习" : "Review"))
+                        .font(.headline)
+                    Text(attempt.status == "observed"
+                         ? (zh ? "昨天的动作已有后续记录" : "A later record was found for yesterday's action")
+                         : attempt.status == "not_yet" ? (zh ? "尚未观察到" : "Not observed yet")
+                         : (zh ? "未获得新数据" : "No new data received"))
+                        .font(.callout)
+                    Button(zh ? "停止追踪" : "Stop tracking") {
+                        store.practice(id: attempt.attemptId, operation: "stop")
+                    }.disabled(store.isRefreshing)
+                }
             }
             rankingList(zh ? "今日 Skill 榜" : "Today's skills", rows: snapshot.rankings?.skill ?? [])
             rankingList(zh ? "今日 Agent 榜" : "Today's agents", rows: snapshot.rankings?.agent ?? [])
@@ -85,6 +91,39 @@ struct TodaySkillTab: View {
             if let source = snapshot.rankings?.source, !source.isEmpty {
                 Text((zh ? "数据：" : "Data: ") + source)
                     .font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+struct PracticeControls: View {
+    let card: SkillCard
+    @ObservedObject var store: SnapshotStore
+    let locale: String
+    private var zh: Bool { locale == "zh" }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(card.evidenceText(locale: locale)).font(.caption).foregroundStyle(.secondary)
+            ForEach(Array((card.steps ?? []).enumerated()), id: \.offset) { index, step in
+                Text("\(index + 1). \(step)").font(.callout)
+            }
+            if let signal = card.expectedSignal { Text(signal).font(.caption) }
+            if let limitations = card.limitations { Text(limitations).font(.caption).foregroundStyle(.secondary) }
+            if card.automaticSupported == false {
+                Text(zh ? "当前工具暂不支持自动验证" : "Automatic verification is not supported for this tool")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            HStack {
+                CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy and try", locale: locale,
+                           onCopied: { store.practice(id: card.id, operation: "copy") })
+                Button(zh ? "开始实践" : "Start practice") { store.practice(id: card.id, operation: "start") }
+                if card.isSelfReport {
+                    Button(zh ? "已尝试（自报）" : "Tried (self-reported)") { store.markTried(card) }
+                }
+            }.controlSize(.small).disabled(store.isRefreshing)
+            if store.feedback(for: card.id) != nil {
+                Text(card.evidenceText(locale: locale)).font(.caption)
             }
         }
     }

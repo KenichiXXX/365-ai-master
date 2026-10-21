@@ -42,10 +42,11 @@ def test_detect_and_permanent_lighting(tmp_path, rule, fields, inv):
     path.write_text(json.dumps({"passed": {"first_edit": "before"}, "regress_notified": []}))
     book = update_book(content, Profile(now=NOW, **fields), inv, path, NOW)
     assert book["lit"] == book["total"] == 1
-    assert book["cards"][0]["how"] == "log"
+    how = "configuration" if rule.startswith("instructions:") else "log"
+    assert book["cards"][0]["how"] == how
     assert update_book(content, blank, {}, path, NOW + timedelta(days=31))["lit"] == 1
     saved = json.loads(path.read_text())
-    assert saved["lit"][card["id"]] == {"at": NOW.isoformat(), "how": "log"}
+    assert saved["lit"][card["id"]] == {"at": NOW.isoformat(), "how": how}
     assert saved["passed"] == {"first_edit": "before"}
 
 
@@ -53,10 +54,10 @@ def test_self_cards_and_mark_tried(tmp_path):
     content, path = load_content(None), tmp_path / "progress.json"
     assert detected({"detect": "self"}, Profile(now=NOW), {}) is None
     assert mark_tried("init_cmd", path, NOW) is True
-    assert mark_tried("rules_file", path, NOW) is False
+    assert mark_tried("rules_file", path, NOW) is True
     assert mark_tried("unknown", path, NOW) is False
     book = update_book(content, Profile(now=NOW), {}, path, NOW)
-    assert book["lit"] == 1
+    assert book["lit"] == 2
     card = next(c for c in book["cards"] if c["id"] == "init_cmd")
     assert card["lit"] and card["how"] == "self"
     assert mark_tried("init_cmd", path, NOW + timedelta(days=1))
@@ -64,7 +65,7 @@ def test_self_cards_and_mark_tried(tmp_path):
     from agentfit.engine.village import advance
     from agentfit.engine.content import QUESTS
     advance({key: (False, "not_yet") for key in QUESTS}, path, NOW)
-    assert update_book(content, Profile(now=NOW), {}, path, NOW)["lit"] == 1
+    assert update_book(content, Profile(now=NOW), {}, path, NOW)["lit"] == 2
 
 
 def test_detect_instruction_boundary():
@@ -187,7 +188,7 @@ def test_live_rankings_match_plugins_case_insensitively_and_keep_order():
 def test_today_skill_skips_yesterdays_card_when_pool_shrinks(tmp_path):
     content = load_content(None)
     # Four cards yesterday, three today; today's modulo points to yesterday's card.
-    content["skills"] = [{**content["skills"][0], "id": str(i), "detect": "self"}
+    content["skills"] = [{**content["skills"][0], "id": str(i), "detect": "self", "validator": "self"}
                          for i in range(4)]
     path = tmp_path / "progress.json"
     yesterday = NOW - timedelta(days=1)
@@ -195,13 +196,13 @@ def test_today_skill_skips_yesterdays_card_when_pool_shrinks(tmp_path):
     assert previous["id"] == "1"
     assert mark_tried("3", path, NOW)
     book = update_book(content, Profile(now=NOW), {}, path, NOW)
-    assert book["today"]["id"] == "2"
+    assert book["today"]["id"] == "0"
     assert book["today"]["id"] != previous["id"]
     assert update_book(content, Profile(now=NOW), {}, path, NOW)["today"] == book["today"]
     assert all(c["detect"] == "self" for c in book["cards"])
     content["skills"] = [next(c for c in content["skills"] if c["id"] == book["today"]["id"])]
     tomorrow = NOW + timedelta(days=1)
-    assert update_book(content, Profile(now=tomorrow), {}, path, tomorrow)["today"]["id"] == book["today"]["id"]
+    assert update_book(content, Profile(now=tomorrow), {}, path, tomorrow)["today"]["mode"] == "review"
 
 
 def test_rankings_emit_growth_metrics():

@@ -41,7 +41,7 @@ def test_skill_copy_matches_plan_exactly():
         assert card["id"] == card_id
         assert card["detect"] == detect
         for locale, copy in (("zh", zh), ("en", en)):
-            assert [card[key][locale] for key in ("title", "why", "prompt")] == copy.split(" / ", 2)
+            assert [card[key][locale] for key in ("title", "prompt")] == [copy.split(" / ", 2)[i] for i in (0, 2)]
 
 
 def test_public_copy_is_byte_identical():
@@ -65,8 +65,8 @@ def test_rankings_and_tips_keep_source_entries():
     assert len(tips) == len(originals)
     assert len({item["id"] for item in tips}) == len(tips)
     for item, original in zip(tips, originals):
-        assert item["title"]["zh"] == original.title
-        assert item["detail"]["zh"] == original.detail
+        assert item["title"]["zh"] and item["title"]["en"]
+        assert item["detail"]["zh"] and item["detail"]["en"]
         assert item["source"] == original.source
 
 
@@ -210,3 +210,24 @@ def test_training_card_level_sets():
     cards = load_content(None)["skills"]
     assert {level: {c["id"] for c in cards if c["level"] == level}
             for level in (1, 2, 3)} == expected
+
+
+@pytest.mark.parametrize("field", ["compatibility", "steps", "validator", "expected_signal", "limitations", "review_id"])
+def test_reviewed_practice_metadata_required(field):
+    content = load_content(None)
+    del content["skills"][0][field]
+    assert not validate(content)
+
+
+def test_no_blanket_promises_in_reviewed_copy():
+    content = load_content(None)
+    for card in content["skills"] + content["tips"]:
+        raw = json.dumps(card, ensure_ascii=False)
+        assert not any(promise in raw for promise in ("问题少一半", "只按 1 折", "只收约 1 折", "返工大幅减少"))
+
+
+@pytest.mark.parametrize("review", [None, 1, [], {}])
+def test_malformed_review_returns_false(review):
+    content = load_content(None)
+    content["review_exercises"] = [review]
+    assert not validate(content)

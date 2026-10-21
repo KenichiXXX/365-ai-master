@@ -21,6 +21,11 @@ def main(argv: list[str] | None = None) -> int:
         snapshot.add_argument("--locale", choices=("zh", "en"), default=locale_from_env())
         snapshot.add_argument("--tools")
         snapshot.add_argument("--content", type=Path)
+        practice = commands.add_parser("practice")
+        practice.add_argument("card_id")
+        practice.add_argument("operation", choices=("start", "copy", "stop", "seen", "skip", "self"))
+        practice.add_argument("--state-dir", type=Path,
+                              default=Path.home() / "Library/Application Support/365AIMaster")
         tried = commands.add_parser("mark-tried")
         tried.add_argument("card_id")
         tried.add_argument("--state-dir", type=Path,
@@ -39,7 +44,11 @@ def main(argv: list[str] | None = None) -> int:
         # Every CLI mutation, including snapshots, uses the same local command lock.
         lock = (args.state_dir / "engine.lock").open("a")
         fcntl.flock(lock, fcntl.LOCK_EX)
-        if args.command == "action-feedback":
+        if args.command == "practice":
+            from agentfit.engine.codex_book import practice_command
+            result = {"ok": practice_command(args.card_id, args.operation,
+                       args.state_dir / "progress.json", datetime.now(timezone.utc))}
+        elif args.command == "action-feedback":
             result = {"ok": action_feedback(args.state_dir / "progress.json", args.action_id,
                         args.feedback, args.reason, datetime.now(timezone.utc).astimezone().date())}
         elif args.command == "reset-action-preferences":

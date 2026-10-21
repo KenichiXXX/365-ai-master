@@ -26,7 +26,7 @@ struct EngineRunner {
         return arguments
     }
 
-    // The engine owns the self-report allowlist and rejects log-detectable cards.
+    // The engine accepts self-report only for manual or currently unsupported validators.
     static func markTried(id: String) throws -> Bool {
         try actionCommand(["mark-tried", id])
     }

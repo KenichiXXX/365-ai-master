@@ -122,4 +122,40 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testRenderPracticeEvidenceStates() async throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        let fixture = try XCTUnwrap(Bundle.module.url(forResource: "snapshot", withExtension: "json", subdirectory: "Fixtures"))
+        let base = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixture)) as? [String: Any])
+        for locale in ["zh", "en"] {
+            for (kind, status) in [("started", "coverage_missing"), ("log_observed", "observed"), ("reuse", "not_yet")] {
+                var object = base
+                var book = try XCTUnwrap(object["book"] as? [String: Any])
+                var card = try XCTUnwrap((book["cards"] as? [[String: Any]])?.first { $0["id"] as? String == "web_search" })
+                card["title"] = locale == "zh" ? "练习搜索能力" : "Practise search"
+                card["why"] = locale == "zh" ? "在适合的任务中练习，再检查新记录。" : "Practise in a suitable task, then check new records."
+                card["prompt"] = locale == "zh" ? "使用搜索能力后检查新记录。" : "Use search, then check new records."
+                card["evidence_kind"] = kind
+                card["automatic_supported"] = true
+                card["mode"] = "new"
+                book["today"] = card
+                book["yesterday"] = [["attempt_id": "synthetic-1", "skill_id": card["id"]!, "status": status]]
+                object["book"] = book
+                object["daily_tip"] = ["id": "synthetic_tip", "title": locale == "zh" ? "完成后检查新记录" : "Check new records after practice",
+                                       "detail": locale == "zh" ? "日志存在不证明输出正确。" : "A log record does not prove output correctness."]
+                object["locale"] = locale
+                let result = try EngineRunner.decode(JSONSerialization.data(withJSONObject: object), status: 0)
+                let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, load: { _, _ in result })
+                await store.refresh()?.value
+                let renderer = ImageRenderer(content: TodaySkillTab(snapshot: result.snapshot, store: store)
+                    .padding(16).frame(width: 440).environment(\.locale, Locale(identifier: locale))
+                    .background(Color(nsColor: .windowBackgroundColor)))
+                renderer.scale = 2
+                let image = try XCTUnwrap(renderer.nsImage)
+                let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
+                try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+                    .write(to: URL(fileURLWithPath: out + "-practice-" + kind + "-" + locale + ".png"))
+            }
+        }
+    }
+
 }

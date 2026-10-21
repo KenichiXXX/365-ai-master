@@ -45,6 +45,43 @@ def validate(d: object) -> bool:
         if not all(_bilingual(card.get(key)) for key in ("title", "why", "prompt")):
             return False
 
+    reviews = d.get("review_exercises")
+    if not isinstance(reviews, list):
+        return False
+    for card in reviews:
+        if not isinstance(card, dict) or not _text(card.get("id")) or card["id"] in ids:
+            return False
+        if type(card.get("level")) is not int or card["level"] < 1:
+            return False
+        if not isinstance(card.get("detect"), str) or _DETECT.fullmatch(card["detect"]) is None:
+            return False
+        if not all(_bilingual(card.get(key)) for key in ("title", "why", "prompt")):
+            return False
+        ids.add(card["id"])
+    for card in skills + reviews:
+        if card.get("validator") != "self" and (not isinstance(card.get("validator"), str)
+                or _DETECT.fullmatch(card["validator"]) is None):
+            return False
+        if not all(_bilingual(card.get(key)) for key in ("expected_signal", "limitations")):
+            return False
+        steps = card.get("steps")
+        if not isinstance(steps, dict) or not all(isinstance(steps.get(loc), list)
+                and steps[loc] and all(_text(step) for step in steps[loc]) for loc in ("zh", "en")):
+            return False
+        if not _text(card.get("review_id")):
+            return False
+        compatibility = card.get("compatibility")
+        if not isinstance(compatibility, dict) or not compatibility:
+            return False
+        for tool, spec in compatibility.items():
+            if tool not in {"claude_code", "codex", "gemini_cli", "qwen_code", "opencode"}:
+                return False
+            if not isinstance(spec, dict) or not _text(spec.get("format")):
+                return False
+            versions = spec.get("adapter_versions")
+            if not isinstance(versions, list) or not versions or not all(_text(v) for v in versions):
+                return False
+
     if "rotate" in rankings and type(rankings["rotate"]) is not bool:
         return False
     if any(key in rankings and not _text(rankings[key]) for key in ("source", "updated_at")):

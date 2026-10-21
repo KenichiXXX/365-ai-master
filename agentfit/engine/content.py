@@ -496,3 +496,18 @@ def first_practice(locale: str) -> dict:
 
 def quest_evidence_label(kind: str, locale: str) -> str:
     return QUEST_EVIDENCE[kind][0 if locale == "zh" else 1]
+
+
+PRACTICE_EVIDENCE = {
+    "ready": ("待实践", "Ready to practise"),
+    "started": ("已开始，等待新记录", "Started; waiting for new records"),
+    "log_observed": ("日志已观察", "Observed in logs"),
+    "reuse": ("再次使用", "Used again"),
+    "historical": ("历史记录", "Historical record"),
+    "configuration": ("配置存在", "Configuration found"),
+    "self_reported": ("已尝试（自报）", "Tried (self-reported)"),
+}
+
+
+def practice_evidence_label(kind: str, locale: str) -> str:
+    return PRACTICE_EVIDENCE[kind][0 if locale == "zh" else 1]

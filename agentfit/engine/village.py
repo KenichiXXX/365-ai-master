@@ -84,11 +84,18 @@ def today_tip(state: dict, dims, locale: str, today: date,
                          set(QUESTS) if supported is None else supported)
 
 
-def village_block(state: dict, met: dict, locale: str, supported: set[str] | None = None) -> dict:
+def village_block(state: dict, met: dict, locale: str, supported: set[str] | None = None,
+                  practice: dict | None = None) -> dict:
     passed, current = state["passed"], state["current"]
     supported = set(QUESTS) if supported is None else supported
 
     def evidence_kind(key):
+        attempts = [a for a in (practice or {}).get("attempts", [])
+                    if a["action_id"].startswith(f"quest:{key}:")]
+        if any(a["first_observed_at"] for a in attempts):
+            return "new_observed"
+        if any(a["self_reported_at"] for a in attempts):
+            return "self_reported"
         if key in passed:
             return "historical"
         if key not in supported:

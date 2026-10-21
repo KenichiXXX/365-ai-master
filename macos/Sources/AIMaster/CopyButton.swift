@@ -16,6 +16,7 @@ struct CopyButton: View {
     let prompt: String
     let title: String
     let locale: String
+    var onCopied: (() -> Void)? = nil
     @State private var feedback = CopyFeedback()
     @State private var copied = false
 
@@ -25,6 +26,7 @@ struct CopyButton: View {
             if NSPasteboard.general.setString(prompt, forType: .string) {
                 feedback.markCopied()
                 copied = true
+                onCopied?()
             }
         }
         .task(id: feedback.copiedAt) {

@@ -173,3 +173,16 @@ def test_practice_copy_and_self_report_never_pass_a_quest(tmp_path):
     state = V.advance(V.evaluate(prof(), inv(), []), path, NOW)
     assert state["passed"] == {"first_edit": "2026-10-01"}
     assert json.loads(path.read_text())["first_practice"]["status"] == "self_reported"
+
+
+def test_practice_evidence_does_not_replace_legacy_passes():
+    state = {"passed": {"first_edit": "legacy"}, "current": "rules_file"}
+    met = {key: (False, "not_yet") for key in V.QUESTS}
+    attempts = [{"action_id": "quest:first_edit:1", "first_observed_at": "new", "self_reported_at": None}]
+    block = V.village_block(state, met, "en", practice={"attempts": attempts})
+    assert block["quests"][0]["evidence_kind"] == "new_observed"
+    assert block["quests"][0]["passed_at"] == "legacy"
+    attempts[0]["first_observed_at"] = None
+    attempts[0]["self_reported_at"] = "self"
+    block = V.village_block(state, met, "en", practice={"attempts": attempts})
+    assert block["quests"][0]["evidence_kind"] == "self_reported"

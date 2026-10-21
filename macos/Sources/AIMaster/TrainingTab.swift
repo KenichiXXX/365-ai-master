@@ -42,6 +42,9 @@ struct TrainingTab: View {
             if let book = snapshot.book {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(zh ? "技能图鉴" : "Skill book").font(.headline)
+                    Text(zh ? "配置存在 \(book.configurationCount ?? 0) · 自报 \(book.selfReportCount ?? 0)"
+                         : "Configuration \(book.configurationCount ?? 0) · Self-reported \(book.selfReportCount ?? 0)")
+                        .font(.caption).foregroundStyle(.secondary)
                     Text((book.groups ?? []).map { "\($0.title) \($0.lit)/\($0.total)" }.joined(separator: " · "))
                         .font(.callout).foregroundStyle(.secondary)
                     ForEach(book.groups ?? []) { group in
@@ -122,12 +125,15 @@ struct TrainingTab: View {
 
     private func skillRow(_ card: SkillCard) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(action: { selected = selected == card.id ? nil : card.id }) {
+            Button(action: {
+                selected = selected == card.id ? nil : card.id
+                if selected == card.id { store.practice(id: card.id, operation: "seen") }
+            }) {
                 HStack {
                     Text(card.lit ? "✓" : "○").foregroundStyle(card.lit ? Color.accentColor : Color.secondary)
                     Text(card.title)
                     Spacer()
-                    if card.how == "self" { Text(zh ? "自评" : "Self").font(.caption).foregroundStyle(.secondary) }
+                    Text(card.evidenceText(locale: snapshot.locale ?? store.locale)).font(.caption).foregroundStyle(.secondary)
                     Image(systemName: selected == card.id ? "chevron.up" : "chevron.down").font(.caption)
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain)
@@ -150,7 +156,7 @@ struct SkillCardDetails: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(card.why).font(.callout).foregroundStyle(.secondary)
                 Text(card.prompt).font(.callout).textSelection(.enabled)
-                CopyButton(prompt: card.prompt, title: locale == "zh" ? "复制指令" : "Copy prompt", locale: locale)
+                PracticeControls(card: card, store: store, locale: locale)
             }
         } else {
             Button(locale == "zh" ? "Pro 可随时选学这张卡" : "Pro: learn any card anytime") {

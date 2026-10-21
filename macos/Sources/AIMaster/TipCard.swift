@@ -29,10 +29,25 @@ struct TipCard: View {
                 HStack {
                     CopyButton(prompt: tip.promptForClaude,
                                title: copyTitle,
-                               locale: displayLocale.identifier.hasPrefix("zh") ? "zh" : "en")
+                               locale: displayLocale.identifier.hasPrefix("zh") ? "zh" : "en",
+                               onCopied: {
+                                   if let id = tip.actionId { store.practice(id: id, operation: "copy") }
+                               })
                     Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
                         .disabled(store.isRefreshing)
                 }.controlSize(.small)
+            }
+            if let id = tip.actionId {
+                HStack {
+                    Button(displayLocale.identifier.hasPrefix("zh") ? "开始实践" : "Start practice") {
+                        store.practice(id: id, operation: "start")
+                    }
+                    if tip.validationKind == "self_report" {
+                        Button(displayLocale.identifier.hasPrefix("zh") ? "已尝试（自报）" : "Tried (self-reported)") {
+                            store.practice(id: id, operation: "self")
+                        }
+                    }
+                }.controlSize(.small).disabled(store.isRefreshing)
             }
             if tip.actionId != nil {
                 HStack {

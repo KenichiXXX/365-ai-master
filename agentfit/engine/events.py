@@ -24,6 +24,10 @@ class CompactEvent:
     markers: dict[str, str] = field(default_factory=dict)
     cwd: str | None = None  # Internal only; never include in public snapshots.
 
+    def identity(self) -> str:
+        import hashlib
+        return hashlib.sha256((self.tool + "\0" + self.key).encode()).hexdigest()
+
     def to_dict(self) -> dict:
         return asdict(self)
 

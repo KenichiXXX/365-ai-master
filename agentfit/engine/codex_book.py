@@ -60,31 +60,131 @@ def _save_progress(path: Path, progress: dict) -> None:
 
 
 def update_book(content: dict, p: Profile, inv: dict[str, Inventory],
-                progress_path: Path, now: datetime) -> dict:
+                progress_path: Path, now: datetime, events=(), coverage=None) -> dict:
+    from agentfit.engine.practice import PracticeLedger, compatible, validation_available
     progress = _read_progress(progress_path)
-    # Persist the active pool's self-report allowlist for the separate CLI command.
-    progress["book_self_ids"] = [c["id"] for c in content["skills"] if c["detect"] == "self"]
+    ledger = PracticeLedger(progress, now)
+    skills = [{**c, "content_revision": content["updated_at"]} for c in content["skills"]]
+    reviews = [{**c, "content_revision": content["updated_at"]} for c in content.get("review_exercises", [])]
+    progress["book_catalog"] = {c["id"]: c for c in skills + reviews}
+    progress["book_self_ids"] = [c["id"] for c in skills + reviews
+                                 if c["validator"] == "self" or not validation_available(c, coverage or {})]
+    ledger.observe(events, skills + reviews, coverage or {}, now)
     lit = progress["lit"]
     cards = []
-    for card in content["skills"]:
-        if detected(card, p, inv):
-            lit.setdefault(card["id"], {"at": now.isoformat(), "how": "log"})
+    for card in skills:
+        configuration = card["detect"].startswith("instructions:") and detected(card, p, inv)
+        kind = ledger.evidence(card["id"], lit.get(card["id"]))
+        if configuration:
+            ledger.state.setdefault("configurations", {}).setdefault(card["id"], {
+                "kind": "configuration", "first_seen_at": now.isoformat(),
+                "content_revision": content["updated_at"], "rule_version": "1"})
+            kind = "configuration"
+        if card["id"] in ledger.state.get("configurations", {}) and kind in {"ready", "historical"}:
+            kind = "configuration"
+        if kind in {"log_observed", "reuse", "self_reported"} or detected(card, p, inv):
+            how = "configuration" if configuration else "self" if kind == "self_reported" else "log"
+            lit.setdefault(card["id"], {"at": now.isoformat(), "how": how})
+            if kind == "ready":
+                kind = "historical"
         record = lit.get(card["id"])
-        cards.append({
-            **{key: card[key] for key in ("id", "title", "why", "prompt", "level", "detect")},
-            "lit": record is not None, "how": record["how"] if record else None,
-        })
+        cards.append({**card, "lit": record is not None,
+                      "how": record["how"] if record else None, "evidence_kind": kind,
+                      "automatic_supported": validation_available(card, coverage or {}),
+                      "mode": "new"})
     today = now.astimezone().date()
+    day = today.isoformat()
     yesterday = (today - timedelta(days=1)).isoformat()
-    seen = progress.get("book_seen", {})
-    choice = today_skill(cards, today, seen.get(yesterday))
-    progress["book_seen"] = {day: card_id for day, card_id in seen.items()
-                             if day == yesterday}
+    assignments = progress.setdefault("book_daily", {})
+    assignment = assignments.get(day)
+    if assignment is None:
+        candidates = [c for c in cards if not c["lit"] and c["id"] not in ledger.state["seen"]
+                      and (not coverage or compatible(c, coverage))]
+        previous = progress.get("book_seen", {}).get(yesterday)
+        choice = today_skill(candidates, today, previous)
+        mode = "new"
+        if not choice:
+            available = [c for c in reviews if compatible(c, coverage or {})]
+            # No detected tool still permits the bundled manual review exercise.
+            if not coverage:
+                available = reviews
+            choice = available[today.toordinal() % len(available)] if available else None
+            mode = "review"
+        assignment = {"card": choice, "mode": mode, "skipped": False,
+                      "content_revision": content["updated_at"]}
+        assignments[day] = assignment
+    choice = assignment["card"]
     if choice:
-        progress["book_seen"][today.isoformat()] = choice["id"]
+        ledger.seen(choice["id"], now)
+        current = next((c for c in cards if c["id"] == choice["id"]), {})
+        choice = {**choice, "lit": choice["id"] in lit, "how": lit.get(choice["id"], {}).get("how"),
+                  "evidence_kind": ledger.evidence(choice["id"], lit.get(choice["id"])),
+                  "automatic_supported": current.get("automatic_supported", False),
+                  "mode": assignment["mode"], "content_revision": assignment["content_revision"]}
+        if current.get("evidence_kind") == "configuration":
+            choice["evidence_kind"] = "configuration"
+        progress.setdefault("book_seen", {})[day] = choice["id"]
+    yesterday_attempts = [a for a in ledger.attempts
+                          if a["started_local_date"] == yesterday
+                          and a["stopped_at"] is None]
+    tracked = []
+    for attempt in yesterday_attempts:
+        card = next((c for c in skills + reviews if c["id"] == attempt["skill_id"]), None)
+        received = any(e["tool"] in (coverage or {}) and e["first_seen_at"] > attempt["started_at"]
+                       and e["occurred_at"] > attempt["started_at"] for e in ledger.state["events"].values())
+        status = ("observed" if attempt["first_observed_at"] else "not_yet"
+                  if received and card and validation_available(card, coverage or {}) else "coverage_missing")
+        tracked.append({"attempt_id": attempt["attempt_id"], "skill_id": attempt["skill_id"],
+                        "status": status})
     _save_progress(progress_path, progress)
     return {"lit": sum(c["lit"] for c in cards), "total": len(cards), "cards": cards,
-            "today": choice}
+            "today": choice, "yesterday": tracked,
+            "configuration_count": len(ledger.state.get("configurations", {})),
+            "self_report_count": len(ledger.state.get("self_reports", {}))}
+
+
+def practice_command(card_id: str, operation: str, progress_path: Path, now: datetime) -> bool:
+    from agentfit.engine.practice import PracticeLedger
+    progress = _read_progress(progress_path)
+    ledger = PracticeLedger(progress, now)
+    content = load_content(None)
+    cards = list(progress.get("book_catalog", {}).values()) or content["skills"] + content.get("review_exercises", [])
+    assignments = progress.get("book_daily", {})
+    day = now.astimezone().date().isoformat()
+    pinned = assignments.get(day, {}).get("card")
+    action_card = progress.get("practice_actions", {}).get(card_id)
+    card = action_card or (pinned if pinned and pinned["id"] == card_id else next((c for c in cards if c["id"] == card_id), None))
+    if operation == "stop":
+        ok = ledger.stop(card_id, now)
+    elif card is None:
+        return False
+    elif operation in {"start", "copy"}:
+        ledger.start(card, card_id, now)
+        ok = True
+    elif operation == "self":
+        if card["validator"] != "self" and not (card_id in progress.get("book_self_ids", [])
+                                                  or card.get("automatic_supported") is False):
+            return False
+        ok = ledger.self_report(card, now, unsupported=True)
+    elif operation == "seen":
+        ledger.seen(card_id, now)
+        ok = True
+    elif operation == "skip":
+        assignment = assignments.get(day)
+        if not assignment or assignment["skipped"] or not pinned or pinned["id"] != card_id:
+            return False
+        alternative = next((c for c in cards if c["id"] != card_id
+                            and c["id"] not in ledger.state["seen"]), None)
+        if alternative is None:
+            return False
+        assignment.update(card=alternative, skipped=True, content_revision=alternative.get("content_revision", content["updated_at"]))
+        ledger.seen(alternative["id"], now)
+        ok = True
+    else:
+        return False
+    if ok:
+        _save_progress(progress_path, progress)
+    return ok
 
 
 def today_skill(cards: list[dict], today: date, yesterday_id: str | None = None) -> dict:
@@ -99,11 +199,14 @@ def today_skill(cards: list[dict], today: date, yesterday_id: str | None = None)
 
 
 def mark_tried(card_id: str, progress_path: Path, now: datetime) -> bool:
+    from agentfit.engine.practice import PracticeLedger
     progress = _read_progress(progress_path)
-    allowed = progress.get("book_self_ids")
-    if allowed is None:
-        allowed = [c["id"] for c in load_content(None)["skills"] if c["detect"] == "self"]
-    if card_id not in allowed:
+    content = load_content(None)
+    cards = list(progress.get("book_catalog", {}).values()) or content["skills"] + content.get("review_exercises", [])
+    card = next((c for c in cards if c["id"] == card_id), None)
+    if not card or card_id not in progress.get("book_self_ids", [c["id"] for c in content["skills"] if c["validator"] == "self"]):
+        return False
+    if not PracticeLedger(progress, now).self_report(card, now, unsupported=card_id in progress.get("book_self_ids", [])):
         return False
     progress["lit"].setdefault(card_id, {"at": now.isoformat(), "how": "self"})
     _save_progress(progress_path, progress)

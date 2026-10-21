@@ -159,6 +159,37 @@ final class SnapshotStore: ObservableObject {
         }
     }
 
+    @Published private(set) var practiceFeedbackID: String?
+    @Published private(set) var practiceFeedback: String?
+
+    func feedback(for id: String) -> String? {
+        practiceFeedbackID == id ? practiceFeedback : nil
+    }
+
+    @discardableResult
+    func practice(id: String, operation: String) -> Task<Void, Never>? {
+        guard !isRefreshing else { return nil }
+        practiceFeedbackID = nil
+        practiceFeedback = nil
+        isRefreshing = true
+        let command = actionCommand
+        return Task {
+            do {
+                let accepted = try await Task.detached { try command(["practice", id, operation]) }.value
+                guard accepted else { throw EngineError.badJSON }
+                isRefreshing = false
+                await refresh()?.value
+                guard lastError == nil else { return }
+                guard ["copy", "start", "self"].contains(operation) else { return }
+                practiceFeedbackID = id
+                practiceFeedback = snapshot?.book?.cards.first { $0.id == id }?.evidenceKind ?? (operation == "self" ? "self_reported" : "started")
+            } catch {
+                lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
+                isRefreshing = false
+            }
+        }
+    }
+
     enum TriedFeedback { case notSeen, lit }
     @Published private(set) var triedFeedback: TriedFeedback?
     @Published private(set) var onboarded: Bool
@@ -257,6 +288,8 @@ final class SnapshotStore: ObservableObject {
     func markTried(_ card: SkillCard) -> Task<Void, Never>? {
         guard !isRefreshing else { return nil }
         triedFeedback = nil
+        practiceFeedbackID = nil
+        practiceFeedback = nil
         isRefreshing = true
         let reporter = tryCard
         return Task {
@@ -270,6 +303,8 @@ final class SnapshotStore: ObservableObject {
                 guard lastError == nil else { return }
                 let lit = snapshot?.book?.cards.first(where: { $0.id == card.id })?.lit == true
                 triedFeedback = lit ? .lit : .notSeen
+                practiceFeedbackID = card.id
+                practiceFeedback = snapshot?.book?.cards.first { $0.id == card.id }?.evidenceKind ?? "self_reported"
             } catch {
                 lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
                 isRefreshing = false

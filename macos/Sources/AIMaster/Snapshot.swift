@@ -149,6 +149,16 @@ struct SkillBook: Decodable {
     let today: SkillCard?
     var groups: [SkillGroup]? = nil
     var nextBadge: NextBadge? = nil
+    var yesterday: [TrackedPractice]? = nil
+    var configurationCount: Int? = nil
+    var selfReportCount: Int? = nil
+}
+
+struct TrackedPractice: Decodable, Identifiable {
+    var id: String { attemptId }
+    let attemptId: String
+    let skillId: String
+    let status: String
 }
 
 struct SkillGroup: Decodable, Identifiable {
@@ -177,7 +187,31 @@ struct SkillCard: Decodable, Identifiable {
     let how: String?
     var detect: String? = nil
 
-    var isSelfReport: Bool { detect == "self" || how == "self" }
+    var evidenceKind: String? = nil
+    var evidenceLabel: String? = nil
+    var validator: String? = nil
+    var automaticSupported: Bool? = nil
+    var mode: String? = nil
+    var contentRevision: String? = nil
+    var steps: [String]? = nil
+    var expectedSignal: String? = nil
+    var limitations: String? = nil
+
+    var isSelfReport: Bool { automaticSupported == false || validator == "self" || detect == "self" || how == "self" }
+
+    func evidenceText(locale: String) -> String {
+        if let evidenceLabel { return evidenceLabel }
+        let labels = [
+            "ready": ["待实践", "Ready to practise"],
+            "started": ["已开始，等待新记录", "Started; waiting for new records"],
+            "log_observed": ["日志已观察", "Observed in logs"],
+            "reuse": ["再次使用", "Used again"],
+            "historical": ["历史记录", "Historical record"],
+            "configuration": ["配置存在", "Configuration found"],
+            "self_reported": ["已尝试（自报）", "Tried (self-reported)"]]
+        let kind = evidenceKind ?? (lit ? "historical" : "ready")
+        return (labels[kind] ?? labels["ready"]!)[locale == "zh" ? 0 : 1]
+    }
 }
 
 struct Rankings: Decodable {

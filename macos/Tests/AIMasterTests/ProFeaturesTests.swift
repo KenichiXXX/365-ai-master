@@ -87,9 +87,9 @@ final class ProFeaturesTests: XCTestCase {
                 let snapshot = try EngineRunner.decode(data, status: 0).snapshot
                 XCTAssertEqual(contains(GrowthCurve.self, in: CheckupTab(snapshot: snapshot, store: store).body), pro)
                 let details = SkillCardDetails(card: card, todayID: "today", store: store, locale: locale)
-                XCTAssertEqual(contains(CopyButton.self, in: details.body), pro)
+                XCTAssertEqual(contains(PracticeControls.self, in: details.body), pro)
                 let today = SkillCardDetails(card: card, todayID: card.id, store: store, locale: locale)
-                XCTAssertTrue(contains(CopyButton.self, in: today.body))
+                XCTAssertTrue(contains(PracticeControls.self, in: today.body))
                 let views: [(String, AnyView)] = [
                     ("checkup", AnyView(CheckupTab(snapshot: snapshot, store: store))),
                     ("skill", AnyView(details)),

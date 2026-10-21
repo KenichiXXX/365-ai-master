@@ -14,7 +14,7 @@ from agentfit.engine.codex_book import (
 )
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
-from agentfit.engine.content import first_practice, label
+from agentfit.engine.content import first_practice, label, practice_evidence_label
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.coverage import source_coverage
 from agentfit.engine.history import record_history
@@ -81,9 +81,10 @@ def build_snapshot(
     met = evaluate(profile, inventories, dims)
     progress = advance(met, state_dir / "progress.json", now)
     pool = load_content(content)
-    book = update_book(pool, profile, inventories, state_dir / "progress.json", now)
-    for card in book["cards"]:
-        for key in ("title", "why", "prompt"):
+    book = update_book(pool, profile, inventories, state_dir / "progress.json", now, events, coverage)
+    for card in book["cards"] + ([book["today"]] if book["today"] else []):
+        card["evidence_label"] = practice_evidence_label(card["evidence_kind"], locale)
+        for key in ("title", "why", "prompt", "steps", "expected_signal", "limitations"):
             card[key] = card[key][locale]
     today = now.astimezone().date()
     streak_days = streak(profile.active_dates_30d, today)
@@ -94,6 +95,25 @@ def build_snapshot(
         state_dir / "progress.json", now, score, {d.key: d.score for d in dims},
         profile.active_dates_30d,
     )
+    tip = today_tip(progress, dims, locale, today, state_dir / "progress.json",
+                    supported_quests(coverage, inventories))
+    from agentfit.engine.codex_book import _read_progress, _save_progress
+    persisted = _read_progress(state_dir / "progress.json")
+    action_id = tip.get("action_id")
+    if action_id:
+        quest_cards = {"rules_file": "rules_file", "light_model": "light_model",
+                       "first_skill": "first_skill", "parallel": "subagent", "automation": "hook"}
+        skill_id = quest_cards.get(tip["source"]["ref"], "review_capability_v1")
+        card = next((c for c in pool["skills"] + pool.get("review_exercises", []) if c["id"] == skill_id),
+                    load_content(None)["review_exercises"][0])
+        if tip["source"]["kind"] == "quest" and tip["source"]["ref"] == "first_edit":
+            card = {**card, "id": "quest:first_edit", "validator": "edit"}
+        from agentfit.engine.practice import validation_available
+        automatic = validation_available(card, coverage)
+        tip["validation_kind"] = "structured_observation" if automatic else "self_report"
+        persisted["practice_actions"] = {action_id: {**card, "content_revision": pool["updated_at"],
+                                                   "automatic_supported": automatic}}
+        _save_progress(state_dir / "progress.json", persisted)
     notices = [] if any(row["tier"] == "deep" and row["detected"] for row in tools) else ["no_tools"]
     notices.extend(f"regressed:{key}" for key in progress["regressed"])
     return {
@@ -102,10 +122,9 @@ def build_snapshot(
         "dimensions": [{"key": d.key, "label": d.label, "score": d.score,
                         "availability": d.availability, "evidence": d.evidence} for d in dims],
         "overall": assessment,
-        "village": village_block(progress, met, locale, supported_quests(coverage, inventories)),
+        "village": village_block(progress, met, locale, supported_quests(coverage, inventories), persisted.get("practice")),
         "first_practice": first_practice(locale),
-        "today_tip": today_tip(progress, dims, locale, today, state_dir / "progress.json",
-                               supported_quests(coverage, inventories)),
+        "today_tip": tip,
         "inventory": {tool: inv.to_public() for tool, inv in inventories.items()},
         "book": book,
         "rankings": daily_rankings(pool, inventories, locale, today, n=20),
