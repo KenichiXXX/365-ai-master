@@ -138,6 +138,21 @@ def validate(d: object) -> bool:
             if not _compatibility(spec):
                 return False
 
+    sources = d.get("course_sources", [])
+    if not isinstance(sources, list) or len(sources) > 100:
+        return False
+    seen_codes = set()
+    for source in sources:
+        if (not isinstance(source, dict) or set(source) != {"code", "practice_id", "title"}
+                or not isinstance(source["code"], str)
+                or re.fullmatch(r"[A-Za-z0-9_-]{1,32}", source["code"]) is None
+                or source["code"] in seen_codes
+                or not isinstance(source["practice_id"], str) or source["practice_id"] not in ids
+                or not _bilingual(source["title"]) or set(source["title"]) != {"zh", "en"}
+                or any(len(title) > 120 for title in source["title"].values())):
+            return False
+        seen_codes.add(source["code"])
+
     if "tool_updates" in d and not validate_updates(d["tool_updates"], ids):
         return False
 

@@ -64,7 +64,7 @@ struct PopoverView: View {
             VStack {
                 ScrollView { ProSettingsSection(store: store, zh: store.locale == "zh").padding(20) }
                 Button(store.locale == "zh" ? "完成" : "Done") { store.showProSettings = false }.padding()
-            }.frame(width: 380, height: 480)
+            }.frame(width: 380, height: 660)
         }
         .sheet(item: $store.reminderCard) { card in
             ScrollView {

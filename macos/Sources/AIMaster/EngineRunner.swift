@@ -20,6 +20,13 @@ struct EngineRunner {
             .appendingPathComponent("365AIMaster/content.json")
     }
 
+    static func courseSources(practiceIDs: Set<String>, content: URL = contentURL) -> [CourseSource] {
+        // The reviewed bundled catalogue is empty; downloaded entries use the same local content cache.
+        guard let size = try? content.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= 2_000_000,
+              let data = try? Data(contentsOf: content) else { return [] }
+        return CourseSource.catalogue(data, practiceIDs: practiceIDs)
+    }
+
     static func snapshotArguments(locale: String, tools: [String], content: URL = contentURL) -> [String] {
         var arguments = ["snapshot", "--json", "--locale", locale, "--tools", tools.joined(separator: ",")]
         if FileManager.default.fileExists(atPath: content.path) { arguments += ["--content", content.path] }

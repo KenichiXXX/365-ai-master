@@ -70,3 +70,23 @@ def test_action_evidence_and_feedback_do_not_export_tool_arguments_or_paths(tmp_
     for raw in (json.dumps(first), json.dumps(second), (state / "progress.json").read_text()):
         for forbidden in ("private-argument-sentinel", "/private/project-sentinel", str(home)):
             assert forbidden not in raw
+
+
+def test_license_transport_is_separate_exact_and_bounded():
+    source = (ROOT / "macos/Sources/AIMaster/ScoreReporter.swift").read_text()
+    license = (ROOT / "macos/Sources/AIMaster/License.swift").read_text()
+    payload = re.search(r"struct LicenseRefreshRequest: Encodable\s*\{([^}]+)\}", license).group(1)
+    assert re.findall(r"(?:let|var) (\w+):", payload) == ["lic", "key"]
+    transport = source.split("struct LicenseServiceTransport:", 1)[1]
+    assert 'appendingPathComponent("license/refresh")' in transport
+    assert 'request.httpMethod = "POST"' in transport
+    assert 'JSONEncoder().encode(proof)' in transport
+    assert 'URLSessionConfiguration.ephemeral' in transport
+    assert 'session.bytes(for: request)' in transport
+    assert 'data.count < 8192' in transport
+    assert 'request.url == endpoint' in transport
+    assert 'httpCookieStorage = nil' in transport and 'urlCredentialStorage = nil' in transport
+    assert 'ScoreRedirectPolicy()' in transport
+    for forbidden in ('device_token', 'anonDeviceToken', 'app_version', 'scoreVersion', 'Authorization', 'courseSource'):
+        assert forbidden not in transport
+    assert 'completionHandler(nil)' in source

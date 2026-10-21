@@ -61,3 +61,28 @@
 
 "Copy practice" = "复制练习";
 "I have a project" = "已有项目";
+
+"Pro founding price: USD $12/year, renews automatically every year" = "Pro 创始价 USD $12/年，每年自动续费";
+"To cancel, use the verified subscription-management link in your purchase receipt before the next renewal" = "取消方式：通过购买收据中的已验证订阅管理入口，在下次续费前取消";
+"After cancellation, access continues until the paid period ends" = "取消后可使用至已付费期限结束";
+"The 14-day local trial needs no card and never automatically becomes paid" = "14 天本地体验无需银行卡，不会自动转为付费";
+"The signed key shows local access expiry. Billing next-renewal date is separate and confirmed by the provider" = "签名激活码显示本地权益到期日；账单下次续费日是独立信息，以支付服务确认为准";
+"For support or refunds, use your purchase receipt to contact support" = "支持或退款：请使用购买收据联系支持";
+"Automatic key refresh sends your license ID and signed activation key to the license service, never usage records" = "自动刷新激活码会向授权服务发送授权编号及签名激活码，不发送使用记录";
+"Refresh license automatically" = "自动刷新授权";
+"Local activation key valid through {date}" = "本地激活码有效至 {date}";
+"Refresh activation key" = "重新获取激活码";
+"Connect to check subscription renewal. Your history is preserved" = "连接后可检查订阅续期；当前历史已保留";
+"Manage or cancel subscription" = "管理或取消订阅";
+"Payment integration is not verified. Checkout is unavailable" = "支付接入待验证，暂不可购买";
+"Course source code (optional)" = "课程来源码（可选）";
+"Include this source code at checkout" = "付款时附带此来源码";
+"Signed key works offline through expiry" = "签名激活码在到期前可离线使用";
+"Checking subscription renewal" = "正在检查订阅续期";
+"Manual authorization, not a subscription" = "手动授权，未关联订阅";
+"Payment is still being confirmed" = "付款仍在确认中";
+"Use your purchase receipt to contact support for license recovery" = "请使用购买收据联系支持恢复授权";
+"Your subscription is still active. You can refresh your activation key" = "订阅仍有效，可重新获取激活码";
+"Renewal cancelled by provider; access continues until the paid period ends" = "支付服务已确认停止续费；可使用至已付费期限结束";
+"Verified paid period ends {date}" = "已验证付费期限结束于 {date}";
+"Buy" = "购买";

@@ -9,6 +9,7 @@ final class SnapshotStore: ObservableObject {
     var isPro: Bool { entitlement.isPro }
     private let proTrial: ProTrial
     private(set) var trialExpiryTimer: Timer?
+    private(set) var licenseExpiryTimer: Timer?
     private var lifecycleObservers: Set<AnyCancellable> = []
     var license: License.Payload? {
         if case .licensed(let payload) = entitlement { return payload }
@@ -16,12 +17,57 @@ final class SnapshotStore: ObservableObject {
     }
     @Published private(set) var licenseError: License.Failure?
     private let licensePublicKeyBase64: String
+    private let licenseRenewal: LicenseRenewal
+    private let licenseClock: () -> Date
+    private let courseContentURL: URL
+    private(set) var licenseRefreshTask: Task<Void, Never>?
+    @Published private(set) var renewalState: RenewalState = .idle
+    @Published var autoRefreshLicense: Bool {
+        didSet {
+            defaults.set(autoRefreshLicense, forKey: "autoRefreshLicense")
+            if autoRefreshLicense { refreshLicense() }
+        }
+    }
+    @Published var courseSourceCode: String {
+        didSet {
+            defaults.set(courseSourceCode, forKey: "courseSourceCode")
+            includeCourseSource = false
+        }
+    }
+    @Published var includeCourseSource = false
+    @Published private(set) var courseCatalogue: [CourseSource] = []
+    var courseSource: CourseSource? { CourseSource.match(courseSourceCode, in: courseCatalogue) }
+    var courseCard: SkillCard? { snapshot?.book?.cards.first { $0.id == courseSource?.practiceID } }
+    var checkoutSource: CourseSource? { includeCourseSource ? courseSource : nil }
+    var signedLicense: License.Payload? {
+        defaults.string(forKey: "licenseKey").flatMap { try? License.authenticate($0, publicKeyBase64: licensePublicKeyBase64) }
+    }
+    let purchaseConfiguration = PurchaseConfiguration.unavailable
+
+    func checkoutReturned() { renewalState = .pending }
+
+    @discardableResult
+    func refreshLicense(explicit: Bool = false) -> Task<Void, Never> {
+        if let licenseRefreshTask { return licenseRefreshTask }
+        guard signedLicense != nil else { return Task {} }
+        let task = Task { [weak self] in
+            guard let self else { return }
+            renewalState = .refreshing
+            await licenseRenewal.refresh(explicit: explicit)
+            renewalState = licenseRenewal.state
+            revalidateEntitlement()
+            licenseRefreshTask = nil
+        }
+        licenseRefreshTask = task
+        return task
+    }
+
     private let weeklyNotifications: WeeklyNotificationScheduling?
     private(set) var notificationTask: Task<Void, Never>?
     @Published var showWeeklyReview = false
     @Published var reminderCard: SkillCard?
     @Published var showProSettings = false
-    var features: ProFeatures { ProFeatures(entitlement: entitlement) }
+    var features: ProFeatures { ProFeatures(isPro: isPro, coursePracticeID: courseSource?.practiceID) }
 
     func openWeeklyReview() {
         revalidateEntitlement()
@@ -73,12 +119,15 @@ final class SnapshotStore: ObservableObject {
     @discardableResult
     func activateLicense(_ key: String) -> Bool {
         do {
-            let payload = try License.verify(key.trimmingCharacters(in: .whitespacesAndNewlines),
-                                             publicKeyBase64: licensePublicKeyBase64)
+            _ = try License.authenticate(key.trimmingCharacters(in: .whitespacesAndNewlines),
+                                                   publicKeyBase64: licensePublicKeyBase64)
             defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "licenseKey")
-            entitlement = .licensed(payload)
+            defaults.set(false, forKey: "manualLicense")
+            licenseRenewal.importedKey()
+            renewalState = .idle
             licenseError = nil
             updateWeeklyNotifications()
+            refreshLicense()
             return true
         } catch {
             licenseError = error as? License.Failure ?? .format
@@ -96,14 +145,18 @@ final class SnapshotStore: ObservableObject {
 
     private func revalidateEntitlement() {
         let license = defaults.string(forKey: "licenseKey").flatMap {
-            try? License.verify($0, publicKeyBase64: licensePublicKeyBase64)
+            try? License.verify($0, publicKeyBase64: licensePublicKeyBase64, today: License.day(licenseClock()))
         }
         let wasPro = isPro
         trialStatus = proTrial.evaluate()
         if let license { entitlement = .licensed(license) }
         else if case .active(let end) = trialStatus { entitlement = .trial(until: end) }
         else { entitlement = .free }
+        if renewalState == .idle, let proof = signedLicense, proof.exp < License.day(licenseClock()) {
+            renewalState = .expired
+        }
         scheduleTrialExpiry()
+        scheduleLicenseExpiry()
         if !isPro {
             showWeeklyReview = false
             if wasPro {
@@ -121,6 +174,24 @@ final class SnapshotStore: ObservableObject {
 
     func resumeEntitlement() {
         updateWeeklyNotifications()
+        refreshLicense()
+    }
+
+    private func scheduleLicenseExpiry() {
+        licenseExpiryTimer?.invalidate()
+        licenseExpiryTimer = nil
+        guard let license else { return }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let day = formatter.date(from: license.exp),
+              let end = formatter.calendar.date(byAdding: .day, value: 1, to: day) else { return }
+        let timer = Timer(timeInterval: max(0.001, end.timeIntervalSince(licenseClock())), repeats: false) { [weak self] _ in
+            Task { @MainActor in self?.resumeEntitlement() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        licenseExpiryTimer = timer
     }
 
     private func scheduleTrialExpiry() {
@@ -411,7 +482,16 @@ final class SnapshotStore: ObservableObject {
          scoreReporter: ScoreReporter? = nil,
          licensePublicKeyBase64: String = License.publicKeyBase64,
          weeklyNotifications: WeeklyNotificationScheduling? = nil,
-         proTrial: ProTrial? = nil) {
+         proTrial: ProTrial? = nil,
+         licenseTransport: LicenseTransport? = nil,
+         licenseClock: @escaping () -> Date = Date.init,
+         courseContentURL: URL = EngineRunner.contentURL) {
+        self.courseContentURL = courseContentURL
+        self.licenseClock = licenseClock
+        self.licenseRenewal = LicenseRenewal(defaults: defaults, transport: licenseTransport ?? LicenseServiceTransport(),
+            publicKey: licensePublicKeyBase64, clock: licenseClock)
+        autoRefreshLicense = defaults.bool(forKey: "autoRefreshLicense")
+        courseSourceCode = defaults.string(forKey: "courseSourceCode") ?? ""
         self.proTrial = proTrial ?? ProTrial(defaults: defaults)
         self.weeklyNotifications = weeklyNotifications
         self.licensePublicKeyBase64 = licensePublicKeyBase64
@@ -438,6 +518,7 @@ final class SnapshotStore: ObservableObject {
         refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
         revalidateEntitlement()
         updateWeeklyNotifications()
+        refreshLicense()
         for (center, name) in [(NotificationCenter.default, NSApplication.didBecomeActiveNotification),
                                (NSWorkspace.shared.notificationCenter, NSWorkspace.didWakeNotification)] {
             center.publisher(for: name).sink { [weak self] _ in
@@ -475,6 +556,7 @@ final class SnapshotStore: ObservableObject {
                     return
                 }
                 snapshot = result.snapshot
+                courseCatalogue = EngineRunner.courseSources(practiceIDs: Set(result.snapshot.book?.cards.map(\.id) ?? []), content: courseContentURL)
                 firstPracticeBranch = FirstPracticeBranch.from(result.snapshot.coverage)
                 defaults.set(firstPracticeBranch.rawValue, forKey: "firstPracticeBranch")
                 snapshotJSON = result.json

@@ -13,5 +13,6 @@ export class PaymentProvider {
 
 // TODO(WAFFO_VERIFIED_INTEGRATION): obtain official webhook signature/API docs,
 // authenticated sandbox fixtures and ordering semantics, verify renewal/refund,
-// cancellation management and receipt/support recovery before enabling payments.
+// cancellation management, verified annual checkout terms and receipt/support recovery
+// before enabling payments. The app keeps checkout and management unavailable until then.
 export class WaffoPaymentProvider extends PaymentProvider {}

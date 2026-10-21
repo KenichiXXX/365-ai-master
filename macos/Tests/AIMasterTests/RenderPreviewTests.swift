@@ -1,10 +1,54 @@
 import XCTest
 import SwiftUI
+import CryptoKit
 @testable import AIMaster
 
 // Opt-in local preview; real usage and generated PNGs must never be committed.
 @MainActor
 final class RenderPreviewTests: XCTestCase {
+    func testRenderSubscriptionPaywallStatesInBothLanguages() async throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        let signer = Curve25519.Signing.PrivateKey()
+        let clock = ISO8601DateFormatter().date(from: "2026-10-21T12:00:00Z")!
+        func key(exp: String) throws -> String {
+            let data = try JSONSerialization.data(withJSONObject: ["v": 1, "lic": "abcdefghijklmnop", "plan": "pro",
+                "iat": "2025-10-21", "exp": exp])
+            func encode(_ data: Data) -> String {
+                data.base64EncodedString().replacingOccurrences(of: "+", with: "-")
+                    .replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+            }
+            return "AIM1.\(encode(data)).\(encode(try signer.signature(for: data)))"
+        }
+        for locale in ["zh", "en"] {
+            for phase in ["paywall", "pending", "offline", "cancel-at-period-end"] {
+                let defaults = UserDefaults(suiteName: UUID().uuidString)!
+                if phase != "paywall" && phase != "pending" { defaults.set(try key(exp: "2026-10-20"), forKey: "licenseKey") }
+                let transport = LicenseServiceTransport { _ in
+                    let response: [String: Any] = phase == "cancel-at-period-end"
+                        ? ["status": "active", "key": try key(exp: "2027-10-21"), "auto_renew": false,
+                           "paid_through": "2027-10-22T00:00:00Z"] : ["status": phase == "pending" ? "pending" : "unavailable"]
+                    return (try JSONSerialization.data(withJSONObject: response), phase == "offline" ? 503 : 200)
+                }
+                let store = SnapshotStore(defaults: defaults, licensePublicKeyBase64: signer.publicKey.rawRepresentation.base64EncodedString(),
+                    licenseTransport: transport, licenseClock: { clock })
+                await store.licenseRefreshTask?.value
+                if phase == "pending" { store.checkoutReturned() }
+                else if phase != "paywall" { await store.refreshLicense(explicit: true).value }
+                let hosting = NSHostingView(rootView: ProSettingsSection(store: store, zh: locale == "zh")
+                    .padding(20).frame(width: 380).environment(\.locale, Locale(identifier: locale))
+                    .background(Color(nsColor: .windowBackgroundColor)))
+                hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+                hosting.layoutSubtreeIfNeeded()
+                XCTAssertEqual(hosting.bounds.width, 380)
+                XCTAssertLessThan(hosting.bounds.height, 1500)
+                let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+                try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                    .write(to: URL(fileURLWithPath: out + "-subscription-" + phase + "-" + locale + ".png"))
+            }
+        }
+    }
+
     func testRenderTrialEligibleActiveAndExpiredInBothLanguages() throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         for locale in ["zh", "en"] {

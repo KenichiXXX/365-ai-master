@@ -70,23 +70,37 @@ struct ProSettingsSection: View {
         VStack(alignment: .leading, spacing: 10) {
             Divider()
             Text("365 AI Master Pro").font(.headline)
-            if store.isPro, let license = store.license {
-                Text(verbatim: zh ? "Pro 已激活，到期 \(license.exp)" : "Pro activated, expires \(license.exp)")
-            } else {
+            if let license = store.signedLicense {
+                Text(verbatim: t("Local activation key valid through {date}").replacingOccurrences(of: "{date}", with: license.exp))
+                if case .active(_, let end) = store.renewalState {
+                    Text(verbatim: t("Verified paid period ends {date}").replacingOccurrences(of: "{date}", with: end))
+                }
+                Button(t("Refresh activation key")) { store.refreshLicense(explicit: true) }
+                    .disabled(store.licenseRefreshTask != nil)
+            }
+            if store.signedLicense != nil || store.renewalState == .pending {
+                Text(t(store.renewalState.messageKey)).foregroundStyle(.secondary)
+            }
+            if !store.isPro {
                 ProTrialSection(store: store, zh: zh)
-                Divider()
-                Text(zh ? "创始价 $12/年" : "Founding price $12/year")
                 Text(zh ? "成长曲线：30 天分数走势、本周比上周" : "Growth curve: 30-day scores and week-over-week change")
                 Text(zh ? "每周复盘：本地生成一页周报，可选开启提醒" : "Weekly review: a local report with optional reminders")
                 Text(zh ? "技能图鉴随时选学、完整榜单 Top 20" : "Learn any skill anytime, full Top 20 ranking")
                 Text(zh ? "四维分别排名" : "Rankings for each of the four dimensions")
-                if License.checkoutURL != "REPLACE_WAFFO_CHECKOUT", let url = URL(string: License.checkoutURL) {
-                    Button(zh ? "去付款" : "Buy") { NSWorkspace.shared.open(url) }
-                } else {
-                    Text(zh ? "付款通道开通中，可联系作者获取创始激活码" : "Checkout opening soon")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
             }
+            PurchaseTermsView(zh: zh)
+            Text(t("Payment integration is not verified. Checkout is unavailable")).foregroundStyle(.secondary)
+            CourseSourceSection(store: store, zh: zh)
+            Button(t("Buy")) {
+                if store.purchaseConfiguration.openCheckout(termsPresented: true, source: store.checkoutSource,
+                    open: { NSWorkspace.shared.open($0) }) { store.checkoutReturned() }
+            }.disabled(store.purchaseConfiguration.checkout(source: store.checkoutSource) == nil)
+            Button(t("Manage or cancel subscription")) {
+                if let url = store.purchaseConfiguration.managementURL { NSWorkspace.shared.open(url) }
+            }.disabled(store.purchaseConfiguration.managementURL == nil)
+            Toggle(t("Refresh license automatically"), isOn: $store.autoRefreshLicense)
+            Text(t("Automatic key refresh sends your license ID and signed activation key to the license service, never usage records"))
+                .font(.caption).foregroundStyle(.secondary)
             TextField(zh ? "输入激活码" : "Enter activation key", text: $activationKey)
                 .textFieldStyle(.roundedBorder)
             Button(zh ? "激活" : "Activate") {
@@ -96,6 +110,40 @@ struct ProSettingsSection: View {
                 Text(error.message(locale: zh ? "zh" : "en")).foregroundStyle(.red)
             }
         }.font(.system(size: 12))
+    }
+
+    private func t(_ key: String) -> String { PurchaseTerms.localized(key, locale: zh ? "zh" : "en") }
+}
+
+struct PurchaseTermsView: View {
+    let zh: Bool
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(PurchaseTerms.lines(locale: zh ? "zh" : "en"), id: \.self) { line in
+                Text(verbatim: line).fixedSize(horizontal: false, vertical: true)
+            }
+        }.font(.caption)
+    }
+}
+
+struct CourseSourceSection: View {
+    @ObservedObject var store: SnapshotStore
+    let zh: Bool
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            TextField(PurchaseTerms.localized("Course source code (optional)", locale: zh ? "zh" : "en"),
+                text: Binding(get: { store.courseSourceCode }, set: { store.courseSourceCode = String($0.prefix(32)) }))
+                .textFieldStyle(.roundedBorder)
+            if let source = store.courseSource, let card = store.courseCard {
+                Text(verbatim: source.title[zh ? "zh" : "en"] ?? source.code)
+                DisclosureGroup(card.title) {
+                    SkillCardDetails(card: card, todayID: store.snapshot?.book?.today?.id,
+                                     store: store, locale: zh ? "zh" : "en")
+                }
+                Toggle(PurchaseTerms.localized("Include this source code at checkout", locale: zh ? "zh" : "en"),
+                       isOn: $store.includeCourseSource)
+            }
+        }
     }
 }
 

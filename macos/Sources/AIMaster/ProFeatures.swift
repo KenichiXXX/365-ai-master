@@ -2,7 +2,8 @@ import Foundation
 
 struct ProFeatures {
     let isPro: Bool
-    init(isPro: Bool) { self.isPro = isPro }
+    var coursePracticeID: String? = nil
+    init(isPro: Bool, coursePracticeID: String? = nil) { self.isPro = isPro; self.coursePracticeID = coursePracticeID }
     init(entitlement: ProEntitlement) { isPro = entitlement.isPro }
     var growthCurve: Bool { isPro }
     var weeklyReview: Bool { isPro }
@@ -17,7 +18,7 @@ struct ProFeatures {
     }
 
     func canLearn(_ card: SkillCard, todayID: String?) -> Bool {
-        isPro || card.lit || card.id == todayID
+        isPro || card.lit || card.id == todayID || card.id == coursePracticeID
     }
 
     func rankings(_ rows: [Ranking], expanded: Bool) -> [Ranking] {

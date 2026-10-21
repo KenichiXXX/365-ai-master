@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 
 private final class ScoreRedirectPolicy: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask,
@@ -165,6 +166,72 @@ final class ScoreReporter {
         let session = URLSession(configuration: config, delegate: ScoreRedirectPolicy(), delegateQueue: nil)
         defer { session.invalidateAndCancel() }
         let (data, response) = try await session.data(for: request)
+        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
+    }
+}
+
+
+@MainActor
+struct LicenseServiceTransport: LicenseTransport {
+    typealias Sender = (URLRequest) async throws -> (Data, Int)
+    private let sender: Sender
+    nonisolated static var endpoint: URL {
+        ScoreReporter.endpoint.deletingLastPathComponent().appendingPathComponent("license/refresh")
+    }
+
+    init(sender: @escaping Sender = LicenseServiceTransport.send) { self.sender = sender }
+
+    func refresh(_ proof: LicenseRefreshRequest) async -> LicenseRefreshResult {
+        guard proof.lic.utf8.count == 16, proof.key.utf8.count <= 768 else { return .unavailable }
+        do {
+            var request = URLRequest(url: Self.endpoint)
+            request.httpMethod = "POST"
+            request.httpShouldHandleCookies = false
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.timeoutInterval = 15
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
+            request.httpBody = try JSONEncoder().encode(proof)
+            let (data, status) = try await sender(request)
+            guard status == 200, data.count <= 8192,
+                  let body = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let code = body["status"] as? String else { return .unavailable }
+            switch code {
+            case "active":
+                guard Set(body.keys) == ["status", "key", "auto_renew", "paid_through"],
+                      let key = body["key"] as? String, key.utf8.count <= 768,
+                      let flag = body["auto_renew"] as? NSNumber, CFGetTypeID(flag) == CFBooleanGetTypeID(),
+                      let end = body["paid_through"] as? String, end.utf8.count <= 30,
+                      end.hasSuffix("Z"), ISO8601DateFormatter().date(from: end) != nil else { return .unavailable }
+                return .active(key: key, autoRenew: flag.boolValue, paidThrough: end)
+            case "manual": return .manual
+            case "pending": return .pending
+            case "expired": return .expired
+            case "revoked": return .revoked
+            default: return .unavailable
+            }
+        } catch { return .unavailable }
+    }
+
+    nonisolated static func send(_ request: URLRequest) async throws -> (Data, Int) {
+        guard request.url == endpoint, request.httpMethod == "POST" else { throw URLError(.badURL) }
+        let config = URLSessionConfiguration.ephemeral
+        config.httpCookieStorage = nil
+        config.urlCredentialStorage = nil
+        config.urlCache = nil
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 15
+        let session = URLSession(configuration: config, delegate: ScoreRedirectPolicy(), delegateQueue: nil)
+        defer { session.invalidateAndCancel() }
+        let (bytes, response) = try await session.bytes(for: request)
+        if let length = (response as? HTTPURLResponse)?.expectedContentLength, length > 8192 {
+            throw URLError(.dataLengthExceedsMaximum)
+        }
+        var data = Data()
+        for try await byte in bytes {
+            guard data.count < 8192 else { throw URLError(.dataLengthExceedsMaximum) }
+            data.append(byte)
+        }
         return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
     }
 }

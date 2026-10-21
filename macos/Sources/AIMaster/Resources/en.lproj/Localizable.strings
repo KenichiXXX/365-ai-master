@@ -61,3 +61,28 @@
 
 "Copy practice" = "Copy prompt";
 "I have a project" = "I have a project";
+
+"Pro founding price: USD $12/year, renews automatically every year" = "Pro founding price: USD $12/year, renews automatically every year";
+"To cancel, use the verified subscription-management link in your purchase receipt before the next renewal" = "To cancel, use the verified subscription-management link in your purchase receipt before the next renewal";
+"After cancellation, access continues until the paid period ends" = "After cancellation, access continues until the paid period ends";
+"The 14-day local trial needs no card and never automatically becomes paid" = "The 14-day local trial needs no card and never automatically becomes paid";
+"The signed key shows local access expiry. Billing next-renewal date is separate and confirmed by the provider" = "The signed key shows local access expiry. Billing next-renewal date is separate and confirmed by the provider";
+"For support or refunds, use your purchase receipt to contact support" = "For support or refunds, use your purchase receipt to contact support";
+"Automatic key refresh sends your license ID and signed activation key to the license service, never usage records" = "Automatic key refresh sends your license ID and signed activation key to the license service, never usage records";
+"Refresh license automatically" = "Refresh license automatically";
+"Local activation key valid through {date}" = "Local activation key valid through {date}";
+"Refresh activation key" = "Refresh activation key";
+"Connect to check subscription renewal. Your history is preserved" = "Connect to check subscription renewal. Your history is preserved";
+"Manage or cancel subscription" = "Manage or cancel subscription";
+"Payment integration is not verified. Checkout is unavailable" = "Payment integration is not verified. Checkout is unavailable";
+"Course source code (optional)" = "Course source code (optional)";
+"Include this source code at checkout" = "Include this source code at checkout";
+"Signed key works offline through expiry" = "Signed key works offline through expiry";
+"Checking subscription renewal" = "Checking subscription renewal";
+"Manual authorization, not a subscription" = "Manual authorization, not a subscription";
+"Payment is still being confirmed" = "Payment is still being confirmed";
+"Use your purchase receipt to contact support for license recovery" = "Use your purchase receipt to contact support for license recovery";
+"Your subscription is still active. You can refresh your activation key" = "Your subscription is still active. You can refresh your activation key";
+"Renewal cancelled by provider; access continues until the paid period ends" = "Renewal cancelled by provider; access continues until the paid period ends";
+"Verified paid period ends {date}" = "Verified paid period ends {date}";
+"Buy" = "Buy";

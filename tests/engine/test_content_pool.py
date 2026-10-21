@@ -324,3 +324,19 @@ def test_malformed_public_metadata_rejected(field, value):
     data = load_content(None)
     data["rankings"]["skill"][0][field] = value
     assert not validate(data)
+
+
+def test_course_catalogue_is_empty_and_synthetic_entries_are_bounded():
+    content = load_content(None)
+    assert content["course_sources"] == []
+    entry = {"code": "SYNTHETIC_1", "practice_id": "web_search",
+             "title": {"zh": "合成课程", "en": "Synthetic course"}}
+    content["course_sources"] = [entry]
+    assert validate(content)
+    for field, bad in [("code", ""), ("code", "x" * 33), ("code", "bad&key=secret"),
+                       ("practice_id", "unknown"), ("title", {"en": "Only English"})]:
+        malformed = deepcopy(content)
+        malformed["course_sources"][0][field] = bad
+        assert not validate(malformed)
+    content["course_sources"] = [entry, entry]
+    assert not validate(content)
