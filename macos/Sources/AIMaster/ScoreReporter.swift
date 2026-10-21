@@ -55,6 +55,10 @@ final class ScoreReporter {
         self.defaults = defaults
         self.endpoint = endpoint
         self.transport = transport
+        // Preserve successful-report history even after a later failure clears the cache.
+        if defaults.object(forKey: "scoreResultAt") != nil {
+            defaults.set(true, forKey: "scoreEverReported")
+        }
     }
 
     @discardableResult
@@ -74,11 +78,13 @@ final class ScoreReporter {
         return result
     }
 
-    func report(score: Int, dims: Dims, appVersion: String, now: Date = Date()) async -> AppScoreOut? {
+    func report(score: Int, dims: Dims, appVersion: String, now: Date = Date(),
+                allowFirstReport: Bool = false) async -> AppScoreOut? {
         guard defaults.bool(forKey: "shareAnonymousScore") else { return nil }
         guard !(endpoint.host?.contains("REPLACE") ?? true) else { return nil }
         if reporting { return cached(now: now) }
-        if let last = defaults.object(forKey: "scoreReportedAt") as? Date,
+        let firstConsent = allowFirstReport && !defaults.bool(forKey: "scoreEverReported")
+        if !firstConsent, let last = defaults.object(forKey: "scoreReportedAt") as? Date,
            last > now || Calendar.current.isDate(last, inSameDayAs: now) { return cached(now: now) }
         guard (0...100).contains(score), [dims.routing, dims.timing, dims.context, dims.leverage]
             .allSatisfy({ (0...100).contains($0) }), appVersion.count <= 20 else { return nil }
@@ -101,6 +107,7 @@ final class ScoreReporter {
                 defaults.removeObject(forKey: "scoreResultAt")
                 return nil
             }
+            defaults.set(true, forKey: "scoreEverReported")
             defaults.set(data, forKey: "scoreResult")
             defaults.set(now, forKey: "scoreResultAt")
             return result

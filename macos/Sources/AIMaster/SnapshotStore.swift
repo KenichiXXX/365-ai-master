@@ -8,27 +8,48 @@ final class SnapshotStore: ObservableObject {
             defaults.set(shareAnonymousScore, forKey: "shareAnonymousScore")
             if shareAnonymousScore {
                 scoreReporter.deviceToken()
-                Task { await refreshRanking() }
+                if !oldValue {
+                    rankingTask = Task { await refreshRanking(allowFirstReport: true) }
+                }
             } else { reportedScore = nil }
         }
     }
     @Published private var reportedScore: AppScoreOut?
     private let scoreReporter: ScoreReporter
+    private var rankingTask: Task<Void, Never>?
+    @Published private(set) var rankingUnavailable = false
+
+    func allowScoreSharing() async {
+        if !shareAnonymousScore { shareAnonymousScore = true }
+        dismissOnboarding()
+        await rankingTask?.value
+    }
+
+    func rankingCaption(locale: String) -> String {
+        if let ranking { return ranking.caption(locale: locale) }
+        if rankingUnavailable {
+            return locale == "zh" ? "暂时连不上排名服务" : "Ranking service unavailable"
+        }
+        return locale == "zh" ? "正在获取排名…" : "Fetching your ranking…"
+    }
     var ranking: AppScoreOut? {
         guard shareAnonymousScore, scoreReporter.cached() != nil else { return nil }
         return reportedScore
     }
 
-    private func refreshRanking() async {
+    private func refreshRanking(allowFirstReport: Bool = false) async {
         guard shareAnonymousScore, let overall = snapshot?.overall,
               let dimensions = snapshot?.dimensions else { return }
         let scores = Dictionary(dimensions.map { ($0.key, $0.score) }, uniquingKeysWith: { first, _ in first })
         guard let routing = scores["routing"], let timing = scores["timing"],
               let context = scores["context"], let leverage = scores["leverage"] else { return }
+        rankingUnavailable = false
         let result = await scoreReporter.report(score: overall.score,
             dims: .init(routing: routing, timing: timing, context: context, leverage: leverage),
-            appVersion: String((Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").prefix(20)))
+            appVersion: String((Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").prefix(20)),
+            allowFirstReport: allowFirstReport)
         reportedScore = shareAnonymousScore ? result : nil
+        rankingUnavailable = shareAnonymousScore && result == nil
     }
 
     enum TriedFeedback { case notSeen, lit }
@@ -90,10 +111,11 @@ final class SnapshotStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard,
          load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) },
-         tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) }) {
+         tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) },
+         scoreReporter: ScoreReporter? = nil) {
         self.defaults = defaults
-        let reporter = ScoreReporter(defaults: defaults)
-        scoreReporter = reporter
+        let reporter = scoreReporter ?? ScoreReporter(defaults: defaults)
+        self.scoreReporter = reporter
         shareAnonymousScore = defaults.bool(forKey: "shareAnonymousScore")
         reportedScore = reporter.cached()
         self.load = load
