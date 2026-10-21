@@ -409,3 +409,10 @@ _BADGE_TITLES = {
 
 def badge_title(key: str, locale: str) -> str:
     return _BADGE_TITLES[key][0 if locale == "zh" else 1]
+
+
+def skill_level_title(level: int, locale: str) -> str:
+    titles = {1: {"zh": "入门", "en": "Basics"},
+              2: {"zh": "进阶", "en": "Intermediate"},
+              3: {"zh": "高手", "en": "Advanced"}}
+    return titles[level][locale]

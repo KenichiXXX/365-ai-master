@@ -5,7 +5,9 @@ from pathlib import Path
 from agentfit.checkup import overall_from_dimensions, tier_for_score
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
-from agentfit.engine.codex_book import badges, daily_rankings, daily_tip, streak, update_book
+from agentfit.engine.codex_book import (
+    badges, book_groups, daily_rankings, daily_tip, next_badge, streak, update_book,
+)
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.content import label
 from agentfit.engine.profile import build_profile, dimensions
@@ -70,6 +72,9 @@ def build_snapshot(
             card[key] = card[key][locale]
     today = now.astimezone().date()
     streak_days = streak(profile.active_dates_30d, today)
+    book["groups"] = book_groups(book["cards"], locale)
+    book["next_badge"] = next_badge(streak_days, book["lit"], book["total"],
+                                    len(progress["passed"]), locale)
     notices = [] if any(row["tier"] == "deep" and row["detected"] for row in tools) else ["no_tools"]
     notices.extend(f"regressed:{key}" for key in progress["regressed"])
     return {

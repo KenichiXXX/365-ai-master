@@ -22,7 +22,7 @@ struct PopoverView: View {
                         }
                         switch selectedTab {
                         case 1: TodaySkillTab(snapshot: snapshot, store: store)
-                        case 2: TrainingTab(snapshot: snapshot)
+                        case 2: TrainingTab(snapshot: snapshot, store: store)
                         default: CheckupTab(snapshot: snapshot, store: store)
                         }
                     } else {

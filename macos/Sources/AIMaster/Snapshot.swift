@@ -112,6 +112,24 @@ struct SkillBook: Decodable {
     let total: Int
     let cards: [SkillCard]
     let today: SkillCard?
+    var groups: [SkillGroup]? = nil
+    var nextBadge: NextBadge? = nil
+}
+
+struct SkillGroup: Decodable, Identifiable {
+    var id: Int { level }
+    let level: Int
+    let title: String
+    let lit: Int
+    let total: Int
+    let missing: [String]
+}
+
+struct NextBadge: Decodable {
+    let id: String
+    let title: String
+    let have: Int
+    let need: Int
 }
 
 struct SkillCard: Decodable, Identifiable {

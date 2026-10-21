@@ -197,3 +197,16 @@ def test_optional_ranking_metadata():
     data["rankings"]["skill"][0].update(stars=1234, stars7d=None)
     data["rankings"]["agent"][0].update(stars=1234, stars7d=-2)
     assert validate(data)
+
+
+def test_training_card_level_sets():
+    expected = {
+        1: {"rules_file", "web_search", "web_fetch", "ask_first", "at_mention",
+            "paste_image", "clear_session", "init_cmd"},
+        2: {"plan_mode", "todo_list", "light_model", "effort_up", "first_skill",
+            "compact", "resume", "review_diff", "codex_agents", "permissions"},
+        3: {"subagent", "mcp", "hook", "worktree", "headless", "custom_command"},
+    }
+    cards = load_content(None)["skills"]
+    assert {level: {c["id"] for c in cards if c["level"] == level}
+            for level in (1, 2, 3)} == expected

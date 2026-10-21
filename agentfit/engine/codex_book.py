@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import tempfile
 
-from agentfit.engine.content import badge_title
+from agentfit.engine.content import badge_title, skill_level_title
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.inventory import Inventory
 from agentfit.engine.profile import Profile
@@ -152,3 +152,25 @@ def badges(streak_days: int, lit: int, total: int, village_passed: int, locale: 
     earned.update(book_all=total > 0 and lit >= total, village_done=village_passed >= 9)
     return [{"id": key, "title": badge_title(key, locale), "earned": value}
             for key, value in earned.items()]
+
+
+def book_groups(cards: list[dict], locale: str) -> list[dict]:
+    groups = []
+    for level in (1, 2, 3):
+        members = [card for card in cards if card["level"] == level]
+        groups.append({"level": level, "title": skill_level_title(level, locale),
+                       "lit": sum(card["lit"] for card in members), "total": len(members),
+                       "missing": [card["id"] for card in members if not card["lit"]]})
+    return groups
+
+
+def next_badge(streak_days: int, lit: int, total: int, village_passed: int,
+               locale: str) -> dict | None:
+    targets = [(f"streak_{n}", streak_days, n) for n in (3, 7, 14, 30)]
+    targets += [(f"book_{n}", lit, n) for n in (5, 10, 20)]
+    targets += [("book_all", lit, total), ("village_done", village_passed, 9)]
+    unearned = [(key, have, need) for key, have, need in targets if have < need]
+    if not unearned:
+        return None
+    key, have, need = min(unearned, key=lambda row: (row[2] - row[1], row[2]))
+    return {"id": key, "title": badge_title(key, locale), "have": have, "need": need}

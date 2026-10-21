@@ -214,3 +214,45 @@ def test_rankings_emit_growth_metrics():
     rows = daily_rankings(content, {}, "en", TODAY)["skill"]
     assert (rows[0]["stars"], rows[0]["stars7d"]) == (302_000, 3946)
     assert rows[1]["stars7d"] is None
+
+
+@pytest.mark.parametrize("locale,titles", [("zh", ["入门", "进阶", "高手"]),
+                                           ("en", ["Basics", "Intermediate", "Advanced"])])
+def test_snapshot_training_groups(tmp_path, locale, titles):
+    from agentfit.engine.snapshot import build_snapshot
+    state = tmp_path / "state"
+    state.mkdir()
+    state.joinpath("progress.json").write_text(json.dumps({
+        "passed": {}, "regress_notified": [],
+        "lit": {"rules_file": {"at": NOW.isoformat(), "how": "log"}}}))
+    snapshot = build_snapshot(tmp_path / "home", state, locale, NOW, enabled=set())
+    groups = snapshot["book"]["groups"]
+    assert [g["level"] for g in groups] == [1, 2, 3]
+    assert [g["title"] for g in groups] == titles
+    assert [g["total"] for g in groups] == [8, 10, 6]
+    assert [g["lit"] for g in groups] == [1, 0, 0]
+    assert groups[0]["missing"] == ["web_search", "web_fetch", "ask_first", "init_cmd",
+                                      "clear_session", "at_mention", "paste_image"]
+    assert snapshot["book"]["next_badge"] == {
+        "id": "streak_3", "title": "连续 3 天" if locale == "zh" else "3-day streak",
+        "have": 0, "need": 3}
+
+
+@pytest.mark.parametrize("days,lit,total,passed,expected", [
+    (0, 0, 24, 0, ("streak_3", 0, 3)),
+    (2, 4, 24, 8, ("streak_3", 2, 3)),
+    (3, 4, 24, 8, ("book_5", 4, 5)),
+    (7, 10, 24, 8, ("village_done", 8, 9)),
+    (30, 23, 24, 9, ("book_all", 23, 24)),
+    (30, 24, 24, 9, None),
+    (30, 0, 0, 9, ("book_5", 0, 5)),
+])
+def test_next_badge(days, lit, total, passed, expected):
+    from agentfit.engine.codex_book import next_badge
+    result = next_badge(days, lit, total, passed, "en")
+    if expected is None:
+        assert result is None
+    else:
+        key, have, need = expected
+        assert result == {"id": key, "title": next(b["title"] for b in
+            badges(days, lit, total, passed, "en") if b["id"] == key), "have": have, "need": need}

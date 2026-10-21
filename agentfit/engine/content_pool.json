@@ -55,7 +55,7 @@
     },
     {
       "id": "plan_mode",
-      "level": 1,
+      "level": 2,
       "detect": "tool:ExitPlanMode",
       "title": {
         "zh": "Plan 模式：先出方案再动手",
@@ -72,7 +72,7 @@
     },
     {
       "id": "todo_list",
-      "level": 1,
+      "level": 2,
       "detect": "tool:TodoWrite",
       "title": {
         "zh": "让 AI 列任务清单",
@@ -106,7 +106,7 @@
     },
     {
       "id": "subagent",
-      "level": 1,
+      "level": 3,
       "detect": "sidechain",
       "title": {
         "zh": "子代理：同时开几条线",
@@ -123,7 +123,7 @@
     },
     {
       "id": "light_model",
-      "level": 1,
+      "level": 2,
       "detect": "light_model",
       "title": {
         "zh": "机械活交给轻量模型",
@@ -140,7 +140,7 @@
     },
     {
       "id": "effort_up",
-      "level": 1,
+      "level": 2,
       "detect": "effort:high|xhigh|max",
       "title": {
         "zh": "难题调高推理强度",
@@ -157,7 +157,7 @@
     },
     {
       "id": "first_skill",
-      "level": 1,
+      "level": 2,
       "detect": "skill_any",
       "title": {
         "zh": "用起第一个 skill",
@@ -174,7 +174,7 @@
     },
     {
       "id": "mcp",
-      "level": 1,
+      "level": 3,
       "detect": "mcp",
       "title": {
         "zh": "用 MCP 连接外部工具",
@@ -191,7 +191,7 @@
     },
     {
       "id": "hook",
-      "level": 1,
+      "level": 3,
       "detect": "hook",
       "title": {
         "zh": "Hook：让固定动作自动发生",
@@ -208,7 +208,7 @@
     },
     {
       "id": "compact",
-      "level": 1,
+      "level": 2,
       "detect": "compaction",
       "title": {
         "zh": "长对话压缩一下",
@@ -225,7 +225,7 @@
     },
     {
       "id": "worktree",
-      "level": 1,
+      "level": 3,
       "detect": "tool:EnterWorktree",
       "title": {
         "zh": "用 worktree 并行开发",
@@ -242,7 +242,7 @@
     },
     {
       "id": "codex_agents",
-      "level": 1,
+      "level": 2,
       "detect": "instructions:codex",
       "title": {
         "zh": "给 Codex 写 AGENTS.md",
@@ -293,7 +293,7 @@
     },
     {
       "id": "resume",
-      "level": 1,
+      "level": 2,
       "detect": "self",
       "title": {
         "zh": "接着上次的会话",
@@ -344,7 +344,7 @@
     },
     {
       "id": "headless",
-      "level": 1,
+      "level": 3,
       "detect": "self",
       "title": {
         "zh": "非交互模式跑批量活",
@@ -361,7 +361,7 @@
     },
     {
       "id": "custom_command",
-      "level": 1,
+      "level": 3,
       "detect": "self",
       "title": {
         "zh": "自定义斜杠命令",
@@ -378,7 +378,7 @@
     },
     {
       "id": "review_diff",
-      "level": 1,
+      "level": 2,
       "detect": "self",
       "title": {
         "zh": "让 AI 改完自查",
@@ -395,7 +395,7 @@
     },
     {
       "id": "permissions",
-      "level": 1,
+      "level": 2,
       "detect": "self",
       "title": {
         "zh": "设好常用权限",

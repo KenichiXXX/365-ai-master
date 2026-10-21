@@ -2,58 +2,134 @@ import SwiftUI
 
 struct TrainingTab: View {
     let snapshot: Snapshot
-    @State private var selected: SkillCard?
+    @ObservedObject var store: SnapshotStore
+    @State private var selected: String?
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            if let village = snapshot.village { VillageGrid(village: village) }
-            if let book = snapshot.book {
-                Text(zh ? "技能图鉴 \(book.lit)/\(book.total) 已点亮" : "Skill book \(book.lit)/\(book.total) lit")
-                    .font(.headline)
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 6) {
-                    ForEach(book.cards) { card in
-                        Button(action: { selected = selected?.id == card.id ? nil : card }) {
-                            VStack(spacing: 4) {
-                                Text(card.title).font(.system(size: 11)).multilineTextAlignment(.center)
-                                if card.how == "self" { Text(zh ? "自评" : "self").font(.system(size: 11)) }
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 58).padding(4)
-                            .background(card.lit ? Color.accentColor.opacity(0.18) : Color.clear)
-                            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(
-                                card.lit ? Color.accentColor.opacity(0.4) : Color.secondary.opacity(0.4),
-                                style: StrokeStyle(lineWidth: 1, dash: card.lit ? [] : [3, 3])))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .opacity(card.lit ? 1 : 0.6)
-                        }.buttonStyle(.plain)
-                    }
-                }
+            HStack(spacing: 8) {
+                stat(zh ? "新手村" : "Village",
+                     value: "\(snapshot.village?.quests.filter { $0.status == "passed" }.count ?? 0)/9")
+                stat(zh ? "技能图鉴" : "Skill book",
+                     value: "\(snapshot.book?.lit ?? 0)/\(snapshot.book?.total ?? 0)")
+                stat(zh ? "连续" : "Streak",
+                     value: zh ? "\(snapshot.streak?.days ?? 0) 天" : "\(snapshot.streak?.days ?? 0) days")
             }
-            if let card = selected {
+            if let village = snapshot.village {
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text(card.title).font(.title2.bold())
-                        Spacer()
-                        Button(zh ? "收起" : "Collapse") { selected = nil }
+                    Text(zh ? "新手村之路" : "Village path").font(.headline)
+                    villagePath(village)
+                    if village.current == nil {
+                        Text(zh ? "出师 ✓" : "Graduated ✓")
+                            .font(.title2.bold()).frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                    } else if let tip = snapshot.todayTip, tip.source.kind == "quest",
+                              tip.source.ref == village.current {
+                        TipCard(tip: tip, store: store)
+                            .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
                     }
-                    Text(card.why).font(.body)
-                    Text(card.prompt).font(.body).textSelection(.enabled)
-                    CopyButton(prompt: card.prompt, title: zh ? "复制指令" : "Copy prompt",
-                               locale: snapshot.locale ?? "en")
-                }.padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-            }
-            let days = snapshot.streak?.days ?? 0
-            Text(zh ? "连续修炼 \(days) 天" : "\(days)-day streak").font(.subheadline.bold())
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 6) {
-                ForEach(snapshot.badges ?? []) { badge in
-                    Text((badge.earned ? "★ " : "☆ ") + badge.title)
-                        .font(.system(size: 11)).padding(6).frame(maxWidth: .infinity, minHeight: 32)
-                        .background(badge.earned ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.06),
-                                    in: RoundedRectangle(cornerRadius: 6))
-                        .opacity(badge.earned ? 1 : 0.4)
                 }
+            }
+            if let book = snapshot.book {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(zh ? "技能图鉴" : "Skill book").font(.headline)
+                    Text((book.groups ?? []).map { "\($0.title) \($0.lit)/\($0.total)" }.joined(separator: " · "))
+                        .font(.callout).foregroundStyle(.secondary)
+                    ForEach(book.groups ?? []) { group in
+                        DisclosureGroup {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(book.cards.filter { $0.level == group.level }) { card in
+                                    skillRow(card)
+                                }
+                            }.padding(.top, 8)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(group.title) \(group.lit)/\(group.total)").font(.subheadline.bold())
+                                Text(missingSummary(group, book: book))
+                                    .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                            }
+                        }.padding(10).background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(zh ? "下一枚徽章" : "Next badge").font(.headline)
+                    if let badge = book.nextBadge {
+                        HStack {
+                            Text(badge.title)
+                            Spacer()
+                            Text("\(badge.have)/\(badge.need)").monospacedDigit()
+                        }
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Color.secondary.opacity(0.15))
+                                Capsule().fill(Color.accentColor)
+                                    .frame(width: geometry.size.width * Double(badge.have) / Double(badge.need))
+                            }
+                        }.frame(height: 6)
+                            .accessibilityLabel(badge.title)
+                            .accessibilityValue("\(badge.have)/\(badge.need)")
+                    } else {
+                        Text(zh ? "徽章已集齐 ✓" : "All badges earned ✓")
+                    }
+                    let earned = (snapshot.badges ?? []).filter(\.earned).map(\.title)
+                    Text(earned.isEmpty ? (zh ? "尚未获得徽章" : "No badges yet") : earned.joined(separator: " · "))
+                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }.padding(12).background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
             }
         }
+    }
+
+    private func stat(_ title: String, value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(title).font(.caption).foregroundStyle(.secondary)
+            Text(value).font(.headline).monospacedDigit()
+        }.frame(maxWidth: .infinity).padding(10)
+            .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func villagePath(_ village: Village) -> some View {
+        HStack(spacing: 0) {
+            ForEach(Array(village.quests.enumerated()), id: \.element.id) { index, quest in
+                if index > 0 {
+                    Rectangle().fill(Color.secondary.opacity(0.25)).frame(height: 2)
+                }
+                Text(quest.status == "passed" ? "✓" : String(index + 1))
+                    .font(.caption.bold()).frame(width: 28, height: 28)
+                    .foregroundStyle(quest.status == "passed" ? Color.white :
+                                        quest.status == "current" ? Color.accentColor : Color.secondary)
+                    .background(quest.status == "passed" ? Color.accentColor : Color.secondary.opacity(0.08), in: Circle())
+                    .overlay(Circle().strokeBorder(quest.status == "current" ? Color.accentColor : .clear, lineWidth: 2))
+                    .accessibilityLabel("\(index + 1). \(quest.title), \(quest.status)")
+            }
+        }
+    }
+
+    private func missingSummary(_ group: SkillGroup, book: SkillBook) -> String {
+        if group.missing.isEmpty { return zh ? "已全部点亮 ✓" : "All lit ✓" }
+        if !zh { return "\(group.missing.count) to go" }
+        let titles = group.missing.prefix(2).compactMap { id in book.cards.first { $0.id == id }?.title }
+        return "还差：" + titles.joined(separator: "、") + (group.missing.count > 2 ? "…" : "")
+    }
+
+    private func skillRow(_ card: SkillCard) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button(action: { selected = selected == card.id ? nil : card.id }) {
+                HStack {
+                    Text(card.lit ? "✓" : "○").foregroundStyle(card.lit ? Color.accentColor : Color.secondary)
+                    Text(card.title)
+                    Spacer()
+                    if card.how == "self" { Text(zh ? "自评" : "Self").font(.caption).foregroundStyle(.secondary) }
+                    Image(systemName: selected == card.id ? "chevron.up" : "chevron.down").font(.caption)
+                }.contentShape(Rectangle())
+            }.buttonStyle(.plain)
+            if selected == card.id {
+                Text(card.why).font(.callout).foregroundStyle(.secondary)
+                Text(card.prompt).font(.callout).textSelection(.enabled)
+                CopyButton(prompt: card.prompt, title: zh ? "复制指令" : "Copy prompt",
+                           locale: snapshot.locale ?? store.locale)
+            }
+        }.padding(.vertical, 4)
     }
 }
