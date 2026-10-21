@@ -1134,3 +1134,20 @@ History file (`stars-history.json`, kept on the `content` branch next to `daily.
 **Tests (no network):** selection/filtering/sorting rules; delta7d from history; translation fallback (fake runner returning bad JSON → zh falls back to en); `build_content` output passes `validate()` and keeps the 24 skill cards and tips unchanged; abort when a list has < 10 items; `installed` matches plugin names; `rotate: False` keeps order; ContentUpdater URL/privacy test updated.
 
 - [ ] TDD steps as usual; commit `feat(harvest): daily rankings from The Skill Leaderboard and GitHub, published to the content branch`.
+
+### Task 19: v2.1 polish — bigger popover, click-outside closes, adversarial-review fixes
+
+From Kenichi's trial (2026-10-21) plus the reviewer's adversarial pass. Swift unless noted.
+
+1. **Bigger UI**: popover 440×720 (StatusItemController.contentSize and PopoverView.frame). Body text one step larger: card titles `.title2.bold()`, descriptions `.body`, ranking names `.headline`, taglines `.callout`; minimum font 11pt everywhere (no `.system(size: 9)`); main ring 150pt, dimension rings 64pt.
+2. **Click outside closes the popover**: root cause — the LSUIElement app never activates, so `.transient` doesn't see outside clicks. Fix: `NSApp.activate(ignoringOtherApps: true)` before `popover.show`, keep `.transient`, AND add an `NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown])` while shown that calls `popover.performClose(nil)`; remove the monitor in `popoverDidClose` (set `popover.delegate`). Esc also closes.
+3. **Copy feedback**: after any copy button, swap its label to「已复制 ✓ / Copied ✓」for 1.5 s.
+4. **"试过了 / I tried it" feedback**: for log-detectable cards, re-scan; if still unlit show inline「还没在日志里看到它——真正用一次后会自动点亮 / Not seen in your logs yet — it lights up automatically after you use it once」; for `self` cards show「已点亮 ✓ / Lit ✓」.
+5. **Rankings rows**: replace the always-"未装" pill with growth info: `★ 30.2万 · 本周 +3,946` / `★ 302K · +3,946 this week` (omit the weekly part when stars7d is null); show an「已装 / Installed」pill only when `installed` is true. Number formatting via the existing token formatter style (zh 万/亿, en K/M). Engine already emits `stars`/`stars7d` per ranking item (Task 18); ensure the Swift model decodes them.
+6. **Skill-book card detail**: replace the `.sheet` (awkward inside a transient popover) with an inline expandable panel under the grid showing why + prompt + a copy button.
+7. **Battery**: background timer every 300 s (was 60 s; settings options 60/300/900, default 300); always refresh immediately when the popover opens.
+8. **First run**: if `UserDefaults "onboarded"` is false, show a one-time banner at the top of the Check-up tab:「365 AI Master 每天读你本机的 AI 使用记录（只读、不上传），给你一个提升动作和一个新技能。」with buttons「开机自动启动」(SMAppService register) and「知道了」. en equivalent.
+9. **Quit placement**: move Quit into Settings (footer keeps only Updated time + Settings) to avoid accidental quits.
+10. **Engine (Python)**: snapshot `book.today` must not repeat a card the user already saw yesterday if other unlit cards exist — use `unlit[(today.toordinal()) % len(unlit)]` but skip index equal to yesterday's pick when len(unlit) > 1 (deterministic; test it).
+
+Tests: Swift unit tests for the formatter strings in (5), the copy-feedback state reset, and the onboarding flag; Python test for (10). Render all three tabs at the new size via RenderPreviewTests (frame 440 wide). Commit `feat(macos): v2.1 polish — larger popover, click-outside close, review fixes`.
