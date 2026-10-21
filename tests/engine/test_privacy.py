@@ -35,6 +35,8 @@ def test_score_reporter_only_posts_anonymous_scores():
     assert len(urls) == 1
     assert re.fullmatch(r"https://[A-Za-z0-9.-]+\.workers\.dev/v1/score", urls[0])
     assert 'httpMethod = "POST"' in text
+    assert 'appendingPathComponent(scoreVersion)' in text
+    assert 'result.score_version == scoreVersion' in text
     payload = re.search(r"struct Payload: Encodable\s*\{([^}]+)\}", text).group(1)
     assert re.findall(r"(?:let|var) (\w+):", payload) == ["device_token", "score", "dims", "app_version"]
     for banned in ("uploadTask", "multipart", "NWConnection"):

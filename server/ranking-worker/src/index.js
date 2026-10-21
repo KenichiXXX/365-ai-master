@@ -61,62 +61,95 @@ async function issueLicense(request, env) {
     { headers: { "Cache-Control": "no-store" } });
 }
 
+// Only this evaluable arithmetic is currently shipped. Future versions must be
+// explicitly reviewed here; app_version never determines score comparability.
+const knownScoreVersions = new Set(["1"]);
+
+// Separate from public routing so tests can prove isolation using a synthetic
+// second version without advertising an unsupported production scoring model.
+export async function handleScore(request, env, scoreVersion = null) {
+  if (scoreVersion !== null && !/^[A-Za-z0-9.-]{1,32}$/.test(scoreVersion)) {
+    return Response.json({ error: "invalid" }, { status: 422 });
+  }
+  const versioned = scoreVersion !== null;
+  const literal = versioned ? `'${scoreVersion}'` : "";
+  const scope = versioned ? `score_version = ${literal} AND ` : "";
+  const versionColumn = versioned ? "score_version, " : "";
+  const versionValue = versioned ? `${literal}, ` : "";
+  const versionJoin = versioned ? `AND c.score_version = ${literal} AND d.score_version = ${literal}` : "";
+  const prepare = (sql) => env.DB.prepare(versioned
+    ? sql.replace(/\b(devices|score_counts|dim_counts)\b/g, "cohort_$1") : sql);
+  const seedStatements = versioned ? [
+    env.DB.prepare(`WITH RECURSIVE scores(score) AS (
+      SELECT 0 UNION ALL SELECT score + 1 FROM scores WHERE score < 100)
+      INSERT OR IGNORE INTO cohort_score_counts(score_version, score, n)
+      SELECT ?, score, 0 FROM scores`).bind(scoreVersion),
+    env.DB.prepare(`WITH RECURSIVE scores(score) AS (
+      SELECT 0 UNION ALL SELECT score + 1 FROM scores WHERE score < 100),
+      dims(dim) AS (SELECT 'routing' UNION ALL SELECT 'timing' UNION ALL SELECT 'context' UNION ALL SELECT 'leverage')
+      INSERT OR IGNORE INTO cohort_dim_counts(score_version, dim, score, n)
+      SELECT ?, dim, score, 0 FROM dims CROSS JOIN scores`).bind(scoreVersion),
+  ] : [];
+  let body;
+  try { body = await readPayload(request); }
+  catch { return Response.json({ error: "invalid" }, { status: 422 }); }
+  const { device_token: token, score, dims, app_version: version } = body;
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - 3600000).toISOString();
+  // Each statement checks the current device inside the same atomic batch.
+  // Concurrent submissions cannot race a read performed outside the transaction.
+  await env.DB.batch([
+    ...seedStatements,
+    prepare(`UPDATE score_counts SET n = n - 1 WHERE ${scope}score = (
+      SELECT score FROM devices WHERE ${scope}device_token = ? AND score <> ? AND updated_at <= ?
+    )`).bind(token, score, cutoff),
+    prepare(`UPDATE score_counts SET n = n + 1 WHERE ${scope}score = ? AND (
+      NOT EXISTS (SELECT 1 FROM devices WHERE ${scope}device_token = ?) OR
+      EXISTS (SELECT 1 FROM devices WHERE ${scope}device_token = ? AND score <> ? AND updated_at <= ?)
+    )`).bind(score, token, token, score, cutoff),
+    ...dimensionKeys.flatMap((dim) => [
+      prepare(`UPDATE dim_counts SET n = n - 1 WHERE ${scope}dim = ? AND score = (
+        SELECT ${dim} FROM devices WHERE ${scope}device_token = ? AND ${dim} <> ? AND updated_at <= ?
+      )`).bind(dim, token, dims[dim], cutoff),
+      prepare(`UPDATE dim_counts SET n = n + 1 WHERE ${scope}dim = ? AND score = ? AND (
+        NOT EXISTS (SELECT 1 FROM devices WHERE ${scope}device_token = ?) OR
+        EXISTS (SELECT 1 FROM devices WHERE ${scope}device_token = ? AND ${dim} <> ? AND updated_at <= ?)
+      )`).bind(dim, dims[dim], token, token, dims[dim], cutoff),
+    ]),
+    prepare(`INSERT INTO devices
+      (${versionColumn}device_token, score, routing, timing, context, leverage, app_version, updated_at)
+      VALUES (${versionValue}?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(${versionColumn}device_token) DO UPDATE SET score = excluded.score,
+      routing = excluded.routing, timing = excluded.timing, context = excluded.context,
+      leverage = excluded.leverage, app_version = excluded.app_version, updated_at = excluded.updated_at
+      WHERE devices.updated_at <= ?`).bind(token, score, dims.routing, dims.timing,
+        dims.context, dims.leverage, version, now.toISOString(), cutoff),
+  ]);
+  const counts = await prepare(`SELECT SUM(n) AS total,
+    SUM(CASE WHEN score < (SELECT score FROM devices WHERE ${scope}device_token = ?) THEN n ELSE 0 END) AS beaten,
+    SUM(CASE WHEN score > (SELECT score FROM devices WHERE ${scope}device_token = ?) THEN n ELSE 0 END) AS higher FROM score_counts WHERE ${scope}1=1`)
+    .bind(token, token).first();
+  const total = counts.total;
+  const dimRanks = await prepare(`SELECT c.dim,
+    SUM(CASE WHEN c.score > CASE c.dim WHEN 'routing' THEN d.routing WHEN 'timing' THEN d.timing
+      WHEN 'context' THEN d.context WHEN 'leverage' THEN d.leverage END THEN c.n ELSE 0 END) + 1 AS rank,
+    SUM(CASE WHEN c.score < CASE c.dim WHEN 'routing' THEN d.routing WHEN 'timing' THEN d.timing
+      WHEN 'context' THEN d.context WHEN 'leverage' THEN d.leverage END THEN c.n ELSE 0 END) AS beaten
+    FROM dim_counts c JOIN devices d ON d.device_token = ? ${versionJoin} GROUP BY c.dim`).bind(token).all();
+  return Response.json({ ...(scoreVersion === null ? {} : { score_version: scoreVersion }), total, dims: Object.fromEntries(dimRanks.results.map(({ dim, rank, beaten }) =>
+    [dim, { rank, percentile: total >= 20 ? Math.round(100 * beaten / (total - 1)) : null }])), rank: counts.higher + 1,
+    percentile: total >= 20 ? Math.round(100 * counts.beaten / (total - 1)) : null,
+    small_sample: total < 20 });
+}
+
 export default {
   async fetch(request, env) {
-    if (request.method === "POST" && new URL(request.url).pathname === "/v1/license/issue") {
-      return issueLicense(request, env);
-    }
-    if (request.method !== "POST" || new URL(request.url).pathname !== "/v1/score") {
-      return new Response(null, { status: 404 });
-    }
-    let body;
-    try { body = await readPayload(request); }
-    catch { return Response.json({ error: "invalid" }, { status: 422 }); }
-    const { device_token: token, score, dims, app_version: version } = body;
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - 3600000).toISOString();
-    // Each statement checks the current device inside the same atomic batch.
-    // Concurrent submissions cannot race a read performed outside the transaction.
-    await env.DB.batch([
-      env.DB.prepare(`UPDATE score_counts SET n = n - 1 WHERE score = (
-        SELECT score FROM devices WHERE device_token = ? AND score <> ? AND updated_at <= ?
-      )`).bind(token, score, cutoff),
-      env.DB.prepare(`UPDATE score_counts SET n = n + 1 WHERE score = ? AND (
-        NOT EXISTS (SELECT 1 FROM devices WHERE device_token = ?) OR
-        EXISTS (SELECT 1 FROM devices WHERE device_token = ? AND score <> ? AND updated_at <= ?)
-      )`).bind(score, token, token, score, cutoff),
-      ...dimensionKeys.flatMap((dim) => [
-        env.DB.prepare(`UPDATE dim_counts SET n = n - 1 WHERE dim = ? AND score = (
-          SELECT ${dim} FROM devices WHERE device_token = ? AND ${dim} <> ? AND updated_at <= ?
-        )`).bind(dim, token, dims[dim], cutoff),
-        env.DB.prepare(`UPDATE dim_counts SET n = n + 1 WHERE dim = ? AND score = ? AND (
-          NOT EXISTS (SELECT 1 FROM devices WHERE device_token = ?) OR
-          EXISTS (SELECT 1 FROM devices WHERE device_token = ? AND ${dim} <> ? AND updated_at <= ?)
-        )`).bind(dim, dims[dim], token, token, dims[dim], cutoff),
-      ]),
-      env.DB.prepare(`INSERT INTO devices
-        (device_token, score, routing, timing, context, leverage, app_version, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(device_token) DO UPDATE SET score = excluded.score,
-        routing = excluded.routing, timing = excluded.timing, context = excluded.context,
-        leverage = excluded.leverage, app_version = excluded.app_version, updated_at = excluded.updated_at
-        WHERE devices.updated_at <= ?`).bind(token, score, dims.routing, dims.timing,
-          dims.context, dims.leverage, version, now.toISOString(), cutoff),
-    ]);
-    const counts = await env.DB.prepare(`SELECT SUM(n) AS total,
-      SUM(CASE WHEN score < ? THEN n ELSE 0 END) AS beaten,
-      SUM(CASE WHEN score > ? THEN n ELSE 0 END) AS higher FROM score_counts`)
-      .bind(score, score).first();
-    const total = counts.total;
-    const dimRanks = await env.DB.prepare(`SELECT c.dim,
-      SUM(CASE WHEN c.score > CASE c.dim WHEN 'routing' THEN d.routing WHEN 'timing' THEN d.timing
-        WHEN 'context' THEN d.context WHEN 'leverage' THEN d.leverage END THEN c.n ELSE 0 END) + 1 AS rank,
-      SUM(CASE WHEN c.score < CASE c.dim WHEN 'routing' THEN d.routing WHEN 'timing' THEN d.timing
-        WHEN 'context' THEN d.context WHEN 'leverage' THEN d.leverage END THEN c.n ELSE 0 END) AS beaten
-      FROM dim_counts c JOIN devices d ON d.device_token = ? GROUP BY c.dim`).bind(token).all();
-    return Response.json({ total, dims: Object.fromEntries(dimRanks.results.map(({ dim, rank, beaten }) =>
-      [dim, { rank, percentile: total >= 20 ? Math.round(100 * beaten / (total - 1)) : null }])), rank: counts.higher + 1,
-      percentile: total >= 20 ? Math.round(100 * counts.beaten / (total - 1)) : null,
-      small_sample: total < 20 });
+    const path = new URL(request.url).pathname;
+    if (request.method === "POST" && path === "/v1/license/issue") return issueLicense(request, env);
+    if (request.method !== "POST") return new Response(null, { status: 404 });
+    if (path === "/v1/score") return handleScore(request, env);
+    const scoreVersion = path.match(/^\/v1\/score\/([^/]+)$/)?.[1];
+    if (!knownScoreVersions.has(scoreVersion)) return new Response(null, { status: 404 });
+    return handleScore(request, env, scoreVersion);
   },
 };

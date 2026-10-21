@@ -90,7 +90,7 @@ def test_rankings_and_tip():
     result = daily_rankings(content, {"codex": inventory(skills=["tdd"])}, "en", TODAY, n=7)
     offset = TODAY.toordinal() % 7
     assert [r["name"] for r in result["skill"]] == [str(i) for i in list(range(7))[offset:] + list(range(7))[:offset]]
-    assert {r["name"] for r in result["skill"] if r["installed"]} == {"0"}
+    assert {r["name"] for r in result["skill"] if r["installation_hint"]} == {"0"}
     assert all(r["tagline"] == "English" for r in result["skill"])
     assert result["agent"] == []
     assert len(daily_rankings(content, {}, "zh", TODAY)["skill"]) == 5
@@ -179,7 +179,7 @@ def test_live_rankings_match_plugins_case_insensitively_and_keep_order():
     inv.plugins_installed = ["superpowers"]
     result = daily_rankings(content, {"claude_code": inv}, "zh", TODAY)
     assert [row["name"] for row in result["skill"]] == [str(i) for i in range(5)]
-    assert all(row["installed"] for row in result["skill"])
+    assert all(row["installation_hint"] for row in result["skill"])
     assert result["source"] == content["rankings"]["source"]
     assert result["updated_at"] == "2026-10-21"
     assert daily_rankings(content, {"claude_code": inv}, "zh", TODAY + timedelta(days=1)) == result

@@ -231,3 +231,96 @@ def test_malformed_review_returns_false(review):
     content = load_content(None)
     content["review_exercises"] = [review]
     assert not validate(content)
+
+
+def tool_update():
+    return {"id": "synthetic-release", "tool": "codex",
+            "source_url": "https://github.com/openai/codex/releases/tag/test",
+            "fetched_at": "2026-10-21", "released_at": "2026-10-20",
+            "compatibility": {"format": "codex-response-usage-v1", "adapter_versions": ["1"]},
+            "summary": {"zh": "测试更新", "en": "Synthetic update"}, "practice_id": "review_diff"}
+
+
+def test_optional_public_sections():
+    from agentfit.engine.prices import EMPTY_TABLE
+    data = load_content(None)
+    data.pop("tool_updates", None)
+    data.pop("prices", None)
+    assert validate(data)
+    data.update(tool_updates=[tool_update()], prices=deepcopy(EMPTY_TABLE))
+    assert validate(data)
+
+
+@pytest.mark.parametrize("key,value", [
+    ("tool", "gemini_cli"), ("source_url", "https://github.com/evil/codex/releases/tag/test"),
+    ("source_url", "https://github.com@evil.example/openai/codex"),
+    ("source_url", "javascript:alert(1)"), ("released_at", "2026-99-99"),
+    ("fetched_at", "yesterday"), ("practice_id", "invented-practice"),
+    ("compatibility", {"format": "codex-response-usage-v1", "adapter_versions": ["???"]}),
+    ("compatibility", {"format": "", "adapter_versions": []}), ("summary", {"en": "only"}),
+])
+def test_invalid_official_update_is_rejected(key, value, tmp_path):
+    data = load_content(None)
+    update = tool_update()
+    update[key] = value
+    data["tool_updates"] = [update]
+    assert not validate(data)
+    path = tmp_path / "public.json"
+    path.write_text(json.dumps(data))
+    assert load_content(path) == load_content(None)
+
+
+@pytest.mark.parametrize("url", ["http://github.com/o/r", "file:///etc/passwd", "https://localhost/a",
+    "https://127.0.0.1/a", "https://user:pass@github.com/o/r", "https://github.com/o/r?token=secret",
+    "https://github.com/o/r#tracking", "https://private.local/a", "https://github.com/white space"])
+def test_unsafe_ranking_urls_are_rejected(url):
+    data = load_content(None)
+    data["rankings"]["skill"][0]["url"] = url
+    assert not validate(data)
+
+
+def test_update_visibility_requires_known_matching_format_and_adapter(tmp_path):
+    from agentfit.engine.codex_book import relevant_updates
+    data = load_content(None)
+    data["tool_updates"] = [tool_update()]
+    coverage = {"codex": {"format": "codex-response-usage-v1", "adapter_version": "1", "status": "ok"}}
+    assert relevant_updates(data, coverage, "en")[0]["summary"] == "Synthetic update"
+    for change in ({"format": "unknown"}, {"adapter_version": "2"}, {"status": "not_detected"}):
+        assert relevant_updates(data, {"codex": {**coverage["codex"], **change}}, "en") == []
+    assert relevant_updates(data, {}, "zh") == []
+
+
+def test_ranking_provenance_survives_normalization_and_name_is_only_hint():
+    from datetime import date
+    from agentfit.engine.codex_book import daily_rankings
+    from agentfit.engine.inventory import Inventory
+    data = load_content(None)
+    row = data["rankings"]["skill"][0]
+    row.update(match=["demo"], source_url=row["url"], source_date="2026-10-20",
+               source_type="repository", task_category="coding", compatibility=None,
+               caution={"zh": "核对权限", "en": "Check permissions"})
+    inv = Inventory(["demo"], 0, 0, 0, 0, 0)
+    result = daily_rankings(data, {"codex": inv}, "en", date(2026, 10, 21), n=20)
+    found = next(x for x in result["skill"] if x["name"] == row["name"])
+    assert found["installation_hint"] is True
+    assert found.get("installed", False) is False
+    assert found["compatibility"] is None
+    assert found["source_url"] == row["url"] and found["source_date"] == "2026-10-20"
+    assert found["source_type"] == "repository" and found["task_category"] == "coding"
+    assert found["caution"] == "Check permissions"
+    assert result["origin"] == "bundled"
+
+
+@pytest.mark.parametrize("field,value", [("origin", []), ("origin", 7)])
+def test_malformed_public_origin_rejected(field, value):
+    data = load_content(None)
+    data["rankings"][field] = value
+    assert not validate(data)
+
+
+@pytest.mark.parametrize("field,value", [("source_type", []), ("compatibility", []),
+    ("source_date", []), ("stars", 10 ** 400)])
+def test_malformed_public_metadata_rejected(field, value):
+    data = load_content(None)
+    data["rankings"]["skill"][0][field] = value
+    assert not validate(data)

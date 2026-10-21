@@ -38,8 +38,28 @@ struct TodaySkillTab: View {
                     }.disabled(store.isRefreshing)
                 }
             }
-            rankingList(zh ? "今日 Skill 榜" : "Today's skills", rows: snapshot.rankings?.skill ?? [])
-            rankingList(zh ? "今日 Agent 榜" : "Today's agents", rows: snapshot.rankings?.agent ?? [])
+            VStack(alignment: .leading, spacing: 6) {
+                Text(zh ? "与你的工具有关的更新" : "Updates for your tools").font(.headline)
+                if snapshot.relevantToolUpdates.isEmpty {
+                    Text(zh ? "暂无与你有关的更新" : "No relevant updates").foregroundStyle(.secondary)
+                }
+                ForEach(snapshot.relevantToolUpdates) { update in
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(update.summary)
+                        Text(update.releasedAt).font(.caption).foregroundStyle(.secondary)
+                        if let card = snapshot.book?.cards.first(where: { $0.id == update.practiceId }) {
+                            DisclosureGroup(card.title) {
+                                PracticeControls(card: card, store: store, locale: snapshot.locale ?? store.locale)
+                            }
+                        }
+                        if PublicContent.safeURL(update.sourceUrl), let url = URL(string: update.sourceUrl) {
+                            Link(zh ? "官方来源" : "Official source", destination: url)
+                        }
+                    }
+                }
+            }
+            rankingList(zh ? "Skill 榜" : "Skills", rows: snapshot.rankings?.skill ?? [])
+            rankingList(zh ? "Agent 榜" : "Agents", rows: snapshot.rankings?.agent ?? [])
             if let tip = snapshot.dailyTip {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(zh ? "大师一句话" : "Master's tip").font(.headline)
@@ -53,10 +73,10 @@ struct TodaySkillTab: View {
 
     private func rankingList(_ title: String, rows: [Ranking]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.headline)
+            Text("\(title) · \(store.features.rankings(rows, expanded: expandedRankings.contains(title)).count)").font(.headline)
             ForEach(Array(store.features.rankings(rows, expanded: expandedRankings.contains(title)).enumerated()), id: \.offset) { _, row in
                 Button(action: {
-                    if let url = URL(string: row.url), ["https", "http"].contains(url.scheme?.lowercased() ?? "") {
+                    if PublicContent.safeURL(row.url), let url = URL(string: row.url) {
                         NSWorkspace.shared.open(url)
                     }
                 }) {
@@ -65,17 +85,24 @@ struct TodaySkillTab: View {
                             Text(row.name).font(.headline)
                             Text(row.tagline).font(.callout).foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
+                            Text(row.compatibilityLabel(locale: snapshot.locale ?? "en")).font(.caption).foregroundStyle(.secondary)
+                            if let category = row.taskCategory { Text(category).font(.caption) }
+                            if let source = row.sourceUrl { Text(source + (row.sourceDate.map { " · " + $0 } ?? "")).font(.caption).foregroundStyle(.secondary) }
+                            if row.installationHint == true || row.installed == true {
+                                Text(zh ? "发现同名安装项，未验证" : "Matching installation name found; unverified")
+                                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                            }
+                            if let sourceType = row.sourceType {
+                                Text(sourceType == "curated" ? (zh ? "精选内容" : "Curated content") : sourceType == "repository" ? (zh ? "仓库来源" : "Repository source") : (zh ? "目录来源" : "Catalog source")).font(.caption).foregroundStyle(.secondary)
+                            }
+                            Text(row.caution ?? (zh ? "安装前请核对权限与来源" : "Check permissions and source before installing")).font(.caption).foregroundStyle(.secondary)
                             if !row.growth(locale: snapshot.locale ?? "en").isEmpty {
                                 Text(row.growth(locale: snapshot.locale ?? "en"))
                                     .font(.system(size: 11)).foregroundStyle(.secondary)
                             }
                         }
                         Spacer(minLength: 0)
-                        if row.installed {
-                            Text(zh ? "已装" : "Installed")
-                                .font(.system(size: 11)).padding(.horizontal, 5).padding(.vertical, 3)
-                                .background(Color.accentColor.opacity(0.18), in: Capsule()).fixedSize()
-                        }
+
                     }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
                 }.buttonStyle(.plain)
                 Divider()
@@ -88,8 +115,8 @@ struct TodaySkillTab: View {
                     } else { store.showProSettings = true }
                 }.buttonStyle(.plain).foregroundStyle(.tint)
             }
-            if let source = snapshot.rankings?.source, !source.isEmpty {
-                Text((zh ? "数据：" : "Data: ") + source)
+            if let rankings = snapshot.rankings {
+                Text(rankings.sourceLabel(locale: snapshot.locale ?? "en", stale: store.contentStale))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }

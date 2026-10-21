@@ -124,19 +124,26 @@ final class SnapshotStore: ObservableObject {
             return NSLocalizedString("No assessable records yet", bundle: .module, comment: "")
         }
         if let ranking { return ranking.caption(locale: locale) }
+        if snapshot?.overall?.scoreVersion.map { scoreReporter.hasVersionMismatch(scoreVersion: $0) } ?? true {
+            return locale == "zh" ? "评分版本不同，暂不比较" : "Scoring versions differ; comparison unavailable"
+        }
         if rankingUnavailable {
             return locale == "zh" ? "暂时连不上排名服务" : "Ranking service unavailable"
         }
         return locale == "zh" ? "正在获取排名…" : "Fetching your ranking…"
     }
     var ranking: AppScoreOut? {
-        guard snapshot?.hasEvaluableScores == true, shareAnonymousScore, scoreReporter.cached() != nil else { return nil }
+        guard snapshot?.hasEvaluableScores == true, shareAnonymousScore,
+              let version = snapshot?.overall?.scoreVersion,
+              scoreReporter.cached(scoreVersion: version) != nil,
+              reportedScore?.score_version == version else { return nil }
         return reportedScore
     }
 
     private func refreshRanking(allowFirstReport: Bool = false) async {
         guard shareAnonymousScore, snapshot?.hasEvaluableScores == true,
-              let score = snapshot?.overall?.score, let dimensions = snapshot?.dimensions else {
+              let score = snapshot?.overall?.score, let dimensions = snapshot?.dimensions,
+              let scoreVersion = snapshot?.overall?.scoreVersion else {
             reportedScore = nil
             rankingUnavailable = false
             return
@@ -148,7 +155,7 @@ final class SnapshotStore: ObservableObject {
         let result = await scoreReporter.report(score: score,
             dims: .init(routing: routing, timing: timing, context: context, leverage: leverage),
             appVersion: String((Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").prefix(20)),
-            allowFirstReport: allowFirstReport)
+            scoreVersion: scoreVersion, allowFirstReport: allowFirstReport)
         reportedScore = shareAnonymousScore ? result : nil
         rankingUnavailable = shareAnonymousScore && result == nil
     }
@@ -244,6 +251,7 @@ final class SnapshotStore: ObservableObject {
     private var timer: Timer?
     private lazy var contentUpdater = ContentUpdater(defaults: defaults)
 
+    @Published private(set) var contentStale = false
     var downloadContent: (() async -> Bool)?
 
     @discardableResult
@@ -252,7 +260,10 @@ final class SnapshotStore: ObservableObject {
             guard publicDownloads == true else { return }
             let changed: Bool
             if let downloadContent { changed = await downloadContent() }
-            else { changed = await contentUpdater.refreshIfNeeded() }
+            else {
+                changed = await contentUpdater.refreshIfNeeded()
+                contentStale = contentUpdater.stale
+            }
             if changed, publicDownloads == true { refresh() }
         }
     }

@@ -3,6 +3,13 @@ import SwiftUI
 @testable import AIMaster
 
 final class ScoreConsentTests: XCTestCase {
+    func testConsentDisclosesAppVersionAndInstallationIdentifier() {
+        XCTAssertTrue(ScoreConsent.explanation(locale: "zh").contains("App 版本"))
+        XCTAssertTrue(ScoreConsent.explanation(locale: "en").contains("app version"))
+        XCTAssertTrue(ScoreConsent.explanation(locale: "zh").contains("随机安装编号"))
+        XCTAssertTrue(ScoreConsent.explanation(locale: "en").contains("random installation ID"))
+    }
+
     @MainActor func testFirstPracticeUsesSeparateOptionalPreferences() {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         XCTAssertFalse(store.shareAnonymousScore)
@@ -18,7 +25,7 @@ final class ScoreConsentTests: XCTestCase {
         var calls = 0
         let reporter = ScoreReporter(defaults: defaults, transport: { _ in
             calls += 1
-            return (Data(#"{"total":25,"rank":13,"percentile":50,"small_sample":false}"#.utf8), 200)
+            return (Data(#"{"score_version":"1","total":25,"rank":13,"percentile":50,"small_sample":false}"#.utf8), 200)
         })
         let result = try snapshotResult()
         let store = SnapshotStore(defaults: defaults, load: { _, _ in result }, scoreReporter: reporter)
@@ -30,7 +37,7 @@ final class ScoreConsentTests: XCTestCase {
         XCTAssertFalse(store.onboarded)
         XCTAssertEqual(calls, 1)
         XCTAssertEqual(store.ranking?.percentile, 50)
-        XCTAssertEqual(store.rankingCaption(locale: "en"), "You beat 50% of AI users (25 taking part)")
+        XCTAssertEqual(store.rankingCaption(locale: "en"), "You beat 50% of AI users worldwide")
         await store.allowScoreSharing()
         await store.refresh()?.value
         XCTAssertEqual(calls, 1, "Allow and refresh must preserve the daily gate after success")
@@ -68,7 +75,7 @@ final class ScoreConsentTests: XCTestCase {
         let reporter = ScoreReporter(defaults: defaults, transport: { _ in
             calls += 1
             return calls == 1
-                ? (Data(#"{"total":1,"rank":1,"percentile":null,"small_sample":true}"#.utf8), 200)
+                ? (Data(#"{"score_version":"1","total":1,"rank":1,"percentile":null,"small_sample":true}"#.utf8), 200)
                 : (Data(), 503)
         })
         let dims = ScoreReporter.Dims(routing: 60, timing: 70, context: 80, leverage: 90)
@@ -86,7 +93,7 @@ final class ScoreConsentTests: XCTestCase {
 
     private func snapshotResult() throws -> EngineResult {
         return try EngineRunner.decode(Data("""
-        {"schema":2,"overall":{"score":75,"tier":"test"},"dimensions":[
+        {"schema":2,"overall":{"score_version":"1","score":75,"tier":"test"},"dimensions":[
         {"key":"routing","label":"Routing","score":60},{"key":"timing","label":"Timing","score":70},
         {"key":"context","label":"Context","score":80},{"key":"leverage","label":"Leverage","score":90}]}
         """.utf8), status: 0)

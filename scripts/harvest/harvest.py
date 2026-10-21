@@ -9,10 +9,11 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+from urllib.error import HTTPError
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from agentfit.engine.content_pool import validate
+from agentfit.engine.content_pool import OFFICIAL_REPOS, validate
 
 USER_AGENT = "365aimaster-harvester/0.1 (+https://github.com/19800104zhao-svg/365-ai-master)"
 CATALOG_URL = "https://www.skillleaderboard.com/api/catalog"
@@ -79,9 +80,51 @@ def select_agents(items, history: dict, n=20, *, today=None) -> list[dict]:
 
 
 def to_ranking_item(repo: str, url: str, en: str, zh: str | None,
-                    stars: int, stars7d: int | None) -> dict:
+                    stars: int, stars7d: int | None, *, metadata: dict | None = None) -> dict:
+    metadata = metadata or {}
     return {"name": repo, "url": url, "tagline": {"en": en, "zh": zh or en},
-            "match": [repo.split("/")[1].lower()], "stars": stars, "stars7d": stars7d}
+            "match": [repo.split("/")[1].lower()], "stars": stars, "stars7d": stars7d,
+            "source_url": metadata.get("source_url", url), "source_date": metadata.get("source_date"),
+            "source_type": metadata.get("source_type", "repository"),
+            "task_category": metadata.get("task_category"), "compatibility": metadata.get("compatibility"),
+            "caution": metadata.get("caution", {"zh": "安装前请核对权限与来源",
+                                                "en": "Check permissions and source before installing"})}
+
+
+class OfficialRedirectPolicy(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        raise HTTPError(newurl, code, "official source redirect refused", headers, fp)
+
+
+def official_fetch(url: str) -> list[dict]:
+    allowed = {f"https://api.github.com/repos/{repo}/releases" for repo in OFFICIAL_REPOS.values()}
+    if url not in allowed:
+        raise ValueError("unsupported official update source")
+    opener = urllib.request.build_opener(OfficialRedirectPolicy())
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with opener.open(request, timeout=30) as response:
+        return json.load(response)
+
+
+def fetch_tool_updates(reviews: list[dict], fetch=official_fetch, today=None) -> list[dict]:
+    """Join reviewed compatibility/copy to real official releases; never infer either."""
+    today = today or date.today()
+    releases = {}
+    result = []
+    for review in reviews:
+        tool = review["tool"]
+        if tool not in OFFICIAL_REPOS:
+            raise ValueError("unsupported official update source")
+        if tool not in releases:
+            releases[tool] = fetch(f"https://api.github.com/repos/{OFFICIAL_REPOS[tool]}/releases")
+        for release in releases[tool]:
+            if (release.get("id") != review["release_id"] or release.get("draft")
+                    or release.get("prerelease") or not release.get("published_at")):
+                continue
+            result.append({key: review[key] for key in ("id", "tool", "summary", "practice_id", "compatibility")}
+                          | {"source_url": release["html_url"], "fetched_at": today.isoformat(),
+                             "released_at": date.fromisoformat(release["published_at"][:10]).isoformat()})
+    return result
 
 
 def translate_zh(texts: list[str], run_claude=subprocess_claude) -> list[str | None]:
@@ -97,11 +140,13 @@ def translate_zh(texts: list[str], run_claude=subprocess_claude) -> list[str | N
     return [None] * len(texts)
 
 
-def build_content(base: dict, skills: list, agents: list, today: date) -> dict:
+def build_content(base: dict, skills: list, agents: list, today: date, *, tool_updates=None) -> dict:
     content = deepcopy(base)
     content["rankings"] = {"skill": skills, "agent": agents, "rotate": False,
-                           "source": "The Skill Leaderboard · GitHub", "updated_at": today.isoformat()}
+                           "source": "The Skill Leaderboard · GitHub", "updated_at": today.isoformat(),
+                           "origin": "public"}
     content["updated_at"] = today.isoformat()
+    content["tool_updates"] = tool_updates or []
     return content
 
 
@@ -126,11 +171,14 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--history", type=Path, required=True)
     parser.add_argument("--no-translate", action="store_true")
+    parser.add_argument("--updates", type=Path, help="Reviewed official release IDs, compatibility and bilingual copy")
     args = parser.parse_args(argv)
     today = date.today()
     try:
         base = json.loads(args.base.read_text(encoding="utf-8"))
         history = json.loads(args.history.read_text(encoding="utf-8")) if args.history.exists() else {}
+        reviews = json.loads(args.updates.read_text(encoding="utf-8")) if args.updates else []
+        updates = fetch_tool_updates(reviews)
         skills = select_skills(fetch_skill_leaderboard())
         raw_agents = fetch_github_agents(today=today)
         agents = select_agents(raw_agents, history, today=today)
@@ -140,13 +188,14 @@ def main(argv=None) -> int:
         texts += [(item.get("description") or "").strip() for item in agents]
         translations = [None] * len(texts) if args.no_translate else translate_zh(texts)
         skill_rows = [to_ranking_item(item["repo"], "https://github.com/" + item["repo"],
-                                     texts[i], translations[i], item["stars"], item["stars7d"])
+                                     texts[i], translations[i], item["stars"], item.get("stars7d"),
+                                     metadata={**item, "source_type": "catalog"})
                       for i, item in enumerate(skills)]
         agent_rows = [to_ranking_item(item["full_name"], item["html_url"],
                                      texts[len(skills) + i], translations[len(skills) + i],
-                                     item["stargazers_count"], item["stars7d"])
+                                     item["stargazers_count"], item["stars7d"], metadata=item)
                       for i, item in enumerate(agents)]
-        content = build_content(base, skill_rows, agent_rows, today)
+        content = build_content(base, skill_rows, agent_rows, today, tool_updates=updates)
         if not validate(content):
             raise ValueError("generated content failed validation")
         cutoff = (today - timedelta(days=34)).isoformat()

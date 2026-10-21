@@ -1182,7 +1182,16 @@
           "zh": "官方 Skill 库,文档/表格/PPT 处理开箱即用",
           "en": "Official Skill library with ready-to-use document, spreadsheet, and PPT handling"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/anthropics/skills",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "modelcontextprotocol/servers",
@@ -1191,7 +1200,16 @@
           "zh": "MCP 官方 server 合集,让 AI 连上数据库/浏览器/文件系统",
           "en": "Official MCP server collection connecting AI to databases, browsers, and filesystems"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/modelcontextprotocol/servers",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "stanfordnlp/dspy",
@@ -1200,7 +1218,16 @@
           "zh": "把提示词写成可自动优化的程序,不再手工反复调",
           "en": "Turn prompts into automatically optimized programs instead of repeatedly tuning them by hand"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/stanfordnlp/dspy",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "mem0ai/mem0",
@@ -1209,7 +1236,16 @@
           "zh": "给你的 AI 加持久记忆,越用越懂你",
           "en": "Give your AI persistent memory so it understands you better with use"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/mem0ai/mem0",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "langchain-ai/langchain",
@@ -1218,7 +1254,16 @@
           "zh": "AI 应用开发框架,组件最全",
           "en": "AI application development framework with the most complete set of components"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/langchain-ai/langchain",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "langgenius/dify",
@@ -1227,7 +1272,16 @@
           "zh": "不写代码也能上线 AI 应用,拖拽可视化",
           "en": "Launch AI apps without coding through a visual drag-and-drop interface"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/langgenius/dify",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "Mintplex-Labs/anything-llm",
@@ -1236,7 +1290,16 @@
           "zh": "私有文档问答一站式,本地部署保护隐私",
           "en": "All-in-one private document Q&A, with local deployment to protect privacy"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/Mintplex-Labs/anything-llm",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "lobehub/lobe-chat",
@@ -1245,7 +1308,16 @@
           "zh": "颜值最高的开源 AI 对话界面,插件丰富",
           "en": "The best-looking open-source AI chat interface, with many plugins"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/lobehub/lobe-chat",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "danny-avila/LibreChat",
@@ -1254,7 +1326,16 @@
           "zh": "一个界面接入所有模型,团队共享",
           "en": "Access all models in one interface, shared across your team"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/danny-avila/LibreChat",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "n8n-io/n8n",
@@ -1263,7 +1344,16 @@
           "zh": "拖拽式工作流自动化,AI 节点齐全",
           "en": "Drag-and-drop workflow automation with a full set of AI nodes"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/n8n-io/n8n",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       }
     ],
     "agent": [
@@ -1274,7 +1364,16 @@
           "zh": "让 AI 替你操作浏览器: 订票/填表/抓数据",
           "en": "Let AI operate your browser: book tickets, fill forms, and collect data"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/browser-use/browser-use",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "aider-AI/aider",
@@ -1283,7 +1382,16 @@
           "zh": "终端里的 AI 结对程序员,直接改你的 git 仓库",
           "en": "An AI pair programmer in your terminal that edits your git repository directly"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/aider-AI/aider",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "cline/cline",
@@ -1292,7 +1400,16 @@
           "zh": "VS Code 里的自主编码 agent,能跑命令能改文件",
           "en": "An autonomous coding agent in VS Code that runs commands and edits files"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/cline/cline",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "assafelovic/gpt-researcher",
@@ -1301,7 +1418,16 @@
           "zh": "给个题目,自动完成全网调研并出报告",
           "en": "Give it a topic and it researches the web and produces a report automatically"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/assafelovic/gpt-researcher",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "microsoft/autogen",
@@ -1310,7 +1436,16 @@
           "zh": "微软出品的多 agent 协作框架",
           "en": "A multi-agent collaboration framework from Microsoft"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/microsoft/autogen",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "crewAIInc/crewAI",
@@ -1319,7 +1454,16 @@
           "zh": "按角色组建 AI 团队: 研究员+写手+审校流水线",
           "en": "Build an AI team by role: a researcher, writer, and reviewer pipeline"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/crewAIInc/crewAI",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "geekan/MetaGPT",
@@ -1328,7 +1472,16 @@
           "zh": "一句需求,多 agent 模拟软件公司交付项目",
           "en": "One requirement, multiple agents simulating a software company to deliver the project"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/geekan/MetaGPT",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "OpenInterpreter/open-interpreter",
@@ -1337,7 +1490,16 @@
           "zh": "本地代码解释器,让 AI 直接操作你的电脑",
           "en": "A local code interpreter that lets AI operate your computer directly"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/OpenInterpreter/open-interpreter",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "khoj-ai/khoj",
@@ -1346,7 +1508,16 @@
           "zh": "你的第二大脑: 笔记/文档/日程的个人 AI 助理",
           "en": "Your second brain: a personal AI assistant for notes, documents, and schedules"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/khoj-ai/khoj",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       },
       {
         "name": "ItzCrazyKns/Perplexica",
@@ -1355,9 +1526,19 @@
           "zh": "开源版 AI 搜索引擎,自托管的 Perplexity",
           "en": "An open-source AI search engine: a self-hosted Perplexity"
         },
-        "match": []
+        "match": [],
+        "source_url": "https://github.com/ItzCrazyKns/Perplexica",
+        "source_date": null,
+        "source_type": "curated",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
       }
-    ]
+    ],
+    "origin": "bundled"
   },
   "tips": [
     {
@@ -1492,5 +1673,6 @@
     "currency": "USD",
     "unit": "per_million_tokens",
     "models": []
-  }
+  },
+  "tool_updates": []
 }

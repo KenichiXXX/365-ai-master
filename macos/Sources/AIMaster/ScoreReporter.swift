@@ -19,6 +19,7 @@ struct AppScoreOut: Codable {
     let percentile: Int?
     let small_sample: Bool
     var dims: [String: DimensionRank]? = nil
+    var score_version: String = "1"
 
     var isValid: Bool {
         if let dims {
@@ -37,8 +38,17 @@ struct AppScoreOut: Codable {
             return locale == "zh" ? "早期排名：\(total) 人中第 \(rank) 名" : "Early ranking: #\(rank) of \(total)"
         }
         guard let percentile else { return "" }
-        return locale == "zh" ? "击败了全球 \(percentile)% 的 AI 用户（\(total) 人参与）"
-            : "You beat \(percentile)% of AI users (\(total) taking part)"
+        return locale == "zh" ? "击败全球 \(percentile)% 的 AI 用户"
+            : "You beat \(percentile)% of AI users worldwide"
+    }
+
+    func participationCaption(locale: String) -> String {
+        locale == "zh" ? "\(total) 个安装参与" : "\(total) installations participating"
+    }
+
+    static func sampleLimitation(locale: String) -> String {
+        locale == "zh" ? "基于自愿参与的安装样本，不代表所有 AI 用户；同一人可能有多个安装"
+            : "Based on opt-in installations, not all AI users. One person may have multiple installations"
     }
 }
 
@@ -62,6 +72,14 @@ final class ScoreReporter {
     private let endpoint: URL
     private let transport: Transport
     private var reporting = false
+    private(set) var versionMismatch = false
+
+    func hasVersionMismatch(scoreVersion: String) -> Bool {
+        if versionMismatch { return true }
+        guard let data = defaults.data(forKey: "scoreResult"),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        return object["score_version"] as? String != scoreVersion
+    }
 
     init(defaults: UserDefaults = .standard, endpoint: URL = ScoreReporter.endpoint,
          transport: @escaping Transport = ScoreReporter.send) {
@@ -82,31 +100,34 @@ final class ScoreReporter {
         return token
     }
 
-    func cached(now: Date = Date()) -> AppScoreOut? {
+    func cached(scoreVersion: String = "1", now: Date = Date()) -> AppScoreOut? {
         guard defaults.bool(forKey: "shareAnonymousScore"),
               let date = defaults.object(forKey: "scoreResultAt") as? Date,
               (0...7 * 86400).contains(now.timeIntervalSince(date)),
               let data = defaults.data(forKey: "scoreResult"),
-              let result = try? JSONDecoder().decode(AppScoreOut.self, from: data), result.isValid else { return nil }
+              let result = try? JSONDecoder().decode(AppScoreOut.self, from: data), result.isValid, result.score_version == scoreVersion else { return nil }
         return result
     }
 
-    func report(score: Int, dims: Dims, appVersion: String, now: Date = Date(),
+    func report(score: Int, dims: Dims, appVersion: String, scoreVersion: String = "1", now: Date = Date(),
                 allowFirstReport: Bool = false) async -> AppScoreOut? {
-        guard defaults.bool(forKey: "shareAnonymousScore") else { return nil }
+        guard defaults.bool(forKey: "shareAnonymousScore"),
+              !scoreVersion.isEmpty, scoreVersion.count <= 40,
+              scoreVersion.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || "-_.".contains($0)) }) else { return nil }
         guard !(endpoint.host?.contains("REPLACE") ?? true) else { return nil }
-        if reporting { return cached(now: now) }
+        if reporting { return cached(scoreVersion: scoreVersion, now: now) }
         let firstConsent = allowFirstReport && !defaults.bool(forKey: "scoreEverReported")
         if !firstConsent, let last = defaults.object(forKey: "scoreReportedAt") as? Date,
-           last > now || Calendar.current.isDate(last, inSameDayAs: now) { return cached(now: now) }
+           last > now || Calendar.current.isDate(last, inSameDayAs: now) { return cached(scoreVersion: scoreVersion, now: now) }
         guard (0...100).contains(score), [dims.routing, dims.timing, dims.context, dims.leverage]
             .allSatisfy({ (0...100).contains($0) }), appVersion.count <= 20 else { return nil }
         reporting = true
+        versionMismatch = false
         defer { reporting = false }
         // Count attempts too: an unavailable server never causes repeated daily uploads.
         defaults.set(now, forKey: "scoreReportedAt")
         do {
-            var request = URLRequest(url: endpoint)
+            var request = URLRequest(url: endpoint.appendingPathComponent(scoreVersion))
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpShouldHandleCookies = false
@@ -114,8 +135,11 @@ final class ScoreReporter {
             request.httpBody = try JSONEncoder().encode(Payload(device_token: deviceToken(), score: score,
                                                                 dims: dims, app_version: appVersion))
             let (data, status) = try await transport(request)
+            if status == 200, let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                versionMismatch = object["score_version"] as? String != scoreVersion
+            }
             guard defaults.bool(forKey: "shareAnonymousScore"), status == 200,
-                  let result = try? JSONDecoder().decode(AppScoreOut.self, from: data), result.isValid else {
+                  let result = try? JSONDecoder().decode(AppScoreOut.self, from: data), result.isValid, result.score_version == scoreVersion else {
                 defaults.removeObject(forKey: "scoreResult")
                 defaults.removeObject(forKey: "scoreResultAt")
                 return nil

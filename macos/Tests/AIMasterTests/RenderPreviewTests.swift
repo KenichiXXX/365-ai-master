@@ -5,6 +5,22 @@ import SwiftUI
 // Opt-in local preview; real usage and generated PNGs must never be committed.
 @MainActor
 final class RenderPreviewTests: XCTestCase {
+    func testRenderRankingSampleCaptions() throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        for locale in ["zh", "en"] {
+            for total in [19, 20] {
+                let ranking = AppScoreOut(total: total, rank: 2, percentile: total < 20 ? nil : 95, small_sample: total < 20)
+                let renderer = ImageRenderer(content: RankingSummary(caption: ranking.caption(locale: locale), ranking: ranking, locale: locale)
+                    .padding(16).frame(width: 440).background(Color(nsColor: .windowBackgroundColor)))
+                renderer.scale = 2
+                let image = try XCTUnwrap(renderer.nsImage)
+                let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
+                try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+                    .write(to: URL(fileURLWithPath: out + "-ranking-\(total)-\(locale).png"))
+            }
+        }
+    }
+
     func testRenderPopoverSections() async throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         let store = SnapshotStore(defaults: UserDefaults(suiteName: "render-preview")!) { locale, tools in
@@ -228,6 +244,32 @@ final class RenderPreviewTests: XCTestCase {
             let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
             try XCTUnwrap(rep.representation(using: .png, properties: [:]))
                 .write(to: URL(fileURLWithPath: out + "-calendar-" + locale + ".png"))
+        }
+    }
+
+    func testRenderPublicContentSources() async throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        for locale in ["zh", "en"] {
+            for origin in ["bundled", "cached"] {
+                let row: [String: Any] = ["name": "synthetic/skill", "url": "https://github.com/openai/codex",
+                    "tagline": locale == "zh" ? "仅用于预览的合成条目" : "Synthetic preview entry",
+                    "source_url": "https://github.com/openai/codex", "source_date": "2026-10-21",
+                    "source_type": "curated", "installation_hint": true]
+                let object: [String: Any] = ["schema": 3, "locale": locale,
+                    "rankings": ["origin": origin, "updated_at": "2026-10-21", "skill": [row], "agent": []],
+                    "tool_updates": []]
+                let result = try EngineRunner.decode(JSONSerialization.data(withJSONObject: object), status: 0)
+                let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, load: { _, _ in result })
+                await store.refresh()?.value
+                let renderer = ImageRenderer(content: TodaySkillTab(snapshot: result.snapshot, store: store)
+                    .padding(16).frame(width: 440).background(Color(nsColor: .windowBackgroundColor)))
+                renderer.scale = 2
+                let image = try XCTUnwrap(renderer.nsImage)
+                XCTAssertEqual(image.size.width, 440)
+                let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
+                try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+                    .write(to: URL(fileURLWithPath: out + "-public-" + origin + "-" + locale + ".png"))
+            }
         }
     }
 

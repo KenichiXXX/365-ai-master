@@ -18,8 +18,8 @@ struct CheckupTab: View {
                 if let village = snapshot.village {
                     Text(village.rankTitle).font(.title2.bold())
                     if store.shareAnonymousScore && snapshot.hasEvaluableScores {
-                        Text(store.rankingCaption(locale: snapshot.locale ?? store.locale))
-                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                        RankingSummary(caption: store.rankingCaption(locale: snapshot.locale ?? store.locale),
+                                       ranking: store.ranking, locale: snapshot.locale ?? store.locale)
                     } else if snapshot.hasEvaluableScores {
                         Button(zh ? "看看你击败了全球多少 AI 用户 →" : "See how you rank worldwide →") {
                             showRankingConsent = true
@@ -81,10 +81,26 @@ struct ScoreConsentPanel: View {
     }
 }
 
-
 enum ScoreConsent {
     static func explanation(locale: String) -> String {
-        locale == "zh" ? "开启后，每天最多一次上传：总分和四个维度分，以及一个随机编号。不上传任何使用记录、文件或对话。随时可以关闭。"
-            : "When on, once a day at most we upload your overall score, your four dimension scores, and a random ID. Never your usage logs, files, or conversations. Turn it off anytime."
+        locale == "zh" ? "开启后，每天最多一次上传：总分和四个维度分，以及一个随机安装编号和 App 版本。不上传任何使用记录、文件或对话。随时可以关闭。"
+            : "When on, once a day at most we upload your overall score, your four dimension scores, a random installation ID, and app version. Never your usage logs, files, or conversations. Turn it off anytime."
+    }
+}
+
+struct RankingSummary: View {
+    let caption: String
+    let ranking: AppScoreOut?
+    let locale: String
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text(caption)
+            if let ranking {
+                Text(ranking.participationCaption(locale: locale))
+                Text(AppScoreOut.sampleLimitation(locale: locale))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }.font(.system(size: 11)).foregroundStyle(.secondary)
     }
 }

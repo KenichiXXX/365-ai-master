@@ -41,7 +41,7 @@ final class ActionCardTests: XCTestCase {
         var calls = 0
         let reporter = ScoreReporter(defaults: defaults, endpoint: URL(string: "https://local.test/v1/score")!, transport: { _ in
             calls += 1
-            return (Data(#"{"total":25,"rank":13,"percentile":50,"small_sample":false}"#.utf8), 200)
+            return (Data(#"{"score_version":"1","total":25,"rank":13,"percentile":50,"small_sample":false}"#.utf8), 200)
         })
         _ = await reporter.report(score: 80, dims: .init(routing: 80, timing: 80, context: 80, leverage: 80), appVersion: "1")
         XCTAssertEqual(calls, 1)

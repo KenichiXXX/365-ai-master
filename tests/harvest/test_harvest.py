@@ -68,7 +68,10 @@ def test_translation_and_ranking_item():
     item = h.to_ranking_item("Owner/Repo", "https://github.com/Owner/Repo", "English", None, 500, None)
     assert item == {"name": "Owner/Repo", "url": "https://github.com/Owner/Repo",
                     "tagline": {"en": "English", "zh": "English"}, "match": ["repo"],
-                    "stars": 500, "stars7d": None}
+                    "stars": 500, "stars7d": None,
+                    "source_url": "https://github.com/Owner/Repo", "source_date": None,
+                    "source_type": "repository", "task_category": None, "compatibility": None,
+                    "caution": {"zh": "安装前请核对权限与来源", "en": "Check permissions and source before installing"}}
 
 
 def test_build_content():
@@ -81,7 +84,7 @@ def test_build_content():
     assert result["skills"] == base["skills"] and result["tips"] == base["tips"]
     assert base == before
     assert result["rankings"] == {"skill": [item], "agent": [item], "rotate": False,
-                                  "source": "The Skill Leaderboard · GitHub", "updated_at": "2026-10-21"}
+                                  "source": "The Skill Leaderboard · GitHub", "updated_at": "2026-10-21", "origin": "public"}
     assert result["updated_at"] == "2026-10-21"
 
 
@@ -226,3 +229,48 @@ def test_null_text_fields_are_skipped_not_crashing():
     agents = [{"full_name": "c/z", "stargazers_count": 5000, "description": None, "license": {"key": "mit"}},
               {"full_name": "d/w", "stargazers_count": 4000, "description": "agent", "license": {"key": "mit"}}]
     assert [i["full_name"] for i in h.select_agents(agents, {})] == ["d/w"]
+
+
+def test_reviewed_official_sources_only_and_no_inferred_releases():
+    calls = []
+    def fetch(url):
+        calls.append(url)
+        return [{"id": 123, "html_url": "https://github.com/openai/codex/releases/tag/test",
+                 "published_at": "2026-10-20T12:00:00Z", "draft": False, "prerelease": False}]
+    review = {"id": "synthetic-release", "release_id": 123, "tool": "codex",
+              "compatibility": {"format": "codex-response-usage-v1", "adapter_versions": ["1"]},
+              "summary": {"zh": "测试更新", "en": "Synthetic update"}, "practice_id": "review_diff"}
+    result = h.fetch_tool_updates([review], fetch=fetch, today=TODAY)
+    assert calls == ["https://api.github.com/repos/openai/codex/releases"]
+    assert result[0]["fetched_at"] == "2026-10-21" and result[0]["released_at"] == "2026-10-20"
+    assert result[0]["compatibility"] == review["compatibility"]
+    assert h.fetch_tool_updates([{**review, "release_id": 999}], fetch=fetch, today=TODAY) == []
+    with pytest.raises(ValueError):
+        h.fetch_tool_updates([{**review, "tool": "evil"}], fetch=fetch, today=TODAY)
+    calls.clear()
+    assert h.fetch_tool_updates([], fetch=fetch, today=TODAY) == [] and calls == []
+
+
+def test_public_metadata_unknowns_and_short_real_lists():
+    item = h.to_ranking_item("o/r", "https://github.com/o/r", "English", None, 500, None)
+    assert item["compatibility"] is None and item["source_date"] is None
+    assert item["task_category"] is None
+    assert item["source_url"] == item["url"]
+    assert len(h.build_content(load_content(None), [item], [], TODAY)["rankings"]["skill"]) == 1
+
+
+def test_official_adapter_rejects_unlisted_urls_and_redirects():
+    with pytest.raises(ValueError):
+        h.official_fetch("https://attacker.example/releases")
+    from urllib.error import HTTPError
+    policy = h.OfficialRedirectPolicy()
+    with pytest.raises(HTTPError):
+        policy.redirect_request(None, None, 302, "Found", {}, "https://attacker.example/a")
+
+
+def test_missing_release_dates_or_reviewed_compatibility_are_not_fabricated():
+    review = {"id": "test", "release_id": 123, "tool": "codex", "summary": {"zh": "测试", "en": "Fixture"},
+              "practice_id": "review_diff"}
+    assert h.fetch_tool_updates([review], fetch=lambda _: [{"id": 123}], today=TODAY) == []
+    with pytest.raises(KeyError):
+        h.fetch_tool_updates([review], fetch=lambda _: [{"id": 123, "published_at": "2026-10-20T12:00:00Z"}], today=TODAY)

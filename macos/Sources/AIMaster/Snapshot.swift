@@ -18,11 +18,22 @@ struct Snapshot: Decodable {
     let book: SkillBook?
     let rankings: Rankings?
     let dailyTip: DailyTip?
+    let toolUpdates: [PublicToolUpdate]?
     let streak: Streak?
     let badges: [Badge]?
     let usageSummary: UsageSummary?
     let growth: Growth?
     let weekly: WeeklyReview?
+
+    var relevantToolUpdates: [PublicToolUpdate] {
+        (toolUpdates ?? []).filter { update in
+            guard let coverage = coverage?[update.tool],
+                  coverage.status != .unsupported, coverage.status != .notDetected,
+                  tools?.contains(where: { $0.tool == update.tool && $0.detected }) == true,
+                  let compatibility = update.compatibility else { return false }
+            return compatibility.format == coverage.format && compatibility.adapterVersions.contains(coverage.adapterVersion)
+        }
+    }
 
     var hasEvaluableScores: Bool {
         guard let score = overall?.score, (0...100).contains(score),
@@ -221,15 +232,43 @@ struct Rankings: Decodable {
     let skill: [Ranking]?
     let agent: [Ranking]?
     let source: String?
+    let origin: String?
+    let updatedAt: String?
+
+    func sourceLabel(locale: String, stale: Bool = false) -> String {
+        if origin != "cached" { return locale == "zh" ? "内置精选，非实时榜单" : "Bundled selection, not a live leaderboard" }
+        let date = updatedAt ?? "—"
+        let label = locale == "zh" ? "缓存内容，更新于 \(date)" : "Cached content, updated \(date)"
+        return stale ? label + (locale == "zh" ? "（更新失败，保留缓存）" : " (update failed; cache retained)") : label
+    }
 }
 
 struct Ranking: Decodable {
     let name: String
     let url: String
     let tagline: String
-    let installed: Bool
+    var installed: Bool? = nil
     var stars: Int? = nil
     var stars7d: Int? = nil
+    var sourceUrl: String? = nil
+    var sourceDate: String? = nil
+    var sourceType: String? = nil
+    var taskCategory: String? = nil
+    var compatibility: [String: PublicCompatibility]? = nil
+    var caution: String? = nil
+    var installationHint: Bool? = nil
+
+    enum CodingKeys: String, CodingKey {
+        case name, url, tagline, installed, stars, stars7d, sourceUrl, sourceDate, sourceType, taskCategory, compatibility, caution, installationHint
+    }
+
+    func compatibilityLabel(locale: String) -> String {
+        guard let compatibility, !compatibility.isEmpty else { return locale == "zh" ? "兼容性未知" : "Compatibility unknown" }
+        return compatibility.keys.sorted().map { tool in
+            let spec = compatibility[tool]!
+            return "\(tool): \(spec.format) (\(spec.adapterVersions.joined(separator: ", ")))"
+        }.joined(separator: " · ")
+    }
 
     func growth(locale: String) -> String {
         guard let stars else { return "" }
@@ -458,4 +497,20 @@ struct FirstPractice: Decodable {
     let noProjectPrompt: String
     let limitation: String
     let validationKind: String
+}
+
+struct PublicCompatibility: Decodable {
+    let format: String
+    let adapterVersions: [String]
+}
+
+struct PublicToolUpdate: Decodable, Identifiable {
+    let id: String
+    let tool: String
+    let sourceUrl: String
+    let fetchedAt: String
+    let releasedAt: String
+    let summary: String
+    let practiceId: String
+    let compatibility: PublicCompatibility?
 }

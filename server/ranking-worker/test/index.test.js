@@ -5,6 +5,9 @@ beforeEach(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
   await env.DB.batch([
     env.DB.prepare("DELETE FROM devices"),
+    env.DB.prepare("DELETE FROM cohort_devices"),
+    env.DB.prepare("DELETE FROM cohort_score_counts"),
+    env.DB.prepare("DELETE FROM cohort_dim_counts"),
     env.DB.prepare("UPDATE score_counts SET n = 0"),
     env.DB.prepare("UPDATE dim_counts SET n = 0"),
   ]);
@@ -137,4 +140,108 @@ test("dimension migration backfills existing devices and seeds every bucket", as
     { dim: "routing", score: 0, n: 2 }, { dim: "timing", score: 100, n: 2 }]);
   await post(payload("legacy-one", 90));
   expect((await env.DB.prepare("SELECT n FROM dim_counts WHERE dim = 'routing' AND score = 0").first()).n).toBe(1);
+});
+
+const versionedPost = (body, version = "1") => SELF.fetch(`https://test.local/v1/score/${version}`, {
+  method: "POST", body: JSON.stringify(body),
+});
+
+test("throttled overall ranking uses the accepted stored score just like dimensions", async () => {
+  await post(payload("low-device", 10));
+  await post(payload("mid-device", 50));
+  const accepted = await (await post(payload("high-device", 90))).json();
+  expect(await (await post({ ...payload("high-device", 0), dims: { routing: 0, timing: 0, context: 0, leverage: 0 } })).json()).toEqual(accepted);
+});
+
+test("known version endpoint echoes version and excludes legacy without inferring app version", async () => {
+  await post(payload("same-device", 100));
+  const response = await versionedPost(payload("same-device", 10));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ score_version: "1", total: 1, rank: 1, small_sample: true });
+  expect((await versionedPost(payload(), "unknown")).status).toBe(404);
+  expect((await versionedPost({ ...payload(), score_version: "1" })).status).toBe(422);
+  expect((await (await post(payload("same-device", 100))).json()).total).toBe(1);
+});
+
+test("versioned cohorts isolate UUIDs, totals, ties and 19/20 boundary", async () => {
+  const { handleScore } = await import("../src/index.js");
+  expect(handleScore).toBeTypeOf("function");
+  const syntheticPost = (body) => handleScore(new Request("https://test.local/v1/score/test-v2", {
+    method: "POST", body: JSON.stringify(body),
+  }), env, "test-v2");
+  for (let i = 0; i < 19; i++) await versionedPost(payload(`cohort-${String(i).padStart(4, "0")}`, i * 5));
+  const early = await (await versionedPost(payload("cohort-0010", 50))).json();
+  expect(early).toMatchObject({ total: 19, rank: 9, percentile: null, small_sample: true });
+  expect(Object.values(early.dims).every(dim => dim.percentile === null)).toBe(true);
+  const ranked = await (await versionedPost(payload("cohort-tied", 50))).json();
+  expect(ranked).toMatchObject({ total: 20, rank: 9, percentile: 53, small_sample: false });
+  expect(Object.values(ranked.dims).every(dim => dim.percentile === 0)).toBe(true);
+  expect(await (await syntheticPost(payload("cohort-tied", 100))).json()).toMatchObject({
+    score_version: "test-v2", total: 1, rank: 1, percentile: null,
+  });
+  expect(await (await versionedPost(payload("cohort-tied", 0))).json()).toEqual(ranked);
+  expect((await (await syntheticPost(payload("cohort-tied", 0))).json()).total).toBe(1);
+});
+
+test("versioned atomic buckets survive concurrent requests and dimension-only updates", async () => {
+  await Promise.all([0, 25, 50, 75, 100].map(score => versionedPost({ ...payload("cohort-concurrent", score),
+    dims: { routing: score, timing: 100 - score, context: score, leverage: 100 - score } })));
+  const stored = await env.DB.prepare("SELECT * FROM cohort_devices WHERE score_version = '1'").first();
+  expect((await env.DB.prepare("SELECT score, n FROM cohort_score_counts WHERE score_version = '1' AND n <> 0").all()).results)
+    .toEqual([{ score: stored.score, n: 1 }]);
+  const original = await (await versionedPost(payload("cohort-concurrent", 100 - stored.score))).json();
+  expect(original.rank).toBe(1);
+  await env.DB.prepare("UPDATE cohort_devices SET updated_at = '2000-01-01T00:00:00.000Z'").run();
+  const changed = { ...payload("cohort-concurrent", stored.score), dims: { routing: 11, timing: 22, context: 33, leverage: 44 } };
+  await versionedPost(changed);
+  const buckets = await env.DB.prepare("SELECT dim, score, n FROM cohort_dim_counts WHERE score_version = '1' AND n <> 0 ORDER BY dim").all();
+  expect(buckets.results).toEqual(Object.entries(changed.dims).sort().map(([dim, score]) => ({ dim, score, n: 1 })));
+  expect((await env.DB.prepare("SELECT SUM(n) AS n FROM cohort_score_counts WHERE score_version = '1'").first()).n).toBe(1);
+});
+
+
+test("versioned overall and dimension comparisons use accepted values under throttle", async () => {
+  await versionedPost({ ...payload("accepted-low", 10), dims: { routing: 10, timing: 90, context: 50, leverage: 30 } });
+  await versionedPost({ ...payload("accepted-mid", 50), dims: { routing: 50, timing: 50, context: 50, leverage: 30 } });
+  const subject = { ...payload("accepted-high", 90), dims: { routing: 90, timing: 10, context: 50, leverage: 70 } };
+  const accepted = await (await versionedPost(subject)).json();
+  expect(accepted).toMatchObject({ rank: 1, dims: { routing: { rank: 1 }, timing: { rank: 3 }, context: { rank: 1 }, leverage: { rank: 1 } } });
+  expect(await (await versionedPost({ ...subject, score: 0, dims: { routing: 0, timing: 100, context: 0, leverage: 0 } })).json()).toEqual(accepted);
+});
+
+
+test("dimension ranks remain isolated from a second cohort with opposing scores", async () => {
+  const { handleScore } = await import("../src/index.js");
+  const syntheticPost = (body) => handleScore(new Request("https://test.local/v1/score/test-v2", {
+    method: "POST", body: JSON.stringify(body),
+  }), env, "test-v2");
+  const subject = { ...payload("isolated-subject", 50), dims: { routing: 50, timing: 50, context: 50, leverage: 50 } };
+  await versionedPost({ ...payload("isolated-peer", 90), dims: { routing: 90, timing: 10, context: 90, leverage: 10 } });
+  const first = await (await versionedPost(subject)).json();
+  expect(first).toMatchObject({ total: 2, rank: 2, dims: {
+    routing: { rank: 2 }, timing: { rank: 1 }, context: { rank: 2 }, leverage: { rank: 1 },
+  } });
+  await syntheticPost({ ...payload("isolated-peer", 10), dims: { routing: 10, timing: 90, context: 10, leverage: 90 } });
+  const second = await (await syntheticPost(subject)).json();
+  expect(second).toMatchObject({ score_version: "test-v2", total: 2, rank: 1, dims: {
+    routing: { rank: 1 }, timing: { rank: 2 }, context: { rank: 1 }, leverage: { rank: 2 },
+  } });
+  expect(await (await versionedPost(subject)).json()).toEqual(first);
+  expect(await (await syntheticPost(subject)).json()).toEqual(second);
+});
+
+test("versioned overall buckets move after one hour and repeated accepted values stay idempotent", async () => {
+  await versionedPost(payload("moving-peer", 50));
+  await versionedPost(payload("moving-subject", 10));
+  await env.DB.prepare("UPDATE cohort_devices SET updated_at = '2000-01-01T00:00:00.000Z' WHERE device_token = 'moving-subject'").run();
+  const accepted = await (await versionedPost(payload("moving-subject", 90))).json();
+  expect(accepted).toMatchObject({ total: 2, rank: 1 });
+  const buckets = async () => (await env.DB.prepare(
+    "SELECT score, n FROM cohort_score_counts WHERE score_version = '1' AND n <> 0 ORDER BY score").all()).results;
+  expect(await buckets()).toEqual([{ score: 50, n: 1 }, { score: 90, n: 1 }]);
+  expect(await (await versionedPost(payload("moving-subject", 90))).json()).toEqual(accepted);
+  await env.DB.prepare("UPDATE cohort_devices SET updated_at = '2000-01-01T00:00:00.000Z' WHERE device_token = 'moving-subject'").run();
+  expect(await (await versionedPost(payload("moving-subject", 90))).json()).toEqual(accepted);
+  expect(await buckets()).toEqual([{ score: 50, n: 1 }, { score: 90, n: 1 }]);
+  expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cohort_devices WHERE score_version = '1'").first()).n).toBe(2);
 });

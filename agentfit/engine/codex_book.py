@@ -220,15 +220,32 @@ def daily_rankings(content: dict, inv: dict[str, Inventory], locale: str,
                  for name in item.skills_installed + item.plugins_installed}
     rankings = content["rankings"]
     result = {key: rankings[key] for key in ("source", "updated_at") if key in rankings}
+    result["origin"] = "cached" if rankings.get("origin") == "public" else "bundled"
     for kind in ("skill", "agent"):
         items = rankings[kind]
         offset = today.toordinal() % len(items) if items and rankings.get("rotate", True) else 0
         result[kind] = [
             {**{key: item[key] for key in ("stars", "stars7d") if key in item},
              "name": item["name"], "url": item["url"], "tagline": item["tagline"][locale],
-             "installed": any(name.casefold() in installed for name in item["match"])}
-            for item in (items[offset:] + items[:offset])[:n]
+             "installation_hint": any(name.casefold() in installed for name in item["match"]),
+             "source_url": item.get("source_url", item["url"]), "source_date": item.get("source_date"),
+             "source_type": item.get("source_type", "curated"), "task_category": item.get("task_category"),
+             "compatibility": item.get("compatibility"),
+             "caution": item["caution"][locale] if "caution" in item else None}
+            for item in (items[offset:] + items[:offset])[:min(n, 20)]
         ]
+    return result
+
+
+def relevant_updates(content: dict, coverage: dict, locale: str) -> list[dict]:
+    result = []
+    for item in content.get("tool_updates", []):
+        source = coverage.get(item["tool"], {})
+        spec = item["compatibility"]
+        if (source.get("status") not in {"not_detected", None}
+                and source.get("format") == spec["format"]
+                and source.get("adapter_version") in spec["adapter_versions"]):
+            result.append({**item, "summary": item["summary"][locale]})
     return result
 
 
