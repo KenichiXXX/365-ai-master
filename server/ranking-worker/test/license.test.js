@@ -5,6 +5,9 @@ import worker from "../src/index.js";
 let bindings, publicKey;
 beforeEach(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
+  for (const table of ["license_keys", "license_refresh_limits", "subscription_events", "subscription_periods", "subscriptions", "manual_orders", "licenses"]) {
+    await env.DB.prepare(`DELETE FROM ${table}`).run();
+  }
   const pair = await crypto.subtle.generateKey("Ed25519", true, ["sign", "verify"]);
   publicKey = pair.publicKey;
   bindings = { ...env, ADMIN_TOKEN: "test-admin",
@@ -53,7 +56,37 @@ test("rejects invalid issuance bodies", async () => {
 });
 
 test("listing and reserved Waffo webhook stay unavailable", async () => {
-  for (const [method, path] of [["GET", "/v1/license/issue"], ["GET", "/v1/licenses"], ["POST", "/v1/waffo/webhook"]]) {
+  for (const [method, path] of [["GET", "/v1/license/issue"], ["GET", "/v1/licenses"], ["GET", "/v1/waffo/webhook"]]) {
     expect((await worker.fetch(new Request(`https://test.local${path}`, { method }), bindings)).status).toBe(404);
   }
+});
+
+
+test("concurrent admin retries return one persisted key per order and manual keys stay manual", async () => {
+  const responses = await Promise.all(Array.from({ length: 4 }, () => issue({ order_ref: "retry-order", days: 365 })));
+  const keys = await Promise.all(responses.map(async response => {
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(response.status).toBe(200);
+    return (await response.json()).key;
+  }));
+  expect(new Set(keys).size).toBe(1);
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM licenses WHERE order_ref = ?").bind("retry-order").first()).n).toBe(1);
+  const payload = JSON.parse(new TextDecoder().decode(decode(keys[0].split(".")[1])));
+  const response = await worker.fetch(new Request("https://test.local/v1/license/refresh", {
+    method: "POST", body: JSON.stringify({ lic: payload.lic, key: keys[0] }),
+  }), bindings);
+  expect(await response.json()).toEqual({ status: "manual" });
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM subscriptions").first()).n).toBe(0);
+});
+
+
+test("pre-subscription manual issuance metadata authorizes only its original signed proof", async () => {
+  const { signLicense } = await import("../src/subscriptions.js");
+  const p = { v: 1, lic: "legacyManualKey1", plan: "pro", iat: "2024-01-01", exp: "2025-01-01" };
+  await env.DB.prepare("INSERT INTO licenses VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(p.lic, p.plan, p.iat, p.exp, "legacy-order", "2024-01-01T00:00:00Z").run();
+  const response = await worker.fetch(new Request("https://test.local/v1/license/refresh", {
+    method: "POST", body: JSON.stringify({ lic: p.lic, key: await signLicense(bindings, p) }),
+  }), bindings);
+  expect(await response.json()).toEqual({ status: "manual" });
 });

@@ -1,7 +1,7 @@
 # Anonymous score ranking Worker
 
-Accepts only a random device ID, overall score, four dimension scores, and app version.
-No request body or IP logging, CORS, or outbound fetches. Rankings scan only the
+Ranking routes accept only a random device ID, overall score, four dimension scores, and app version.
+The Worker has no application request-body or IP logging, CORS, or outbound fetches. Subscription billing is isolated from ranking data. Rankings scan only the
 101 score buckets per cohort. Device updates and bucket moves use one atomic D1
 batch; updates within one hour leave all stored values unchanged. A tied score
 is not counted as beaten. Overall and dimension comparisons use the accepted
@@ -49,3 +49,16 @@ npx wrangler deploy
 Replace the placeholder host in `macos/Sources/AIMaster/ScoreReporter.swift`
 with the deployed `.workers.dev` host. The app refuses to send while `REPLACE`
 is present. Deployment and real network reporting are reviewer actions.
+
+
+## Subscription contract and release blocker
+
+Task 34 adds `src/subscriptions.js`, a normalized `PaymentProvider` boundary, and migration `0005_subscriptions.sql`. Local D1 tests inject a fake through an internal module API. The public router always uses the unavailable Waffo adapter. Request bodies, query parameters, and environment flags cannot select the fake.
+
+`POST /v1/waffo/webhook` currently returns HTTP 503 with `status: unavailable`. `TODO(WAFFO_VERIFIED_INTEGRATION)` requires official documentation, authenticated sandbox fixtures, and real renewal, refund, cancellation, and receipt recovery checks. No guessed provider protocol or live checkout is implemented.
+
+`POST /v1/license/refresh` accepts exactly `{lic, key}`, bounded to 1024 bytes. It requires an authentic known AIM1 proof, including an expired proof after a genuine renewal. No account or app admin token is needed. It reconciles provider state, uses the same license ID and verified paid-through boundary, and returns the persisted period key without expiry inflation. Refund/revocation blocks refresh. Cancellation retains the paid period. Provider outages fail closed. Ten authenticated attempts per license per UTC minute are allowed. All license responses use `Cache-Control: no-store`.
+
+Manual `POST /v1/license/issue` remains admin-only and is now idempotent by order reference, including concurrent retries. Legacy signed keys remain valid and do not become subscriptions. There is no listing endpoint. Billing tables contain no ranking UUID, raw webhook, card, email, or usage event. The issued-key registry is sensitive server data; keys appear only in explicit no-store key responses and never application logs.
+
+See [Activation keys](../../docs/license.md) for normalized provider fields, UTC inclusive-expiry conversion, persistence/retry semantics, response codes, and offline revocation limits. No production migration, secret setup, deployment, or real merchant action was run for this task.

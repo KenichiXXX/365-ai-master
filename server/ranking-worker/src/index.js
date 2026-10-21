@@ -1,3 +1,7 @@
+import { base64url, createSubscriptionHandler, licenseResponse, signLicense } from "./subscriptions.js";
+
+const handleSubscription = createSubscriptionHandler();
+
 const dimensionKeys = ["routing", "timing", "context", "leverage"];
 const exactKeys = (value, keys) => value !== null && typeof value === "object"
   && !Array.isArray(value) && Object.keys(value).length === keys.length
@@ -35,30 +39,34 @@ async function readPayload(request) {
   return body;
 }
 
-const base64url = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)))
-  .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
 async function issueLicense(request, env) {
   if (!env.ADMIN_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.ADMIN_TOKEN}`) {
-    return Response.json({ error: "unauthorized" }, { status: 401 });
+    return licenseResponse({ error: "unauthorized" }, 401);
   }
   let body;
   try {
     body = await readJSON(request);
     if (!exactKeys(body, ["order_ref", "days"]) || typeof body.order_ref !== "string"
       || body.order_ref.trim().length === 0 || body.order_ref.length > 64 || body.days !== 365) throw new Error("invalid");
-  } catch { return Response.json({ error: "invalid" }, { status: 422 }); }
+  } catch { return licenseResponse({ error: "invalid" }, 422); }
   const now = new Date();
   const payload = { v: 1, lic: base64url(crypto.getRandomValues(new Uint8Array(12))), plan: "pro",
     iat: now.toISOString().slice(0, 10), exp: new Date(now.getTime() + body.days * 86400000).toISOString().slice(0, 10) };
-  const bytes = new TextEncoder().encode(JSON.stringify(payload));
-  const privateKey = await crypto.subtle.importKey("pkcs8",
-    Uint8Array.from(atob(env.LICENSE_PRIVATE_KEY), c => c.charCodeAt(0)), "Ed25519", false, ["sign"]);
-  const signature = await crypto.subtle.sign("Ed25519", privateKey, bytes);
-  await env.DB.prepare(`INSERT INTO licenses (lic, plan, iat, exp, order_ref, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)`).bind(payload.lic, payload.plan, payload.iat, payload.exp, body.order_ref, now.toISOString()).run();
-  return Response.json({ key: `AIM1.${base64url(bytes)}.${base64url(signature)}` },
-    { headers: { "Cache-Control": "no-store" } });
+  await env.DB.batch([
+    env.DB.prepare(`INSERT INTO licenses (lic, plan, iat, exp, order_ref, created_at)
+      SELECT ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM manual_orders WHERE order_ref = ?)`)
+      .bind(payload.lic, payload.plan, payload.iat, payload.exp, body.order_ref, now.toISOString(), body.order_ref),
+    env.DB.prepare(`INSERT OR IGNORE INTO manual_orders(order_ref, lic)
+      SELECT order_ref, lic FROM licenses WHERE lic = ?`).bind(payload.lic),
+  ]);
+  const stored = await env.DB.prepare(`SELECT l.* FROM licenses l JOIN manual_orders m ON m.lic = l.lic
+    WHERE m.order_ref = ?`).bind(body.order_ref).first();
+  const key = await signLicense(env, { v: 1, lic: stored.lic, plan: stored.plan, iat: stored.iat, exp: stored.exp });
+  await env.DB.prepare(`INSERT OR IGNORE INTO license_keys(lic, period_ref, exp, key) VALUES (?, ?, ?, ?)`)
+    .bind(stored.lic, `manual:${body.order_ref}`, stored.exp, key).run();
+  const issued = await env.DB.prepare("SELECT key FROM license_keys WHERE lic = ? AND period_ref = ?")
+    .bind(stored.lic, `manual:${body.order_ref}`).first();
+  return licenseResponse({ key: issued.key });
 }
 
 // Only this evaluable arithmetic is currently shipped. Future versions must be
@@ -145,7 +153,12 @@ export async function handleScore(request, env, scoreVersion = null) {
 export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname;
-    if (request.method === "POST" && path === "/v1/license/issue") return issueLicense(request, env);
+    if (path === "/v1/waffo/webhook" || path === "/v1/license/refresh") return handleSubscription(request, env);
+    if (request.method === "POST" && path === "/v1/license/issue") {
+      if (new URL(request.url).search) return licenseResponse({ error: "invalid" }, 422);
+      try { return await issueLicense(request, env); }
+      catch { return licenseResponse({ status: "unavailable" }, 503); }
+    }
     if (request.method !== "POST") return new Response(null, { status: 404 });
     if (path === "/v1/score") return handleScore(request, env);
     const scoreVersion = path.match(/^\/v1\/score\/([^/]+)$/)?.[1];
