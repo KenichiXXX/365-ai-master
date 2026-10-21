@@ -22,7 +22,7 @@ def test_content_updater_only_fetches_fixed_public_content():
     text = (ROOT / "macos/Sources/AIMaster/ContentUpdater.swift").read_text(encoding="utf-8")
     assert BANNED.search(text.replace("URLSession", "")) is None
     urls = re.findall(r'https://[^"\s]+', text)
-    assert urls == ["https://raw.githubusercontent.com/19800104zhao-svg/365-ai-master/content/daily.json"]
+    assert urls == ["https://raw.githubusercontent.com/KenichiXXX/365-ai-master/content/daily.json"]
     assert 'httpMethod = "GET"' in text
     for banned in ("httpBody", "setValue(", "addValue(", "uploadTask", "NWConnection"):
         assert banned not in text

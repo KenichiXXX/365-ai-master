@@ -12,7 +12,7 @@ private final class ContentRedirectPolicy: NSObject, URLSessionTaskDelegate {
 
 @MainActor
 final class ContentUpdater {
-    nonisolated static let url = URL(string: "https://raw.githubusercontent.com/19800104zhao-svg/365-ai-master/content/daily.json")!
+    nonisolated static let url = URL(string: "https://raw.githubusercontent.com/KenichiXXX/365-ai-master/content/daily.json")!
     typealias Loader = () async throws -> (Data, Int)
     private let file: URL
     private let defaults: UserDefaults
