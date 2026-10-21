@@ -1,0 +1,16 @@
+"Copy prompt" = "复制给 Claude 的指令";
+"Check now" = "做完了，帮我检查";
+"Settings" = "设置";
+"Quit" = "退出";
+"Updated" = "更新于";
+"stale" = "数据可能过期";
+"Launch at login" = "开机启动";
+"View my snapshot" = "查看我的快照";
+"This app makes no network connections." = "本应用不联网。";
+"Refresh interval" = "刷新间隔";
+"Loading" = "正在读取本地用量…";
+"Refresh failed" = "刷新失败，请重试。";
+"Today" = "今日";
+"7 days" = "7 日";
+"Done" = "完成";
+"Login item unavailable" = "无法启用开机启动，请检查系统登录项设置及应用安装状态。";

@@ -72,4 +72,5 @@ def build_snapshot(
         "today_tip": today_tip(progress, dims, locale, now.astimezone().date()),
         "inventory": {tool: inv.to_public() for tool, inv in inventories.items()},
         "notices": notices,
+        "labels": {key: label(key, locale) for key in ("no_tools", "tool_unavailable")},
     }

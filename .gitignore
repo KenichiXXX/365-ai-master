@@ -12,3 +12,4 @@ build/
 dist/
 node_modules/
 *.spec
+macos/.build/

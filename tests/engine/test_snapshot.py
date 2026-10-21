@@ -90,3 +90,12 @@ def test_old_state_events_are_pruned(tmp_path):
     assert all(t["usage_7d"]["tokens"] == 0 for t in snapshot["tools"])
     saved = json.loads((state / "scan.json").read_text())
     assert all(not cursor["events"] for files in saved["tools"].values() for cursor in files.values())
+
+
+def test_snapshot_includes_localized_notice_labels(tmp_path):
+    from agentfit.engine.content import label
+    for locale in ("zh", "en"):
+        snapshot = build_snapshot(tmp_path / "empty", tmp_path / locale, locale, now=NOW)
+        assert snapshot["labels"] == {
+            key: label(key, locale) for key in ("no_tools", "tool_unavailable")
+        }
