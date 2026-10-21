@@ -1180,3 +1180,51 @@ Kenichi's decision (2026-10-21): optional, **default off**; only after the user 
 Commit `feat: opt-in anonymous global ranking (score + four dimensions only)`.
 
 Also update the onboarding banner text: zh「365 AI Master 每天读你本机的 AI 使用记录（只读，默认不上传任何数据），给你一个提升动作和一个新技能。」, en "365 AI Master reads your local AI usage every day (read-only; nothing is uploaded unless you opt in) and gives you one thing to improve and one new skill."
+
+---
+
+# Phase 3 — Training tab redesign + Free / Pro (Kenichi approved 2026-10-21)
+
+Free keeps the daily habit; Pro ($12/year founding price) sells "see your growth" and "go deeper". Payment: Waffo checkout (Kenichi is opening a personal merchant account) → activation key → the app verifies the key's signature locally. No user accounts. Nothing in Pro may be a promise of an unbuilt feature.
+
+### Task 22: Training tab redesign + card levels
+
+- Content (`agentfit/engine/content_pool.json` and identical `content/daily.json`): set `level` per card — 1 入门/Basics: rules_file, web_search, web_fetch, ask_first, at_mention, paste_image, clear_session, init_cmd; 2 进阶/Intermediate: plan_mode, todo_list, light_model, effort_up, first_skill, compact, resume, review_diff, codex_agents, permissions; 3 高手/Advanced: subagent, mcp, hook, worktree, headless, custom_command. Add a test asserting these exact level sets.
+- Engine snapshot `book` gains `groups`: `[{"level":1,"title":"入门|Basics","lit":n,"total":m,"missing":[card ids]}]` for levels 1–3, and `next_badge`: `{"id","title","have":x,"need":y}` for the closest unearned badge (ties → lowest need).
+- Swift `TrainingTab` (replace the three tile grids):
+  1. Summary row of three stat chips: 新手村 `passed/9`, 技能图鉴 `lit/total`, 连续 `N 天`.
+  2. 「新手村之路 / Village path」: 9 dots joined by a line (passed filled with ✓, current outlined with its number, locked grey; dots 4–8 may collapse to `…` only if width requires); under it ONE card for the current quest (title + Copy prompt + Check now, reusing TipCard behaviour). After graduation show a "出师 ✓" card instead.
+  3. 「技能图鉴 / Skill book」 header with `入门 a/b · 进阶 c/d · 高手 e/f`; three disclosure rows (one per level) showing "还差：<first two missing titles>…" / "N to go"; expanding a row lists that level's cards (lit ✓ / unlit), tapping a card expands its why + prompt inline (free-tier gating is added in Task 24, not here).
+  4. 「下一枚徽章 / Next badge」 card with a progress bar (`have/need`) and one grey line listing earned badge titles.
+- Render the tab via RenderPreviewTests; total rendered height of the Training tab must be ≤ 1100 pt at 440 wide with the real-data snapshot (assert in the preview test).
+- Commit `feat(macos): training tab as a path — summary, village path, grouped skill book, next badge`.
+
+### Task 23: Activation keys + paywall (no Waffo API yet)
+
+- **Key format** (`docs/license.md` documents it): `AIM1.<base64url(payload JSON)>.<base64url(Ed25519 signature over the payload bytes)>`; payload `{"v":1,"lic":"<random 16-char id>","plan":"pro","iat":"YYYY-MM-DD","exp":"YYYY-MM-DD"}` — no email, no name, no device binding.
+- **Worker** (`server/ranking-worker`): D1 migration `0002_licenses.sql` table `licenses(lic TEXT PRIMARY KEY, plan TEXT, iat TEXT, exp TEXT, order_ref TEXT, created_at TEXT)`. `POST /v1/license/issue` — requires header `Authorization: Bearer <ADMIN_TOKEN>` (Worker secret); body `{"order_ref": "<string ≤ 64>", "days": 365}`; signs with secret `LICENSE_PRIVATE_KEY` (Ed25519 PKCS8 base64, WebCrypto `Ed25519`), stores the row, returns `{"key": "AIM1...."}`. No GET listing endpoint. Reserve (but do not implement) `POST /v1/waffo/webhook` → 404 for now. Tests with a test keypair generated in the test (no secrets committed).
+- **Scripts**: `server/ranking-worker/scripts/gen_keypair.mjs` (prints a new Ed25519 keypair: private PKCS8 base64 for `wrangler secret put LICENSE_PRIVATE_KEY`, public raw 32-byte base64 for the app) and `scripts/issue_key.sh <order_ref>` (curl with ADMIN_TOKEN from env) — for issuing founding keys by hand until Waffo is wired.
+- **App**: `License.swift` verifies keys with `CryptoKit.Curve25519.Signing.PublicKey(rawRepresentation:)` against `static let publicKeyBase64 = "REPLACE_PUBLIC_KEY"` (reviewer fills it in); checks `v==1`, `plan=="pro"`, `exp >= today`. Stored in UserDefaults `licenseKey` (verification re-runs on launch; never trust a cached boolean). `isPro` published on SnapshotStore. URL scheme `aimaster365://activate?key=...` (Info.plist `CFBundleURLTypes`) + Settings field 「输入激活码 / Enter activation key」 with clear errors (格式不对 / 签名无效 / 已过期).
+- **Paywall UI**: Settings section 「365 AI Master Pro」: price line 「创始价 $12/年 / Founding price $12/year」, the four Pro items as a list (exact copy from the sketch: 成长曲线：30 天分数走势、本周比上周 · 每周复盘：周一推送一页周报 · 技能图鉴随时选学、完整榜单 Top 20 · 四维分别排名), button 「去付款 / Buy」 opening `static let checkoutURL = "REPLACE_WAFFO_CHECKOUT"` — the button is hidden while it is the placeholder, and a grey line says 「付款通道开通中，可联系作者获取创始激活码 / Checkout opening soon」. When Pro: show 「Pro 已激活，到期 YYYY-MM-DD」.
+- Privacy test: allow network in `ContentUpdater.swift`, `ScoreReporter.swift` only (activation is offline; the Buy button only opens the browser via NSWorkspace).
+- Commit `feat: offline-verified activation keys and Pro paywall`.
+
+### Task 24: Pro features — growth curve, weekly review, choose-any skill, Top 20
+
+- **Engine history**: `progress.json` gains `history: {"YYYY-MM-DD": {"score": int, "dims": {...}}}` written on every snapshot (same day overwritten), keep 90 days. Snapshot adds `growth`: `{"days": [{"date","score"}...last 30], "week_delta": int|null}` (this week's latest minus last week's latest; null if no data last week) and `weekly`: `{"week_start","score_delta","cards_lit_this_week":[ids],"quests_passed_this_week":[keys],"days_active":n}`.
+- **Gating (Swift)**: free users see the existing views; Pro adds:
+  1. Check-up tab: a 30-day line chart (Swift Charts) under the dimension rings + 「本周比上周 +N」.
+  2. Weekly review: every Monday 09:00 local a `UNUserNotificationCenter` notification (ask permission only when Pro is activated) titled 「本周复盘」 with one line; clicking opens the popover on a Weekly sheet built from `weekly`.
+  3. Skill book: tapping any unlit card shows why + prompt + Copy. Free users tapping an unlit card that is not today's card see 「Pro 可随时选学这张卡 / Pro: learn any card anytime」 with a link to the Pro section.
+  4. Rankings: free shows Top 5, Pro shows all (up to 20) with a 「展开全部 / Show all」 row.
+- Tests: engine history retention and week_delta; Swift gating (free vs pro) for each of the four.
+- Commit `feat: Pro growth curve, weekly review, choose-any skill, full rankings`.
+
+### Task 25: Per-dimension ranking (Pro)
+
+- Worker: migration `0003_dim_counts.sql` table `dim_counts(dim TEXT, score INTEGER, n INTEGER, PRIMARY KEY(dim, score))` pre-filled for the 4 dims × 0..100. Maintain it in the same `DB.batch` as `score_counts` (decrement old dim buckets / increment new, same throttle rules). Backfill from existing `devices` rows in the migration. Response adds `dims: {"routing": {"rank","percentile"}, ...}` with the same small-sample rule.
+- App: Pro only — under the rings, each dimension label shows 「击败 X%」 (or 「第 K 名」 when small sample). Free users see nothing extra.
+- Tests in the worker (bucket moves per dimension, backfill) and Swift (decode + gating).
+- Commit `feat: per-dimension global ranking for Pro`.
+
+Reviewer (not Codex) deploys the worker changes, sets secrets, fills the public key, and repackages.
