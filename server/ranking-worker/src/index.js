@@ -4,7 +4,7 @@ const exactKeys = (value, keys) => value !== null && typeof value === "object"
   && keys.every((key) => Object.hasOwn(value, key));
 const scoreValid = (score) => Number.isInteger(score) && score >= 0 && score <= 100;
 
-async function readPayload(request) {
+async function readJSON(request) {
   // Bound the actual bytes, including chunked requests without Content-Length.
   const reader = request.body?.getReader();
   if (!reader) throw new Error("invalid");
@@ -22,7 +22,11 @@ async function readPayload(request) {
   const bytes = new Uint8Array(size);
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-  const body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+}
+
+async function readPayload(request) {
+  const body = await readJSON(request);
   if (!exactKeys(body, ["device_token", "score", "dims", "app_version"])
     || typeof body.device_token !== "string" || !/^[A-Za-z0-9-]{8,64}$/.test(body.device_token)
     || !scoreValid(body.score) || !exactKeys(body.dims, dimensionKeys)
@@ -31,8 +35,37 @@ async function readPayload(request) {
   return body;
 }
 
+const base64url = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)))
+  .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+async function issueLicense(request, env) {
+  if (!env.ADMIN_TOKEN || request.headers.get("Authorization") !== `Bearer ${env.ADMIN_TOKEN}`) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+  let body;
+  try {
+    body = await readJSON(request);
+    if (!exactKeys(body, ["order_ref", "days"]) || typeof body.order_ref !== "string"
+      || body.order_ref.trim().length === 0 || body.order_ref.length > 64 || body.days !== 365) throw new Error("invalid");
+  } catch { return Response.json({ error: "invalid" }, { status: 422 }); }
+  const now = new Date();
+  const payload = { v: 1, lic: base64url(crypto.getRandomValues(new Uint8Array(12))), plan: "pro",
+    iat: now.toISOString().slice(0, 10), exp: new Date(now.getTime() + body.days * 86400000).toISOString().slice(0, 10) };
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  const privateKey = await crypto.subtle.importKey("pkcs8",
+    Uint8Array.from(atob(env.LICENSE_PRIVATE_KEY), c => c.charCodeAt(0)), "Ed25519", false, ["sign"]);
+  const signature = await crypto.subtle.sign("Ed25519", privateKey, bytes);
+  await env.DB.prepare(`INSERT INTO licenses (lic, plan, iat, exp, order_ref, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`).bind(payload.lic, payload.plan, payload.iat, payload.exp, body.order_ref, now.toISOString()).run();
+  return Response.json({ key: `AIM1.${base64url(bytes)}.${base64url(signature)}` },
+    { headers: { "Cache-Control": "no-store" } });
+}
+
 export default {
   async fetch(request, env) {
+    if (request.method === "POST" && new URL(request.url).pathname === "/v1/license/issue") {
+      return issueLicense(request, env);
+    }
     if (request.method !== "POST" || new URL(request.url).pathname !== "/v1/score") {
       return new Response(null, { status: 404 });
     }

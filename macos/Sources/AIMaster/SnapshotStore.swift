@@ -3,6 +3,42 @@ import Combine
 
 @MainActor
 final class SnapshotStore: ObservableObject {
+    @Published private(set) var isPro = false
+    @Published private(set) var license: License.Payload?
+    @Published private(set) var licenseError: License.Failure?
+    private let licensePublicKeyBase64: String
+
+    @discardableResult
+    func activateLicense(_ key: String) -> Bool {
+        do {
+            let payload = try License.verify(key.trimmingCharacters(in: .whitespacesAndNewlines),
+                                             publicKeyBase64: licensePublicKeyBase64)
+            defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "licenseKey")
+            license = payload
+            isPro = true
+            licenseError = nil
+            return true
+        } catch {
+            licenseError = error as? License.Failure ?? .format
+            return false
+        }
+    }
+
+    @discardableResult
+    func handleActivationURL(_ url: URL) -> Bool {
+        guard url.scheme == "aimaster365", url.host == "activate",
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let key = components.queryItems?.first(where: { $0.name == "key" })?.value else { return false }
+        return activateLicense(key)
+    }
+
+    private func revalidateLicense() {
+        license = defaults.string(forKey: "licenseKey").flatMap {
+            try? License.verify($0, publicKeyBase64: licensePublicKeyBase64)
+        }
+        isPro = license != nil
+    }
+
     @Published var shareAnonymousScore: Bool {
         didSet {
             defaults.set(shareAnonymousScore, forKey: "shareAnonymousScore")
@@ -112,7 +148,9 @@ final class SnapshotStore: ObservableObject {
     init(defaults: UserDefaults = .standard,
          load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) },
          tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) },
-         scoreReporter: ScoreReporter? = nil) {
+         scoreReporter: ScoreReporter? = nil,
+         licensePublicKeyBase64: String = License.publicKeyBase64) {
+        self.licensePublicKeyBase64 = licensePublicKeyBase64
         self.defaults = defaults
         let reporter = scoreReporter ?? ScoreReporter(defaults: defaults)
         self.scoreReporter = reporter
@@ -124,6 +162,7 @@ final class SnapshotStore: ObservableObject {
         enabledTools = defaults.stringArray(forKey: "enabledTools") ?? Self.allTools
         let interval = defaults.integer(forKey: "refreshSeconds")
         refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
+        revalidateLicense()
     }
 
     func startTimer() {
@@ -135,6 +174,7 @@ final class SnapshotStore: ObservableObject {
 
     @discardableResult
     func refresh() -> Task<Void, Never>? {
+        revalidateLicense()
         guard !isRefreshing else { return nil }
         isRefreshing = true
         let tools = enabledTools

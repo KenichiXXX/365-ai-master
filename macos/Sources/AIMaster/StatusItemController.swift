@@ -29,6 +29,10 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         store.refresh()
     }
 
+    func handleActivationURL(_ url: URL) {
+        store.handleActivationURL(url)
+    }
+
     static func badgeTitle(snapshot: Snapshot?) -> String {
         guard let village = snapshot?.village else { return "○" }
         guard let current = village.current else { return "✓" + (snapshot?.book?.today?.lit == false ? " •" : "") }

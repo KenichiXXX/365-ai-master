@@ -13,8 +13,13 @@ struct AIMasterApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var controller: StatusItemController?
 
+    func application(_ application: NSApplication, open urls: [URL]) {
+        if controller == nil { controller = StatusItemController() }
+        for url in urls { controller?.handleActivationURL(url) }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-        controller = StatusItemController()
+        if controller == nil { controller = StatusItemController() }
     }
 }
