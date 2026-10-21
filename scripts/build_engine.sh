@@ -7,5 +7,6 @@ export PYINSTALLER_CONFIG_DIR="$PWD/build/pyinstaller-cache"
 export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
 .venv/bin/pyinstaller --onefile --name 365engine --clean --noconfirm \
   --exclude-module fastapi --exclude-module sqlalchemy --exclude-module cloud \
+  --add-data agentfit/engine/content_pool.json:agentfit/engine \
   scripts/engine_entry.py
 ls -lh dist/365engine

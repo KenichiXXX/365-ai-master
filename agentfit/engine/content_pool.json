@@ -1,0 +1,674 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-21",
+  "skills": [
+    {
+      "id": "rules_file",
+      "level": 1,
+      "detect": "instructions:claude",
+      "title": {
+        "zh": "写一份 CLAUDE.md",
+        "en": "Write a CLAUDE.md"
+      },
+      "why": {
+        "zh": "AI 每次开工先读它，写一次长期省事",
+        "en": "Your AI reads it before every task — write once, save time forever"
+      },
+      "prompt": {
+        "zh": "请读一下这个项目，帮我写一份 60 行以内的 CLAUDE.md，写完给我看",
+        "en": "Read this project and write a CLAUDE.md under 60 lines, then show me"
+      }
+    },
+    {
+      "id": "web_search",
+      "level": 1,
+      "detect": "tool:WebSearch",
+      "title": {
+        "zh": "让 AI 联网搜索",
+        "en": "Let the AI search the web"
+      },
+      "why": {
+        "zh": "问最新的东西时让它先查再答，少编造",
+        "en": "For anything recent, have it look things up first — fewer made-up answers"
+      },
+      "prompt": {
+        "zh": "请先联网搜索这个问题的最新资料，再给我结论和出处：[你的问题]",
+        "en": "Search the web for the latest on this, then give me a conclusion with sources: [your question]"
+      }
+    },
+    {
+      "id": "web_fetch",
+      "level": 1,
+      "detect": "tool:WebFetch",
+      "title": {
+        "zh": "让 AI 读一个网页",
+        "en": "Have the AI read a page"
+      },
+      "why": {
+        "zh": "贴个链接让它读完再总结，省得你自己翻",
+        "en": "Paste a link and let it read and summarize for you"
+      },
+      "prompt": {
+        "zh": "请读这个网页并用 5 条要点总结：[链接]",
+        "en": "Read this page and summarize it in 5 bullet points: [link]"
+      }
+    },
+    {
+      "id": "plan_mode",
+      "level": 1,
+      "detect": "tool:ExitPlanMode",
+      "title": {
+        "zh": "Plan 模式：先出方案再动手",
+        "en": "Plan mode: plan before acting"
+      },
+      "why": {
+        "zh": "大改动前先看步骤，你点头再执行，返工更少",
+        "en": "See the steps before big changes and approve them — less rework"
+      },
+      "prompt": {
+        "zh": "进入 Plan 模式（Shift+Tab 切换），先给我方案，不要改文件：[你的任务]",
+        "en": "Enter plan mode (Shift+Tab), give me a plan first and don't edit files: [your task]"
+      }
+    },
+    {
+      "id": "todo_list",
+      "level": 1,
+      "detect": "tool:TodoWrite",
+      "title": {
+        "zh": "让 AI 列任务清单",
+        "en": "Let the AI keep a to-do list"
+      },
+      "why": {
+        "zh": "长任务拆成清单逐项打勾，不容易漏",
+        "en": "Long tasks get split into a checklist so nothing is missed"
+      },
+      "prompt": {
+        "zh": "请先把这个任务拆成一个待办清单，再一项项完成：[你的任务]",
+        "en": "Break this task into a to-do list first, then work through it item by item: [your task]"
+      }
+    },
+    {
+      "id": "ask_first",
+      "level": 1,
+      "detect": "tool:AskUserQuestion",
+      "title": {
+        "zh": "让 AI 先问你",
+        "en": "Let the AI ask first"
+      },
+      "why": {
+        "zh": "需求不清时让它先提问，比猜错再改快",
+        "en": "When the request is fuzzy, questions beat wrong guesses"
+      },
+      "prompt": {
+        "zh": "开始之前，如果有任何不确定的地方，先用选择题问我",
+        "en": "Before you start, ask me multiple-choice questions about anything unclear"
+      }
+    },
+    {
+      "id": "subagent",
+      "level": 1,
+      "detect": "sidechain",
+      "title": {
+        "zh": "子代理：同时开几条线",
+        "en": "Sub-agents: work in parallel"
+      },
+      "why": {
+        "zh": "让子代理并行查资料，主对话保持清爽",
+        "en": "Sub-agents research side by side and keep your main chat clean"
+      },
+      "prompt": {
+        "zh": "请用子代理并行完成：A 梳理目录结构，B 找出所有 TODO，最后汇总给我",
+        "en": "Use sub-agents in parallel: A) map the project structure, B) find all TODOs, then summarize"
+      }
+    },
+    {
+      "id": "light_model",
+      "level": 1,
+      "detect": "light_model",
+      "title": {
+        "zh": "机械活交给轻量模型",
+        "en": "Give chores to a light model"
+      },
+      "why": {
+        "zh": "格式转换这类活用轻量档更快更省",
+        "en": "Formatting-type work is faster and cheaper on a light tier"
+      },
+      "prompt": {
+        "zh": "这个任务是机械性的，请用最轻量的模型完成；如果当前不是，告诉我怎么用 /model 切换",
+        "en": "This task is mechanical — use the lightest model; if you aren't on one, tell me how to switch with /model"
+      }
+    },
+    {
+      "id": "effort_up",
+      "level": 1,
+      "detect": "effort:high|xhigh|max",
+      "title": {
+        "zh": "难题调高推理强度",
+        "en": "Raise reasoning effort for hard problems"
+      },
+      "why": {
+        "zh": "架构和疑难调试时让它多想一会儿",
+        "en": "Let it think longer on architecture and tricky bugs"
+      },
+      "prompt": {
+        "zh": "这个问题比较难，请用更高的推理强度仔细想清楚再回答：[你的问题]",
+        "en": "This one is hard — use higher reasoning effort and think it through before answering: [your question]"
+      }
+    },
+    {
+      "id": "first_skill",
+      "level": 1,
+      "detect": "skill_any",
+      "title": {
+        "zh": "用起第一个 skill",
+        "en": "Use your first skill"
+      },
+      "why": {
+        "zh": "把常干的活变成一句话能调用的能力",
+        "en": "Turn a recurring job into a one-line command"
+      },
+      "prompt": {
+        "zh": "请列出我装了哪些 skill，挑一个最适合这个项目的，用它完成一个小任务",
+        "en": "List the skills I have installed, pick the best one for this project, and use it on a small task"
+      }
+    },
+    {
+      "id": "mcp",
+      "level": 1,
+      "detect": "mcp",
+      "title": {
+        "zh": "用 MCP 连接外部工具",
+        "en": "Connect tools with MCP"
+      },
+      "why": {
+        "zh": "让 AI 直接读写 GitHub、文档等外部系统",
+        "en": "Let the AI work directly with GitHub, docs, and other systems"
+      },
+      "prompt": {
+        "zh": "请告诉我我已经连了哪些 MCP 工具，并用其中一个帮我完成一件小事",
+        "en": "Tell me which MCP tools I have connected and use one of them for a small task"
+      }
+    },
+    {
+      "id": "hook",
+      "level": 1,
+      "detect": "hook",
+      "title": {
+        "zh": "Hook：让固定动作自动发生",
+        "en": "Hooks: automate the routine"
+      },
+      "why": {
+        "zh": "比如改完代码自动跑测试，不用每次提醒",
+        "en": "For example, run tests after every edit without reminding it"
+      },
+      "prompt": {
+        "zh": "请帮我配置一个 hook：每次改完文件自动运行测试。先告诉我要改什么，我确认后再写",
+        "en": "Set up a hook that runs tests after you edit files. Tell me what you'll change first; write it after I confirm"
+      }
+    },
+    {
+      "id": "compact",
+      "level": 1,
+      "detect": "compaction",
+      "title": {
+        "zh": "长对话压缩一下",
+        "en": "Compact long chats"
+      },
+      "why": {
+        "zh": "会话太长时压缩，保留结论、扔掉过程",
+        "en": "Compress a long session — keep conclusions, drop the noise"
+      },
+      "prompt": {
+        "zh": "请用 /compact 压缩当前对话，只保留结论和待办",
+        "en": "Use /compact to compress this conversation, keeping only conclusions and open items"
+      }
+    },
+    {
+      "id": "worktree",
+      "level": 1,
+      "detect": "tool:EnterWorktree",
+      "title": {
+        "zh": "用 worktree 并行开发",
+        "en": "Parallel work with worktrees"
+      },
+      "why": {
+        "zh": "两件事互不干扰地同时改，不怕弄乱",
+        "en": "Change two things at once without stepping on each other"
+      },
+      "prompt": {
+        "zh": "请在一个新的 git worktree 里完成这个改动，别动我当前的工作区：[你的任务]",
+        "en": "Do this change in a new git worktree and leave my current working tree alone: [your task]"
+      }
+    },
+    {
+      "id": "codex_agents",
+      "level": 1,
+      "detect": "instructions:codex",
+      "title": {
+        "zh": "给 Codex 写 AGENTS.md",
+        "en": "Write an AGENTS.md for Codex"
+      },
+      "why": {
+        "zh": "Codex 的项目说明书，作用和 CLAUDE.md 一样",
+        "en": "Codex's project brief — same idea as CLAUDE.md"
+      },
+      "prompt": {
+        "zh": "请读一下这个项目，帮我写一份 AGENTS.md，控制在 60 行以内",
+        "en": "Read this project and write an AGENTS.md under 60 lines"
+      }
+    },
+    {
+      "id": "init_cmd",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "/init 自动生成说明书",
+        "en": "Generate a brief with /init"
+      },
+      "why": {
+        "zh": "在项目里输入 /init，AI 会自己读代码写初稿",
+        "en": "Type /init in a project and the AI drafts the brief from the code"
+      },
+      "prompt": {
+        "zh": "在这个项目里运行 /init，然后把生成的 CLAUDE.md 给我看",
+        "en": "Run /init in this project, then show me the generated CLAUDE.md"
+      }
+    },
+    {
+      "id": "clear_session",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "一个任务一个会话",
+        "en": "One task per session"
+      },
+      "why": {
+        "zh": "换话题就 /clear，上下文干净、回答更准",
+        "en": "Switch topics with /clear for cleaner context and sharper answers"
+      },
+      "prompt": {
+        "zh": "（换新任务前输入 /clear）",
+        "en": "(type /clear before starting a new task)"
+      }
+    },
+    {
+      "id": "resume",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "接着上次的会话",
+        "en": "Pick up where you left off"
+      },
+      "why": {
+        "zh": "用 claude --resume 或 codex resume 找回昨天的对话",
+        "en": "Use claude --resume or codex resume to reopen yesterday's chat"
+      },
+      "prompt": {
+        "zh": "（在终端输入 claude --resume，选择要继续的会话）",
+        "en": "(run claude --resume in your terminal and choose a session)"
+      }
+    },
+    {
+      "id": "at_mention",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "用 @ 引用文件",
+        "en": "Reference files with @"
+      },
+      "why": {
+        "zh": "输入 @ 加文件名，直接把文件交给 AI 看",
+        "en": "Type @ plus a filename to hand that file to the AI"
+      },
+      "prompt": {
+        "zh": "请看一下 @README.md，告诉我这个项目缺什么",
+        "en": "Look at @README.md and tell me what this project is missing"
+      }
+    },
+    {
+      "id": "paste_image",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "贴截图让 AI 看",
+        "en": "Paste a screenshot"
+      },
+      "why": {
+        "zh": "报错截图、设计稿直接粘贴进对话",
+        "en": "Drop error screenshots or designs straight into the chat"
+      },
+      "prompt": {
+        "zh": "（把截图粘贴进对话）请看这张图，告诉我问题出在哪",
+        "en": "(paste a screenshot) Look at this image and tell me what's wrong"
+      }
+    },
+    {
+      "id": "headless",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "非交互模式跑批量活",
+        "en": "Headless mode for batch jobs"
+      },
+      "why": {
+        "zh": "claude -p 或 codex exec 一行命令跑完就走",
+        "en": "claude -p or codex exec runs a task in one command"
+      },
+      "prompt": {
+        "zh": "（在终端试：claude -p \"用三句话总结这个项目\"）",
+        "en": "(try in a terminal: claude -p \"summarize this project in three sentences\")"
+      }
+    },
+    {
+      "id": "custom_command",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "自定义斜杠命令",
+        "en": "Custom slash commands"
+      },
+      "why": {
+        "zh": "把常用提示词存成 /命令，一键复用",
+        "en": "Save a prompt you reuse as a /command"
+      },
+      "prompt": {
+        "zh": "请帮我把\"检查代码风格并修复\"做成一个自定义斜杠命令",
+        "en": "Turn \"check code style and fix it\" into a custom slash command for me"
+      }
+    },
+    {
+      "id": "review_diff",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "让 AI 改完自查",
+        "en": "Have the AI review its own diff"
+      },
+      "why": {
+        "zh": "改完先让它自己看一遍 diff，问题少一半",
+        "en": "A self-review pass catches many problems early"
+      },
+      "prompt": {
+        "zh": "请检查你刚才的改动：列出可能的问题和遗漏，先别继续改",
+        "en": "Review the change you just made: list possible problems and gaps, and don't change anything yet"
+      }
+    },
+    {
+      "id": "permissions",
+      "level": 1,
+      "detect": "self",
+      "title": {
+        "zh": "设好常用权限",
+        "en": "Set up permissions"
+      },
+      "why": {
+        "zh": "常用的安全命令设成免确认，少被打断",
+        "en": "Allow safe, frequent commands so you're interrupted less"
+      },
+      "prompt": {
+        "zh": "请帮我看看哪些常用命令可以安全地加入免确认列表，先列出来不要改",
+        "en": "Suggest which frequent commands are safe to auto-allow — list them, don't change anything"
+      }
+    }
+  ],
+  "rankings": {
+    "skill": [
+      {
+        "name": "anthropics/skills",
+        "url": "https://github.com/anthropics/skills",
+        "tagline": {
+          "zh": "官方 Skill 库,文档/表格/PPT 处理开箱即用",
+          "en": "Official Skill library with ready-to-use document, spreadsheet, and PPT handling"
+        },
+        "match": []
+      },
+      {
+        "name": "modelcontextprotocol/servers",
+        "url": "https://github.com/modelcontextprotocol/servers",
+        "tagline": {
+          "zh": "MCP 官方 server 合集,让 AI 连上数据库/浏览器/文件系统",
+          "en": "Official MCP server collection connecting AI to databases, browsers, and filesystems"
+        },
+        "match": []
+      },
+      {
+        "name": "stanfordnlp/dspy",
+        "url": "https://github.com/stanfordnlp/dspy",
+        "tagline": {
+          "zh": "把提示词写成可自动优化的程序,不再手工反复调",
+          "en": "Turn prompts into automatically optimized programs instead of repeatedly tuning them by hand"
+        },
+        "match": []
+      },
+      {
+        "name": "mem0ai/mem0",
+        "url": "https://github.com/mem0ai/mem0",
+        "tagline": {
+          "zh": "给你的 AI 加持久记忆,越用越懂你",
+          "en": "Give your AI persistent memory so it understands you better with use"
+        },
+        "match": []
+      },
+      {
+        "name": "langchain-ai/langchain",
+        "url": "https://github.com/langchain-ai/langchain",
+        "tagline": {
+          "zh": "AI 应用开发框架,组件最全",
+          "en": "AI application development framework with the most complete set of components"
+        },
+        "match": []
+      },
+      {
+        "name": "langgenius/dify",
+        "url": "https://github.com/langgenius/dify",
+        "tagline": {
+          "zh": "不写代码也能上线 AI 应用,拖拽可视化",
+          "en": "Launch AI apps without coding through a visual drag-and-drop interface"
+        },
+        "match": []
+      },
+      {
+        "name": "Mintplex-Labs/anything-llm",
+        "url": "https://github.com/Mintplex-Labs/anything-llm",
+        "tagline": {
+          "zh": "私有文档问答一站式,本地部署保护隐私",
+          "en": "All-in-one private document Q&A, with local deployment to protect privacy"
+        },
+        "match": []
+      },
+      {
+        "name": "lobehub/lobe-chat",
+        "url": "https://github.com/lobehub/lobe-chat",
+        "tagline": {
+          "zh": "颜值最高的开源 AI 对话界面,插件丰富",
+          "en": "The best-looking open-source AI chat interface, with many plugins"
+        },
+        "match": []
+      },
+      {
+        "name": "danny-avila/LibreChat",
+        "url": "https://github.com/danny-avila/LibreChat",
+        "tagline": {
+          "zh": "一个界面接入所有模型,团队共享",
+          "en": "Access all models in one interface, shared across your team"
+        },
+        "match": []
+      },
+      {
+        "name": "n8n-io/n8n",
+        "url": "https://github.com/n8n-io/n8n",
+        "tagline": {
+          "zh": "拖拽式工作流自动化,AI 节点齐全",
+          "en": "Drag-and-drop workflow automation with a full set of AI nodes"
+        },
+        "match": []
+      }
+    ],
+    "agent": [
+      {
+        "name": "browser-use/browser-use",
+        "url": "https://github.com/browser-use/browser-use",
+        "tagline": {
+          "zh": "让 AI 替你操作浏览器: 订票/填表/抓数据",
+          "en": "Let AI operate your browser: book tickets, fill forms, and collect data"
+        },
+        "match": []
+      },
+      {
+        "name": "aider-AI/aider",
+        "url": "https://github.com/aider-AI/aider",
+        "tagline": {
+          "zh": "终端里的 AI 结对程序员,直接改你的 git 仓库",
+          "en": "An AI pair programmer in your terminal that edits your git repository directly"
+        },
+        "match": []
+      },
+      {
+        "name": "cline/cline",
+        "url": "https://github.com/cline/cline",
+        "tagline": {
+          "zh": "VS Code 里的自主编码 agent,能跑命令能改文件",
+          "en": "An autonomous coding agent in VS Code that runs commands and edits files"
+        },
+        "match": []
+      },
+      {
+        "name": "assafelovic/gpt-researcher",
+        "url": "https://github.com/assafelovic/gpt-researcher",
+        "tagline": {
+          "zh": "给个题目,自动完成全网调研并出报告",
+          "en": "Give it a topic and it researches the web and produces a report automatically"
+        },
+        "match": []
+      },
+      {
+        "name": "microsoft/autogen",
+        "url": "https://github.com/microsoft/autogen",
+        "tagline": {
+          "zh": "微软出品的多 agent 协作框架",
+          "en": "A multi-agent collaboration framework from Microsoft"
+        },
+        "match": []
+      },
+      {
+        "name": "crewAIInc/crewAI",
+        "url": "https://github.com/crewAIInc/crewAI",
+        "tagline": {
+          "zh": "按角色组建 AI 团队: 研究员+写手+审校流水线",
+          "en": "Build an AI team by role: a researcher, writer, and reviewer pipeline"
+        },
+        "match": []
+      },
+      {
+        "name": "geekan/MetaGPT",
+        "url": "https://github.com/geekan/MetaGPT",
+        "tagline": {
+          "zh": "一句需求,多 agent 模拟软件公司交付项目",
+          "en": "One requirement, multiple agents simulating a software company to deliver the project"
+        },
+        "match": []
+      },
+      {
+        "name": "OpenInterpreter/open-interpreter",
+        "url": "https://github.com/OpenInterpreter/open-interpreter",
+        "tagline": {
+          "zh": "本地代码解释器,让 AI 直接操作你的电脑",
+          "en": "A local code interpreter that lets AI operate your computer directly"
+        },
+        "match": []
+      },
+      {
+        "name": "khoj-ai/khoj",
+        "url": "https://github.com/khoj-ai/khoj",
+        "tagline": {
+          "zh": "你的第二大脑: 笔记/文档/日程的个人 AI 助理",
+          "en": "Your second brain: a personal AI assistant for notes, documents, and schedules"
+        },
+        "match": []
+      },
+      {
+        "name": "ItzCrazyKns/Perplexica",
+        "url": "https://github.com/ItzCrazyKns/Perplexica",
+        "tagline": {
+          "zh": "开源版 AI 搜索引擎,自托管的 Perplexity",
+          "en": "An open-source AI search engine: a self-hosted Perplexity"
+        },
+        "match": []
+      }
+    ]
+  },
+  "tips": [
+    {
+      "id": "project_brief",
+      "title": {
+        "zh": "给项目写一个 CLAUDE.md(AI 的项目说明书),它从此记住你的规矩",
+        "en": "Write a CLAUDE.md (a project brief for AI) so it remembers your rules"
+      },
+      "detail": {
+        "zh": "CLAUDE.md 是放在项目文件夹里的规则文件(Claude Code 认这个名字,Codex 认 AGENTS.md)。写清楚项目结构、常用命令、你的规矩,AI 每次对话都会自动先读,不用再重复交代。",
+        "en": "CLAUDE.md is a rules file in your project folder (Claude Code recognizes this name; Codex recognizes AGENTS.md). Describe the project structure, common commands, and your rules. The AI reads it automatically before every conversation, so you do not have to repeat yourself."
+      },
+      "source": "官方文档 docs.anthropic.com"
+    },
+    {
+      "id": "fresh_session",
+      "title": {
+        "zh": "长会话记得开新会话,省钱又提质",
+        "en": "Start fresh sessions during long conversations to cut costs and improve quality"
+      },
+      "detail": {
+        "zh": "会话越长,每次请求都在为历史内容付费,而且模型注意力被稀释。一个任务结束就开新会话,大任务拆成多个会话。",
+        "en": "The longer the conversation, the more you pay for its history on every request, and the more the model's attention is diluted. Start a new session when a task ends, and split large tasks across sessions."
+      },
+      "source": "官方计费文档 + 社区共识"
+    },
+    {
+      "id": "plan_first",
+      "title": {
+        "zh": "先让 AI 出计划,你点头后再让它动手",
+        "en": "Ask the AI for a plan first, then approve it before it acts"
+      },
+      "detail": {
+        "zh": "复杂任务先说「先给我一个计划,先不要改代码」。看过计划再让它动手,返工大幅减少。Claude Code 里有专门的『计划模式』(Plan Mode)。",
+        "en": "For complex tasks, say \"Give me a plan first; do not change code yet.\" Review the plan before letting it act to greatly reduce rework. Claude Code has a dedicated Plan Mode."
+      },
+      "source": "官方文档 + 社区实践"
+    },
+    {
+      "id": "prompt_caching",
+      "title": {
+        "zh": "用好提示词缓存,重复内容只按 1 折计费",
+        "en": "Use prompt caching: repeated content costs just 10% of the usual rate"
+      },
+      "detail": {
+        "zh": "固定的要求、参考资料放在每次提问的开头,变化的问题放末尾——AI 认出重复部分后,这部分只收约 1 折的钱。",
+        "en": "Put fixed requirements and reference materials at the beginning of each prompt, and changing questions at the end. When the AI recognizes the repeated portion, that part costs about 10% of the usual rate."
+      },
+      "source": "官方定价文档"
+    },
+    {
+      "id": "summarize_progress",
+      "title": {
+        "zh": "用 /compact 或开新会话前,先让 AI 总结当前进度",
+        "en": "Before using /compact or starting a new session, ask the AI to summarize progress"
+      },
+      "detail": {
+        "zh": "长会话结束前说「把已完成的结论和待办总结成一段」,存进项目笔记再开新会话——上下文清爽了,进度一点不丢。",
+        "en": "Before ending a long conversation, say \"Summarize the completed conclusions and open items in a paragraph.\" Save it in your project notes before starting a new session to keep the context clean without losing progress."
+      },
+      "source": "官方文档 + 社区共识"
+    },
+    {
+      "id": "stop_retrying",
+      "title": {
+        "zh": "连续失败两次就停,改问法而不是重发",
+        "en": "After two consecutive failures, stop and rephrase instead of resending"
+      },
+      "detail": {
+        "zh": "AI 连续两次没做对,原样重发第三次几乎必然还是错的。停下来: 缩小任务范围、补充关键信息、或者换一种问法。",
+        "en": "If the AI gets it wrong twice in a row, resending the same request a third time will almost certainly fail again. Stop: narrow the task, add key information, or ask in a different way."
+      },
+      "source": "社区共识"
+    }
+  ]
+}
