@@ -45,10 +45,10 @@ def evaluate_dimensions(p, coverage: dict | None, locale: str) -> list[Evaluable
     if coverage is None:
         coverage = {tool: {"signals": dict.fromkeys(SUPPORTED.get(tool, {"usage"}), "available")}
                     for tool in p.usage_tools_14d | p.behavior_tools_14d}
-    _, saving, mix = diagnose_model_mix(p.usage_by_model_7d, p.total_cost_7d)
+    _, saving, mix = diagnose_model_mix(p.scoring_usage_7d, p.scoring_weight_7d)
     _, _, time = analyze_time_habits(p.hourly_histogram_7d)
     legacy, _ = compute_checkup(p.rule_hits(), mix, time, p.cache_hit_rate_7d, saving)
-    usage = p.usage_by_model_7d
+    usage = p.scoring_usage_7d
     tokens = sum(u["tokens"] for u in usage.values())
     costs = sum(u["cost"] for u in usage.values())
     hist = p.hourly_histogram_7d

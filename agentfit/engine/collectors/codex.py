@@ -168,13 +168,14 @@ def latest_rate_limits(home: Path) -> dict | None:
                 if row is None or row.get("type") != "event_msg" or row["payload"].get("type") != "token_count":
                     continue
                 limits = row["payload"].get("rate_limits")
-                if not isinstance(limits, dict) or not isinstance(limits.get("primary"), dict):
+                if not isinstance(limits, dict) or not any(isinstance(limits.get(name), dict)
+                                                            for name in ("primary", "secondary")):
                     continue
                 try:
                     timestamp = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00"))
                     if timestamp.tzinfo is None:
                         timestamp = timestamp.replace(tzinfo=timezone.utc)
-                    value = {"plan_type": limits.get("plan_type")}
+                    value = {"plan_type": limits.get("plan_type"), "recorded_at": timestamp.isoformat()}
                     for name in ("primary", "secondary"):
                         window = limits.get(name)
                         value[f"{name}_pct"] = float(window["used_percent"]) if window else None

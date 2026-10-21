@@ -511,3 +511,44 @@ PRACTICE_EVIDENCE = {
 
 def practice_evidence_label(kind: str, locale: str) -> str:
     return PRACTICE_EVIDENCE[kind][0 if locale == "zh" else 1]
+
+
+_REVIEW_COPY = {
+    "en": {
+        "tokens": "Logged tokens (excluding cache reads)",
+        "price_basis": "API-equivalent at public prices, not a subscription bill",
+        "matched_subtotal": "Matched subtotal USD {amount}, price coverage {pct}%",
+        "price_unknown": "Price unknown", "price_date": "Price table dated {date}",
+        "quota_hours": "Codex {hours}-hour window: {pct}% used",
+        "quota_week": "Codex weekly window: {pct}% used",
+        "quota_minutes": "Codex {minutes}-minute window: {pct}% used",
+        "quota_recorded": "Quota recorded {date}", "quota_reset": "Resets {date}",
+        "quota_stale": "Quota record is stale", "quota_future": "Quota record is future-dated",
+        "delta": "Mean score change for matched weekdays: {delta} points",
+        "accumulating": "Collecting comparable data", "version_changed": "Scoring version changed",
+        "observed": "New structured practice observations: {count}",
+        "no_change": "No new practice change was observed this week",
+        "uncertainty": "Log evidence does not prove output quality or time saved",
+        "next_practice": "One practice for next week",
+        "separate": "Configuration / self-report: {configured} / {self_reported}; reuse: {reuse}",
+    },
+    "zh": {
+        "tokens": "日志 Token（不含缓存读取）",
+        "price_basis": "按公开 API 单价折算，非订阅账单",
+        "matched_subtotal": "已匹配部分折算 USD {amount}，价格覆盖 {pct}%",
+        "price_unknown": "价格未知", "price_date": "价格表日期 {date}",
+        "quota_hours": "Codex {hours} 小时窗口已用 {pct}%", "quota_week": "Codex 周窗口已用 {pct}%",
+        "quota_minutes": "Codex {minutes} 分钟窗口已用 {pct}%",
+        "quota_recorded": "额度记录时间 {date}", "quota_reset": "重置时间 {date}",
+        "quota_stale": "额度记录已过时", "quota_future": "额度记录时间在未来",
+        "delta": "同星期窗口均分变化 {delta} 分",
+        "accumulating": "可比数据积累中", "version_changed": "评分版本变化",
+        "observed": "新的结构化实践观察：{count}", "no_change": "本周未观察到新的实践变化",
+        "uncertainty": "日志证据不能证明输出质量或节省时间", "next_practice": "下周练一步",
+        "separate": "配置 / 自报：{configured} / {self_reported}；复用：{reuse}",
+    },
+}
+
+
+def review_labels(locale):
+    return dict(_REVIEW_COPY[locale])

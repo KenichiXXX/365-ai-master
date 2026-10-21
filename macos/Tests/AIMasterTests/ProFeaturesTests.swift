@@ -56,6 +56,21 @@ final class ProFeaturesTests: XCTestCase {
         XCTAssertNil(old.growth)
         XCTAssertNil(old.weekly)
     }
+    func testUnversionedDeltaNeverBecomesAnImprovementClaimInEitherLanguage() throws {
+        let snapshot = try EngineRunner.decode(Data(#"{"schema":3,"weekly":{"week_start":"2026-10-19","score_delta":20,"cards_lit_this_week":[],"quests_passed_this_week":[],"days_active":3}}"#.utf8), status: 0).snapshot
+        for locale in ["zh", "en"] {
+            let text = try XCTUnwrap(snapshot.weekly).summary(locale: locale)
+            XCTAssertEqual(text, locale == "zh" ? "可比数据积累中" : "Collecting comparable data")
+            XCTAssertFalse(text.contains("20"))
+            XCTAssertFalse(text.contains("%"))
+            let caption = UsageSummary(tokens7d: 12, costUsd7d: 500, codexQuotaPct: 80).caption(locale: locale)
+            XCTAssertTrue(caption.contains(locale == "zh" ? "非订阅账单" : "not a subscription bill"))
+            XCTAssertFalse(caption.contains("500"))
+            XCTAssertFalse(caption.contains("saved"))
+            XCTAssertFalse(caption.contains("节省"))
+        }
+    }
+
     func testUnknownScoresDoNotChangeEntitlementsOrAcquireAPercentile() throws {
         let snapshot = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":null,"tier":null},"dimensions":[{"key":"routing","label":"Routing","score":null}],"growth":{"days":[],"week_delta":null}}"#.utf8), status: 0).snapshot
         XCTAssertFalse(snapshot.hasEvaluableScores)

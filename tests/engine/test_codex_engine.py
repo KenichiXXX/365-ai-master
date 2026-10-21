@@ -99,7 +99,23 @@ def test_rate_limits_newest_event_in_five_newest_files(tmp_path):
         log.write_text(json.dumps(row) + "\n")
         os.utime(log, (1000+i, 1000+i))
     limits = latest_rate_limits(tmp_path)
-    assert limits == {"primary_pct": 1.0, "primary_window_min": 300,
+    assert limits == {"recorded_at": "2026-10-25T00:00:00+00:00", "primary_pct": 1.0, "primary_window_min": 300,
                       "primary_resets_at": datetime.fromtimestamp(1792540800, timezone.utc).isoformat(),
                       "secondary_pct": None, "secondary_window_min": None,
                       "secondary_resets_at": None, "plan_type": None}
+
+
+def test_quota_secondary_only_preserves_source_window_and_record_time(tmp_path):
+    import json
+    root = tmp_path / ".codex/sessions"
+    root.mkdir(parents=True)
+    (root / "quota.jsonl").write_text(json.dumps({
+        "timestamp": "2026-10-21T00:00:00Z", "type": "event_msg", "payload": {
+            "type": "token_count", "rate_limits": {"secondary": {
+                "used_percent": 20, "window_minutes": 120, "resets_at": 1792540800}}}}) + "\n")
+    quota = latest_rate_limits(tmp_path)
+    assert quota is not None
+    assert quota["primary_pct"] is None
+    assert quota["secondary_pct"] == 20
+    assert quota["secondary_window_min"] == 120
+    assert quota["recorded_at"] == "2026-10-21T00:00:00+00:00"

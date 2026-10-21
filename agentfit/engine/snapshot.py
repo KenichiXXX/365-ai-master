@@ -14,7 +14,7 @@ from agentfit.engine.codex_book import (
 )
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
-from agentfit.engine.content import first_practice, label, practice_evidence_label
+from agentfit.engine.content import first_practice, label, practice_evidence_label, review_labels
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.coverage import source_coverage
 from agentfit.engine.history import record_history
@@ -52,14 +52,15 @@ def build_snapshot(
     cutoff = now - timedelta(days=30)
     state.prune_before(cutoff)
     state.save()
-    profile = build_profile([event for event in events if event.dt() >= cutoff], now)
+    pool = load_content(content)
+    profile = build_profile([event for event in events if event.dt() >= cutoff], now, prices=pool.get("prices"))
     inventories = {}
     quota = None
     for collector, row in collectors:
         usage = profile.by_tool.get(collector.tool, {})
         row.update(
-            usage_today=usage.get("today", {"tokens": 0, "cost_usd": 0.0}),
-            usage_7d=usage.get("7d", {"tokens": 0, "cost_usd": 0.0}),
+            usage_today=usage.get("today", {"tokens": 0, "cost_usd": None}),
+            usage_7d=usage.get("7d", {"tokens": 0, "cost_usd": None}),
             by_model=usage.get("by_model", []),
         )
         if not row["detected"]:
@@ -73,6 +74,11 @@ def build_snapshot(
                 inventories[collector.tool] = inventory
             if collector.tool == "codex" and row["error"] is None:
                 quota = latest_rate_limits(home)
+                if quota:
+                    recorded = quota.get("recorded_at")
+                    age = (now - datetime.fromisoformat(recorded)).total_seconds() if recorded else None
+                    quota["freshness"] = ("unknown" if age is None else "future" if age < 0 else
+                                          "stale" if age > 3600 else "fresh")
         except Exception:
             row["error"] = "unavailable"
     dims = dimensions(profile, coverage, locale)
@@ -80,7 +86,6 @@ def build_snapshot(
     score = assessment["score"]
     met = evaluate(profile, inventories, dims)
     progress = advance(met, state_dir / "progress.json", now)
-    pool = load_content(content)
     book = update_book(pool, profile, inventories, state_dir / "progress.json", now, events, coverage)
     for card in book["cards"] + ([book["today"]] if book["today"] else []):
         card["evidence_label"] = practice_evidence_label(card["evidence_kind"], locale)
@@ -93,7 +98,9 @@ def build_snapshot(
                                     len(progress["passed"]), locale)
     growth, weekly = record_history(
         state_dir / "progress.json", now, score, {d.key: d.score for d in dims},
-        profile.active_dates_30d,
+        profile.active_dates_30d, coverage=coverage, locale=locale,
+        price_version=profile.price_estimate["price_version"],
+        next_practice=book["today"]["id"] if book["today"] else "review_capability_v1",
     )
     tip = today_tip(progress, dims, locale, today, state_dir / "progress.json",
                     supported_quests(coverage, inventories))
@@ -135,7 +142,9 @@ def build_snapshot(
         "usage_summary": {
             "tokens_7d": sum(usage["tokens"] for usage in profile.usage_by_model_7d.values()),
             "cost_usd_7d": profile.total_cost_7d,
-            "codex_quota_pct": quota.get("primary_pct") if quota else None,
+            "price_estimate": profile.price_estimate,
+            "codex_quota": quota,
+            "labels": review_labels(locale),
         },
         "notices": notices,
         "labels": {key: label(key, locale) for key in ("no_tools", "tool_unavailable")},

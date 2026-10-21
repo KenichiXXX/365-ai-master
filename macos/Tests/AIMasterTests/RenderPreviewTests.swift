@@ -158,4 +158,54 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testRenderComparableHistoryAndAccumulatingReview() throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        let root = URL(fileURLWithPath: out + "-history-fixture-" + UUID().uuidString)
+        let home = root.appendingPathComponent("empty-home")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        var history: [String: Any] = [:]
+        for offset in [6, 5, 3, 2, 1] {
+            let day = try XCTUnwrap(Calendar.current.date(byAdding: .day, value: -offset, to: Date()))
+            history[formatter.string(from: day)] = ["score": 80 - offset * 3, "dims": [:],
+                "score_version": offset >= 3 ? "previous-v1" : "1", "rule_version": "1",
+                "timezone": "Asia/Tokyo", "price_version": "unreviewed-v1", "coverage": [:]] as [String: Any]
+        }
+        for locale in ["zh", "en"] {
+            let state = root.appendingPathComponent(locale)
+            try FileManager.default.createDirectory(at: state, withIntermediateDirectories: true)
+            try JSONSerialization.data(withJSONObject: ["history": history, "passed": [:], "regress_notified": []] as [String: Any]).write(to: state.appendingPathComponent("progress.json"))
+            let process = Process()
+            process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
+            process.arguments = ["snapshot", "--json", "--home", home.path, "--state-dir", state.path, "--locale", locale]
+            let pipe = Pipe(); process.standardOutput = pipe; process.standardError = FileHandle.nullDevice
+            try process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            let snapshot = try EngineRunner.decode(data, status: process.terminationStatus).snapshot
+            let growth = try XCTUnwrap(snapshot.growth)
+            XCTAssertEqual(growth.days.count, 30)
+            XCTAssertEqual(growth.segments.map(\.count), [2, 1, 2])
+            XCTAssertNil(growth.comparableDelta)
+            XCTAssertTrue(snapshot.weekly!.reportText!.contains(locale == "zh" ? "可比数据积累中" : "Collecting comparable data"))
+            try data.write(to: URL(fileURLWithPath: out + "-history-" + locale + ".json"))
+            let views: [(String, AnyView)] = [
+                ("curve", AnyView(GrowthCurve(growth: growth, zh: locale == "zh"))),
+                ("review", AnyView(WeeklyReviewSheet(snapshot: snapshot)))
+            ]
+            for (name, view) in views {
+                let hosting = NSHostingView(rootView: view.padding(16).frame(width: 440)
+                    .background(Color(nsColor: .windowBackgroundColor)))
+                hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+                hosting.layoutSubtreeIfNeeded()
+                let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+                try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                    .write(to: URL(fileURLWithPath: out + "-history-" + name + "-" + locale + ".png"))
+            }
+        }
+    }
+
 }

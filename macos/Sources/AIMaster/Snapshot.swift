@@ -51,14 +51,14 @@ struct ToolUsage: Decodable, Identifiable {
 
 struct Usage: Decodable {
     let tokens: Int
-    let costUsd: Double
+    let costUsd: Double?
 }
 
 struct ModelUsage: Decodable, Identifiable {
     var id: String { model }
     let model: String
     let tokens: Int
-    let costUsd: Double
+    let costUsd: Double?
 }
 
 struct Quota: Decodable {
@@ -73,6 +73,8 @@ struct CodexQuota: Decodable {
     let secondaryWindowMin: Int?
     let secondaryResetsAt: String?
     let planType: String?
+    let recordedAt: String?
+    let freshness: String?
 }
 
 struct Dimension: Decodable, Identifiable {
@@ -263,11 +265,14 @@ struct Badge: Decodable, Identifiable {
 
 struct UsageSummary: Decodable {
     let tokens7d: Int
-    let costUsd7d: Double
-    let codexQuotaPct: Double?
+    let costUsd7d: Double?
+    let codexQuotaPct: Double? // Legacy only: percentage alone proves no window.
+    var priceEstimate: PriceEstimate? = nil
+    var codexQuota: CodexQuota? = nil
+    var labels: [String: String]? = nil
 
     enum CodingKeys: String, CodingKey {
-        case tokens7d = "tokens7D", costUsd7d = "costUsd7D", codexQuotaPct
+        case tokens7d = "tokens7D", costUsd7d = "costUsd7D", codexQuotaPct, priceEstimate, codexQuota, labels
     }
 
     static func tokens(_ count: Int, locale: String) -> String {
@@ -290,41 +295,139 @@ struct UsageSummary: Decodable {
 
     func caption(locale: String) -> String {
         let zh = locale == "zh"
-        let cost = String(format: "%.0f", locale: Locale(identifier: "en_US_POSIX"), costUsd7d)
-        var text = zh ? "本周 \(Self.tokens(tokens7d, locale: locale)) tokens · 折算 $\(cost)"
-            : "This week \(Self.tokens(tokens7d, locale: locale)) tokens · ≈$\(cost) API-equivalent"
-        if let quota = codexQuotaPct {
-            let pct = String(format: "%.0f", locale: Locale(identifier: "en_US_POSIX"), quota)
-            text += zh ? " · Codex 周额度 \(pct)%" : " · Codex weekly \(pct)%"
+        func copy(_ key: String, _ en: String, _ chinese: String) -> String {
+            labels?[key] ?? (zh ? chinese : en)
+        }
+        func fill(_ template: String, _ pairs: [String: String]) -> String {
+            pairs.reduce(template) { $0.replacingOccurrences(of: "{\($1.key)}", with: $1.value) }
+        }
+        func number(_ value: Double) -> String {
+            String(format: "%.4g", locale: Locale(identifier: "en_US_POSIX"), value)
+        }
+        var text = copy("tokens", "Logged tokens (excluding cache reads)", "日志 Token（不含缓存读取）")
+            + ": " + Self.tokens(tokens7d, locale: locale)
+        if let price = priceEstimate, let pct = price.coveragePct, pct > 0 {
+            text += " · " + fill(copy("matched_subtotal", "Matched subtotal USD {amount}, price coverage {pct}%",
+                                     "已匹配部分折算 USD {amount}，价格覆盖 {pct}%"),
+                                ["amount": number(price.matchedSubtotalUsd), "pct": number(pct)])
+        } else {
+            text += " · " + copy("price_unknown", "Price unknown", "价格未知")
+        }
+        text += " · " + copy("price_basis", "API-equivalent at public prices, not a subscription bill", "按公开 API 单价折算，非订阅账单")
+        if let date = priceEstimate?.reviewedAt {
+            text += " · " + fill(copy("price_date", "Price table dated {date}", "价格表日期 {date}"), ["date": date])
+        }
+        if let quota = codexQuota {
+            for (pct, minutes, reset) in [(quota.primaryPct, quota.primaryWindowMin, quota.primaryResetsAt),
+                                           (quota.secondaryPct, quota.secondaryWindowMin, quota.secondaryResetsAt)] {
+                guard let pct, pct.isFinite, let minutes, minutes > 0 else { continue }
+                let template = minutes == 10080
+                    ? copy("quota_week", "Codex weekly window: {pct}% used", "Codex 周窗口已用 {pct}%")
+                    : minutes % 60 == 0
+                    ? copy("quota_hours", "Codex {hours}-hour window: {pct}% used", "Codex {hours} 小时窗口已用 {pct}%")
+                    : copy("quota_minutes", "Codex {minutes}-minute window: {pct}% used", "Codex {minutes} 分钟窗口已用 {pct}%")
+                text += " · " + fill(template, ["pct": number(pct), "hours": number(Double(minutes) / 60), "minutes": String(minutes)])
+                if let reset {
+                    text += " · " + fill(copy("quota_reset", "Resets {date}", "重置时间 {date}"), ["date": reset])
+                }
+            }
+            if let date = quota.recordedAt {
+                text += " · " + fill(copy("quota_recorded", "Quota recorded {date}", "额度记录时间 {date}"), ["date": date])
+            }
+            if quota.freshness == "stale" {
+                text += " · " + copy("quota_stale", "Quota record is stale", "额度记录已过时")
+            } else if quota.freshness == "future" {
+                text += " · " + copy("quota_future", "Quota record is future-dated", "额度记录时间在未来")
+            }
         }
         return text
     }
 }
 
+struct PriceEstimate: Decodable {
+    let matchedSubtotalUsd: Double
+    let coveragePct: Double?
+    let reviewedAt: String?
+}
+
+struct HistoryComparison: Decodable {
+    let reason: String?
+    let window: String?
+}
+
 struct Growth: Decodable {
     let days: [ScoreDay]
-    let weekDelta: Int?
+    let weekDelta: Double?
+    let comparison: HistoryComparison?
+    let labels: [String: String]?
+
+    // Explicit series IDs prevent Charts from bridging unknown dates or versions.
+    var segments: [[ScoreDay]] {
+        var result: [[ScoreDay]] = []
+        var previous: ScoreDay?
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        for day in days {
+            guard let score = day.score, (0...100).contains(score),
+                  let date = formatter.date(from: day.date) else { previous = nil; continue }
+            guard let version = day.scoreVersion, version != "legacy_unknown_version" else {
+                result.append([day]); previous = nil; continue
+            }
+            let consecutive = previous.flatMap { formatter.date(from: $0.date) }
+                .map { date.timeIntervalSince($0) == 86400 } ?? false
+            if consecutive, previous?.scoreVersion == version, previous?.ruleVersion == day.ruleVersion {
+                result[result.count - 1].append(day)
+            } else { result.append([day]) }
+            previous = day
+        }
+        return result
+    }
+
+    var comparableDelta: Double? {
+        comparison?.reason == nil && comparison?.window == "matched_completed_weekdays" ? weekDelta : nil
+    }
 }
 
 struct ScoreDay: Decodable, Identifiable {
     var id: String { date }
     let date: String
-    let score: Int
+    let score: Int?
+    let scoreVersion: String?
+    let ruleVersion: String?
+}
+
+struct ReviewStatement: Decodable {
+    let text: String
+    let metricId: String?
+    let evidenceIds: [String]?
+    let practiceId: String?
+    let reason: String?
 }
 
 struct WeeklyReview: Decodable {
     let weekStart: String
-    let scoreDelta: Int?
+    let scoreDelta: Double?
     let cardsLitThisWeek: [String]
     let questsPassedThisWeek: [String]
     let daysActive: Int
+    let comparison: HistoryComparison?
+    let observedChange: ReviewStatement?
+    let uncertainty: ReviewStatement?
+    let nextPractice: ReviewStatement?
+    let reportText: String?
+    let selfReportIds: [String]?
+    let configurationIds: [String]?
+    let reuseEvidenceIds: [String]?
 
     func summary(locale: String) -> String {
-        let change = scoreDelta.map { $0 >= 0 ? "+\($0)" : String($0) }
-        if locale == "zh" {
-            return "活跃 \(daysActive) 天 · 新点亮 \(cardsLitThisWeek.count) 张 · " + (change.map { "分数 \($0)" } ?? "暂无上周数据")
+        guard comparison?.window == "matched_completed_weekdays", comparison?.reason == nil, let delta = scoreDelta else {
+            return locale == "zh" ? "可比数据积累中" : "Collecting comparable data"
         }
-        return "\(daysActive) active days · \(cardsLitThisWeek.count) new skills · " + (change.map { "Score \($0)" } ?? "No data last week")
+        let signed = String(format: "%+.2f", locale: Locale(identifier: "en_US_POSIX"), delta)
+        return locale == "zh" ? "同星期窗口均分变化 \(signed) 分"
+            : "Mean score change for matched weekdays: \(signed) points"
     }
 }
 

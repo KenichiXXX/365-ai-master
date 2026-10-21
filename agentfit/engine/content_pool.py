@@ -26,6 +26,9 @@ def validate(d: object) -> bool:
         return False
     if not _text(d.get("updated_at")):
         return False
+    from agentfit.engine.prices import validate_prices
+    if "prices" in d and not validate_prices(d["prices"]):
+        return False
     skills, rankings, tips = d.get("skills"), d.get("rankings"), d.get("tips")
     if not isinstance(skills, list) or not isinstance(rankings, dict) or not isinstance(tips, list):
         return False

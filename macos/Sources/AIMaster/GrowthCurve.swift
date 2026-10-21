@@ -8,12 +8,20 @@ struct GrowthCurve: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(zh ? "成长曲线" : "Growth curve").font(.headline)
-            Chart(growth.days) { day in
-                LineMark(x: .value(zh ? "日期" : "Date", day.date),
-                         y: .value(zh ? "分数" : "Score", day.score))
-                PointMark(x: .value(zh ? "日期" : "Date", day.date),
-                          y: .value(zh ? "分数" : "Score", day.score))
+            Chart {
+                ForEach(Array(growth.segments.enumerated()), id: \.offset) { index, segment in
+                    ForEach(segment) { day in
+                        if let score = day.score {
+                            LineMark(x: .value(zh ? "日期" : "Date", day.date),
+                                     y: .value(zh ? "分数" : "Score", score),
+                                     series: .value("Segment", String(index)))
+                            PointMark(x: .value(zh ? "日期" : "Date", day.date),
+                                      y: .value(zh ? "分数" : "Score", score))
+                        }
+                    }
+                }
             }
+            .chartXScale(domain: growth.days.map(\.date))
             .chartYScale(domain: 0...100)
             .chartXAxis(.hidden)
             .frame(height: 130)
@@ -22,11 +30,14 @@ struct GrowthCurve: View {
                 Spacer()
                 Text(growth.days.last?.date ?? "")
             }.font(.caption).foregroundStyle(.secondary)
-            if let delta = growth.weekDelta {
-                let signed = delta >= 0 ? "+\(delta)" : String(delta)
-                Text(zh ? "本周比上周 \(signed)" : "This week vs last week \(signed)")
+            if let delta = growth.comparableDelta {
+                let signed = String(format: "%+.2f", delta)
+                Text(zh ? "同星期窗口均分变化 \(signed) 分" : "Mean score change for matched weekdays: \(signed) points")
             } else {
-                Text(zh ? "暂无上周数据" : "No data last week").foregroundStyle(.secondary)
+                Text(zh ? "可比数据积累中" : "Collecting comparable data").foregroundStyle(.secondary)
+                if growth.comparison?.reason == "version_changed" {
+                    Text(zh ? "评分版本变化" : "Scoring version changed").font(.caption)
+                }
             }
         }
     }
@@ -44,15 +55,20 @@ struct WeeklyReviewSheet: View {
                 if let weekly = snapshot.weekly {
                     Text(weekly.weekStart).foregroundStyle(.secondary)
                     Text(weekly.summary(locale: snapshot.locale ?? "en"))
-                    Text(zh ? "本周点亮的技能" : "Skills lit this week").font(.headline)
-                    if weekly.cardsLitThisWeek.isEmpty { Text(zh ? "暂无" : "None yet") }
-                    ForEach(weekly.cardsLitThisWeek, id: \.self) { id in
-                        Text("✓ " + (snapshot.book?.cards.first { $0.id == id }?.title ?? id))
+                    if let observed = weekly.observedChange {
+                        Text(observed.text).font(.headline)
+                        Text(([observed.metricId].compactMap { $0 } + (observed.evidenceIds ?? [])).joined(separator: " · "))
+                            .font(.caption).foregroundStyle(.secondary)
                     }
-                    Text(zh ? "本周通过的关卡" : "Quests passed this week").font(.headline)
-                    if weekly.questsPassedThisWeek.isEmpty { Text(zh ? "暂无" : "None yet") }
-                    ForEach(weekly.questsPassedThisWeek, id: \.self) { key in
-                        Text("✓ " + (snapshot.village?.quests.first { $0.key == key }?.title ?? key))
+                    if let uncertainty = weekly.uncertainty { Text(uncertainty.text).foregroundStyle(.secondary) }
+                    Text(zh ? "配置 / 自报：\(weekly.configurationIds?.count ?? 0) / \(weekly.selfReportIds?.count ?? 0)；复用：\(weekly.reuseEvidenceIds?.count ?? 0)"
+                         : "Configuration / self-report: \(weekly.configurationIds?.count ?? 0) / \(weekly.selfReportIds?.count ?? 0); reuse: \(weekly.reuseEvidenceIds?.count ?? 0)")
+                    if let next = weekly.nextPractice {
+                        Text(next.text).font(.headline)
+                        Text(snapshot.book?.cards.first { $0.id == next.practiceId }?.title ?? next.practiceId ?? "")
+                    }
+                    if let report = weekly.reportText {
+                        CopyButton(prompt: report, title: zh ? "复制复盘" : "Copy review", locale: snapshot.locale ?? "en")
                     }
                 } else {
                     Text(zh ? "暂无周报数据" : "No weekly data yet")

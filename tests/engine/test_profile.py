@@ -17,7 +17,7 @@ def test_dedupe_and_windows():
         ev(key="cx", tool="codex", model="gpt-6.1-sol", input=200, cache_read=800, output=50),
     ]
     p = build_profile(events, NOW)
-    assert p.usage_by_model_7d["claude-sonnet-5"] == {"tokens": 140, "cost": round(event_cost(ev(input=100, output=40)), 6), "requests": 1}
+    assert p.usage_by_model_7d["claude-sonnet-5"] == {"tokens": 140, "cost": None, "requests": 1}
     assert p.tool_calls_14d == {"Edit": 1, "Read": 1}
     assert "old" not in str(p.usage_by_model_7d) and p.turns_14d == 1 and p.aborted_14d == 1
     assert p.light_token_share_14d == round(100 / (140 + 100 + 250), 4)
@@ -97,22 +97,21 @@ def test_today_and_histogram_use_local_timezone(monkeypatch):
 
 def test_costs_model_order_and_empty_profile():
     assert event_cost(ev(model="claude-opus-4", input=1_000_000, output=1_000_000,
-                         cache_read=1_000_000, cache_write=999_999)) == 91.5
+                         cache_read=1_000_000, cache_write=999_999)) is None
     events = [ev(key="small", input=1, cache_read=1),
               ev(key="large", model="claude-haiku-4-5", input=2, output=3)]
     p = build_profile(events, NOW)
-    expected_cost = round(sum(event_cost(e) for e in events), 6)
-    assert p.total_cost_7d == expected_cost
-    assert p.by_tool["claude_code"]["7d"] == {"tokens": 6, "cost_usd": expected_cost}
-    assert p.by_tool["claude_code"]["by_model"] == [
-        {"model": "claude-haiku-4-5", "tokens": 5, "cost_usd": 0.000017},
-        {"model": "claude-sonnet-5", "tokens": 1, "cost_usd": 0.000003},
-    ]
+    assert p.total_cost_7d is None
+    assert p.by_tool["claude_code"]["7d"]["tokens"] == 6
+    assert p.by_tool["claude_code"]["7d"]["cost_usd"] is None
+    assert [(r["model"], r["tokens"], r["cost_usd"]) for r in p.by_tool["claude_code"]["by_model"]] == [
+        ("claude-haiku-4-5", 5, None), ("claude-sonnet-5", 1, None)]
+    assert p.price_estimate["unknown_tokens"] == 7
     empty = build_profile([], NOW)
     assert empty.now == NOW
     assert empty.cache_hit_rate_7d is None
     assert empty.light_token_share_14d == 0.0
-    assert empty.total_cost_7d == 0.0
+    assert empty.total_cost_7d is None
     assert empty.by_tool == {} and empty.usage_by_model_7d == {}
     assert empty.hourly_histogram_7d == [0] * 24
 
@@ -126,7 +125,7 @@ def test_rule_thresholds_and_scoring_integration():
         p = build_profile([ev(turn_start=turns, aborted=aborted, compacted=compacted,
                               input=100, output=20, model="claude-opus-4")], NOW)
         assert p.rule_hits() == {"RULE_CONTEXT_BLOAT": bloat, "RULE_ERROR_RETRY_LOOP": retry}
-        _, saving, mix_flags = diagnose_model_mix(p.usage_by_model_7d, p.total_cost_7d)
+        _, saving, mix_flags = diagnose_model_mix(p.scoring_usage_7d, p.scoring_weight_7d)
         _, _, time_flags = analyze_time_habits(p.hourly_histogram_7d)
         expected, _ = compute_checkup(p.rule_hits(), mix_flags, time_flags, p.cache_hit_rate_7d, saving)
         coverage = {"claude_code": {"signals": dict.fromkeys(

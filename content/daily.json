@@ -1485,5 +1485,12 @@
       },
       "review_id": "practice-review-2026-10-21"
     }
-  ]
+  ],
+  "prices": {
+    "version": "unreviewed-v1",
+    "reviewed_at": null,
+    "currency": "USD",
+    "unit": "per_million_tokens",
+    "models": []
+  }
 }

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from agentfit.engine.events import CompactEvent
 from agentfit.pricing import TIER_PRICES, classify_model
+from agentfit.engine.prices import estimate
 
 
 @dataclass
@@ -13,7 +14,11 @@ class Profile:
     usage_by_model_7d: dict[str, dict] = field(default_factory=dict)
     hourly_histogram_7d: list[int] = field(default_factory=lambda: [0] * 24)
     cache_hit_rate_7d: float | None = None
-    total_cost_7d: float = 0.0
+    total_cost_7d: float | None = None
+    price_estimate: dict = field(default_factory=dict)
+    # Frozen v1 score weights, never a public USD estimate.
+    scoring_usage_7d: dict[str, dict] = field(default_factory=dict)
+    scoring_weight_7d: float = 0.0
     by_tool: dict[str, dict] = field(default_factory=dict)
     tool_calls_14d: dict[str, int] = field(default_factory=dict)
     skill_calls_14d: dict[str, int] = field(default_factory=dict)
@@ -52,7 +57,12 @@ class Profile:
         }
 
 
-def event_cost(e: CompactEvent) -> float:
+def event_cost(e: CompactEvent, prices=None) -> float | None:
+    return estimate([e], prices)["total_usd"]
+
+
+def _scoring_weight(e: CompactEvent) -> float:
+    """Retain v1 arithmetic independently of reviewed public price changes."""
     p_in, p_out, p_cache = TIER_PRICES[classify_model(e.model)]
     return (e.input * p_in + e.output * p_out + e.cache_read * p_cache) / 1e6
 
@@ -84,7 +94,7 @@ def _dedupe(events: list[CompactEvent]) -> list[CompactEvent]:
     return list(merged.values())
 
 
-def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
+def build_profile(events: list[CompactEvent], now: datetime, prices=None) -> Profile:
     profile = Profile(now=now)
     cutoff_7d = now - timedelta(days=7)
     cutoff_14d = now - timedelta(days=14)
@@ -99,6 +109,8 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
     tokens_30d = fast_30d = 0
     active_dates: set[str] = set()
 
+    priced_events = []
+    tool_events = {}
     seen_markers: set[tuple[str, str]] = set()
     for event in _dedupe(events):
         if event.markers:
@@ -135,7 +147,7 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
         profile.hook_success_14d += event.hook_success
         if event.cwd:
             profile.project_dirs_14d.add(event.cwd)
-        if not event.model or event.input + event.output + event.cache_read <= 0:
+        if not event.model or event.input + event.output + event.cache_read + event.cache_write <= 0:
             continue
         profile.usage_tools_14d.add(event.tool)
         tokens = event.input + event.output
@@ -146,8 +158,10 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
             continue
 
         profile.usage_tools_7d.add(event.tool)
-        cost = event_cost(event)
-        usage = profile.usage_by_model_7d.setdefault(
+        priced_events.append(event)
+        tool_events.setdefault(event.tool, []).append(event)
+        cost = _scoring_weight(event)
+        usage = profile.scoring_usage_7d.setdefault(
             event.model, {"tokens": 0, "cost": 0.0, "requests": 0}
         )
         usage["tokens"] += tokens
@@ -157,23 +171,20 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
         profile.hourly_histogram_7d[local_time.hour] += 1
         input_tokens += event.input
         cache_tokens += event.cache_read
-        profile.total_cost_7d += cost
+        profile.scoring_weight_7d += cost
 
         tool_usage = profile.by_tool.setdefault(event.tool, {
-            "today": {"tokens": 0, "cost_usd": 0.0},
-            "7d": {"tokens": 0, "cost_usd": 0.0},
+            "today": {"tokens": 0},
+            "7d": {"tokens": 0},
             "by_model": [],
         })
         tool_usage["7d"]["tokens"] += tokens
-        tool_usage["7d"]["cost_usd"] += cost
         if local_time.date() == today:
             tool_usage["today"]["tokens"] += tokens
-            tool_usage["today"]["cost_usd"] += cost
         model_usage = tool_models.setdefault(event.tool, {}).setdefault(
-            event.model, {"model": event.model, "tokens": 0, "cost_usd": 0.0}
+            event.model, {"model": event.model, "tokens": 0}
         )
         model_usage["tokens"] += tokens
-        model_usage["cost_usd"] += cost
 
     profile.input_tokens_7d = input_tokens
     profile.cache_tokens_7d = cache_tokens
@@ -186,15 +197,25 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
     profile.light_token_share_14d = round(fast_tokens / all_tokens, 4) if all_tokens else 0.0
     if input_tokens + cache_tokens:
         profile.cache_hit_rate_7d = cache_tokens / (input_tokens + cache_tokens)
-    profile.total_cost_7d = round(profile.total_cost_7d, 6)
-    for usage in profile.usage_by_model_7d.values():
+    profile.scoring_weight_7d = round(profile.scoring_weight_7d, 6)
+    for usage in profile.scoring_usage_7d.values():
         usage["cost"] = round(usage["cost"], 6)
+    profile.price_estimate = estimate(priced_events, prices)
+    profile.total_cost_7d = profile.price_estimate["total_usd"]
+    for model, usage in profile.scoring_usage_7d.items():
+        profile.usage_by_model_7d[model] = {**usage, "cost": estimate(
+            [e for e in priced_events if e.model == model], prices)["total_usd"]}
     for tool, usage in profile.by_tool.items():
         usage["by_model"] = sorted(
             tool_models[tool].values(), key=lambda item: (-item["tokens"], item["model"])
         )
-        for row in [usage["today"], usage["7d"], *usage["by_model"]]:
-            row["cost_usd"] = round(row["cost_usd"], 6)
+        for key in ("today", "7d"):
+            subset = [e for e in tool_events[tool] if key == "7d" or e.dt().astimezone().date() == today]
+            usage[key]["price_estimate"] = estimate(subset, prices)
+            usage[key]["cost_usd"] = usage[key]["price_estimate"]["total_usd"]
+        for row in usage["by_model"]:
+            row["price_estimate"] = estimate([e for e in tool_events[tool] if e.model == row["model"]], prices)
+            row["cost_usd"] = row["price_estimate"]["total_usd"]
     return profile
 
 

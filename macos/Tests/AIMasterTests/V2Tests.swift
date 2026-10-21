@@ -13,8 +13,8 @@ final class V2Tests: XCTestCase {
         XCTAssertEqual(UsageSummary.tokens(1_200, locale: "en"), "1.2K")
         XCTAssertEqual(UsageSummary.tokens(2_000_000_000, locale: "en"), "2B")
         let usage = UsageSummary(tokens7d: 28_670_000, costUsd7d: 577, codexQuotaPct: 13)
-        XCTAssertEqual(usage.caption(locale: "zh"), "本周 2,867 万 tokens · 折算 $577 · Codex 周额度 13%")
-        XCTAssertEqual(usage.caption(locale: "en"), "This week 28.7M tokens · ≈$577 API-equivalent · Codex weekly 13%")
+        XCTAssertEqual(usage.caption(locale: "zh"), "日志 Token（不含缓存读取）: 2,867 万 · 价格未知 · 按公开 API 单价折算，非订阅账单")
+        XCTAssertEqual(usage.caption(locale: "en"), "Logged tokens (excluding cache reads): 28.7M · Price unknown · API-equivalent at public prices, not a subscription bill")
         XCTAssertFalse(UsageSummary(tokens7d: 0, costUsd7d: 0, codexQuotaPct: nil).caption(locale: "en").contains("Codex"))
     }
 

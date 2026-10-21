@@ -28,7 +28,8 @@ def test_empty_scores_are_unknown_and_cannot_graduate(tmp_path):
     s = build_snapshot(tmp_path / "empty", tmp_path / "state", "en", now=NOW)
     assert all(d["score"] is None for d in s["dimensions"])
     assert s["overall"] == {"score": None, "tier": None, "availability": "unavailable", "score_version": "1"}
-    assert s["growth"]["days"] == []
+    assert len(s["growth"]["days"]) == 30
+    assert all(d["score"] is None for d in s["growth"]["days"])
     assert not evaluate(build_profile([], NOW), {}, [])["graduate"][0]
 
 
@@ -37,7 +38,7 @@ def test_rules_explain_actual_denominators_and_preserve_legacy_arithmetic():
     from agentfit.checkup import compute_checkup, diagnose_model_mix, analyze_time_habits, overall_from_dimensions
     p = profile(compacted=3, aborted=2)
     dims = evaluate_dimensions(p, covered(), "en")
-    _, saving, mix = diagnose_model_mix(p.usage_by_model_7d, p.total_cost_7d)
+    _, saving, mix = diagnose_model_mix(p.scoring_usage_7d, p.scoring_weight_7d)
     _, _, time = analyze_time_habits(p.hourly_histogram_7d)
     legacy, _ = compute_checkup(p.rule_hits(), mix, time, p.cache_hit_rate_7d, saving)
     assert [d.score for d in dims] == [d.score for d in legacy]
@@ -159,7 +160,8 @@ def test_snapshot_score_states_history_and_privacy(tmp_path, kind):
     state = tmp_path / "state"
     snapshot = build_snapshot(home, state, "en", now=NOW)
     assert snapshot["overall"]["availability"] == {"empty": "unavailable", "partial": "partial", "evaluable": "available"}[kind]
-    assert len(snapshot["growth"]["days"]) == (1 if kind == "evaluable" else 0)
+    assert len(snapshot["growth"]["days"]) == 30
+    assert sum(d["score"] is not None for d in snapshot["growth"]["days"]) == (1 if kind == "evaluable" else 0)
     raw = json.dumps(snapshot)
     for sentinel in ("private sentinel", "/private/sentinel", str(tmp_path)):
         assert sentinel not in raw
@@ -167,9 +169,11 @@ def test_snapshot_score_states_history_and_privacy(tmp_path, kind):
     assert repeated["today_tip"]["action_id"] == snapshot["today_tip"]["action_id"]
     later = build_snapshot(home, state, "en", now=NOW + timedelta(days=31))
     assert later["overall"]["score"] is None
-    assert json.loads((state / "progress.json").read_text())["history"] == (
-        {NOW.astimezone().date().isoformat(): {"score": snapshot["overall"]["score"],
-            "dims": {d["key"]: d["score"] for d in snapshot["dimensions"]}}} if kind == "evaluable" else {})
+    history = json.loads((state / "progress.json").read_text())["history"]
+    assert len(history) == 2
+    assert history[NOW.astimezone().date().isoformat()]["score"] == snapshot["overall"]["score"]
+    assert history[(NOW + timedelta(days=31)).astimezone().date().isoformat()]["score"] is None
+
 
 
 def test_quest_completion_reassigns_but_feedback_never_unlocks(tmp_path):

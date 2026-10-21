@@ -69,7 +69,7 @@ def test_collector_failure_is_sanitized(tmp_path, monkeypatch):
     rows = {t["tool"]: t for t in s["tools"]}
     assert rows["codex"]["error"] == "unavailable"
     assert rows["claude_code"]["error"] is None
-    assert rows["codex"]["usage_7d"] == {"tokens": 0, "cost_usd": 0.0}
+    assert rows["codex"]["usage_7d"] == {"tokens": 0, "cost_usd": None}
     assert "private content" not in json.dumps(s)
 
 
@@ -111,13 +111,19 @@ def test_snapshot_v2_blocks(tmp_path):
     assert isinstance(s["daily_tip"]["detail"], str)
     assert s["streak"]["days"] == 1
     assert len(s["badges"]) == 9
-    assert s["usage_summary"] == {
-        "tokens_7d": sum(t["usage_7d"]["tokens"] for t in s["tools"]),
-        "cost_usd_7d": round(sum(t["usage_7d"]["cost_usd"] for t in s["tools"]), 6),
-        "codex_quota_pct": 42.5,
-    }
+    usage = s["usage_summary"]
+    assert usage["tokens_7d"] == sum(t["usage_7d"]["tokens"] for t in s["tools"])
+    assert usage["cost_usd_7d"] is None
+    assert usage["price_estimate"]["unknown_tokens"] > 0
+    assert usage["codex_quota"]["primary_pct"] == 42.5
+    assert usage["codex_quota"]["primary_window_min"] == 300
+    assert usage["codex_quota"]["secondary_window_min"] == 10080
+    assert usage["codex_quota"]["recorded_at"]
+    assert usage["codex_quota"]["freshness"] == "stale"
     empty = build_snapshot(tmp_path / "empty", tmp_path / "empty-state", "zh", now=NOW)
-    assert empty["usage_summary"] == {"tokens_7d": 0, "cost_usd_7d": 0.0, "codex_quota_pct": None}
+    assert empty["usage_summary"]["tokens_7d"] == 0
+    assert empty["usage_summary"]["cost_usd_7d"] is None
+    assert empty["usage_summary"]["codex_quota"] is None
     assert empty["streak"] == {"days": 0}
 
 
