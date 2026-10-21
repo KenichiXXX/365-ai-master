@@ -67,6 +67,36 @@ final class LicenseTests: XCTestCase {
         XCTAssertTrue(store.isPro)
         XCTAssertFalse(store.handleActivationURL(URL(string: "aimaster365://activate")!))
     }
+    @MainActor func testValidLicenseSupersedesTrialEvenAfterTerminalTrialExpiry() throws {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        var now = Date(timeIntervalSince1970: 1_800_000_000)
+        var state: Data?
+        let trial = ProTrial(clock: { now }, read: { state }, write: { state = $0 })
+        let store = SnapshotStore(defaults: defaults, licensePublicKeyBase64: publicKey, proTrial: trial)
+        store.startProTrial()
+        guard case .trial = store.entitlement else { return XCTFail("Trial should be active") }
+        XCTAssertTrue(store.activateLicense(try key(exp: "2099-01-01")))
+        guard case .licensed(let license) = store.entitlement else { return XCTFail("License takes precedence") }
+        XCTAssertEqual(license.lic, "abcdefghijklmnop")
+        now += 14 * 86400
+        store.resumeEntitlement()
+        XCTAssertEqual(store.trialStatus, .expired(.deadline))
+        XCTAssertTrue(store.isPro)
+        let terminal = state
+        store.startProTrial()
+        XCTAssertEqual(state, terminal)
+        defaults.set("invalid", forKey: "licenseKey")
+        store.resumeEntitlement()
+        XCTAssertFalse(store.isPro)
+        XCTAssertEqual(state, terminal)
+        defaults.set("corrupt", forKey: ProTrial.storageKey)
+        let corrupted = SnapshotStore(defaults: defaults)
+        XCTAssertFalse(corrupted.isPro)
+        XCTAssertEqual(corrupted.trialStatus, .expired(.corrupt))
+        corrupted.startProTrial()
+        XCTAssertFalse(corrupted.isPro)
+    }
+
     @MainActor func testPaywallRendersInBothLanguagesAndLicenseStates() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, licensePublicKeyBase64: publicKey)
         for pro in [false, true] {

@@ -37,3 +37,13 @@ These steps require the reviewer's deployment authorization. They are not run by
 5. Enter the key in Settings or open `aimaster365://activate?key=<key>`. The app performs no activation network request.
 
 `License.checkoutURL` remains `REPLACE_WAFFO_CHECKOUT`. Settings hides Buy and shows "Checkout opening soon" until the reviewer supplies the checkout URL. The four Pro descriptions use the approved sketch copy. Their implementations remain in Tasks 24 and 25 and are not acceptance evidence for Task 23.
+
+## Local fourteen-day Pro trial
+
+The trial starts only when the user presses **Start trial** in Settings or a contextual advanced-feature entry. Installing, launching, viewing an advanced feature or opening checkout never starts it. No card, account, checkout, automatic charge or network request is involved. Buying a subscription is a separate action; the trial never converts automatically.
+
+Entitlement is Free, Trial(until), or Licensed(payload). A valid signed license takes precedence. Trial access uses the same ProFeatures gates as a license, including growth, weekly review, any-card practice and expanded rankings. Dimension comparison still requires separate score-sharing consent. Trial start does not enable public downloads, score sharing or notification permission.
+
+App-owned UserDefaults stores a single `proTrial` JSON data record with `consumed`, UTC epoch `start`, `end`, `maximumObserved`, `expired` and an optional terminal `reason`. `end = start + 14 × 86400` seconds and is exclusive. Repeated starts do not reset dates. Launch, snapshot refresh, foreground/wake and a dedicated expiry timer re-evaluate access. Timezone changes only affect displayed dates. A clock reading below the persisted maximum ends the trial permanently. Reaching the deadline also persists terminal expiry before returning Free. Corrupt existing state becomes a consumed, expired record and cannot start again.
+
+Expiry hides existing advanced views and removes Pro-only reminders without requesting permission. Daily Free practice and all local history remain available and unchanged. No engine score, practice event or achievement depends on entitlement. Deliberately deleting app state or reinstalling to reset it is an accepted limitation of this local trial. No Keychain, hardware fingerprint or AI-tool credentials are used to prevent that abuse.

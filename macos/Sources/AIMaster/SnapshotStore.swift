@@ -1,10 +1,19 @@
 import Foundation
 import Combine
+import AppKit
 
 @MainActor
 final class SnapshotStore: ObservableObject {
-    @Published private(set) var isPro = false
-    @Published private(set) var license: License.Payload?
+    @Published private(set) var entitlement: ProEntitlement = .free
+    @Published private(set) var trialStatus: ProTrial.Status = .eligible
+    var isPro: Bool { entitlement.isPro }
+    private let proTrial: ProTrial
+    private(set) var trialExpiryTimer: Timer?
+    private var lifecycleObservers: Set<AnyCancellable> = []
+    var license: License.Payload? {
+        if case .licensed(let payload) = entitlement { return payload }
+        return nil
+    }
     @Published private(set) var licenseError: License.Failure?
     private let licensePublicKeyBase64: String
     private let weeklyNotifications: WeeklyNotificationScheduling?
@@ -12,15 +21,15 @@ final class SnapshotStore: ObservableObject {
     @Published var showWeeklyReview = false
     @Published var reminderCard: SkillCard?
     @Published var showProSettings = false
-    var features: ProFeatures { ProFeatures(isPro: isPro) }
+    var features: ProFeatures { ProFeatures(entitlement: entitlement) }
 
     func openWeeklyReview() {
-        revalidateLicense()
+        revalidateEntitlement()
         if features.weeklyReview { showWeeklyReview = true }
     }
 
     private func updateWeeklyNotifications(requestPermission: Bool = false) {
-        revalidateLicense()
+        revalidateEntitlement()
         guard let weeklyNotifications else { return }
         if remindersPaused || (!dailyPracticeReminders && !(notificationsEnabled && features.weeklyReview)) {
             weeklyNotifications.cancel()
@@ -28,7 +37,7 @@ final class SnapshotStore: ObservableObject {
         let previous = notificationTask
         notificationTask = Task {
             await previous?.value
-            revalidateLicense()
+            revalidateEntitlement()
             guard dailyPracticeReminders || (notificationsEnabled && features.weeklyReview) else {
                 weeklyNotifications.cancel()
                 return
@@ -46,7 +55,7 @@ final class SnapshotStore: ObservableObject {
 
     @discardableResult
     func openReminder(_ route: [AnyHashable: Any]) -> Bool {
-        revalidateLicense()
+        revalidateEntitlement()
         if let id = route["daily_id"] as? String, WeeklyNotifications.safeID(id),
            let day = route["daily_date"] as? String, day == snapshot?.book?.practiceCalendar?.days.last?.date,
            let card = snapshot?.book?.today, card.id == id {
@@ -67,8 +76,7 @@ final class SnapshotStore: ObservableObject {
             let payload = try License.verify(key.trimmingCharacters(in: .whitespacesAndNewlines),
                                              publicKeyBase64: licensePublicKeyBase64)
             defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "licenseKey")
-            license = payload
-            isPro = true
+            entitlement = .licensed(payload)
             licenseError = nil
             updateWeeklyNotifications()
             return true
@@ -86,16 +94,44 @@ final class SnapshotStore: ObservableObject {
         return activateLicense(key)
     }
 
-    private func revalidateLicense() {
-        license = defaults.string(forKey: "licenseKey").flatMap {
+    private func revalidateEntitlement() {
+        let license = defaults.string(forKey: "licenseKey").flatMap {
             try? License.verify($0, publicKeyBase64: licensePublicKeyBase64)
         }
         let wasPro = isPro
-        isPro = license != nil
+        trialStatus = proTrial.evaluate()
+        if let license { entitlement = .licensed(license) }
+        else if case .active(let end) = trialStatus { entitlement = .trial(until: end) }
+        else { entitlement = .free }
+        scheduleTrialExpiry()
         if !isPro {
             showWeeklyReview = false
-            if wasPro { weeklyNotifications?.cancel() }
+            if wasPro {
+                if dailyPracticeReminders { updateWeeklyNotifications() }
+                else { weeklyNotifications?.cancel() }
+            }
         }
+    }
+
+    func startProTrial() {
+        guard license == nil else { return }
+        proTrial.start()
+        updateWeeklyNotifications()
+    }
+
+    func resumeEntitlement() {
+        updateWeeklyNotifications()
+    }
+
+    private func scheduleTrialExpiry() {
+        trialExpiryTimer?.invalidate()
+        trialExpiryTimer = nil
+        guard case .active(let end) = trialStatus else { return }
+        let timer = Timer(timeInterval: max(0.001, end.timeIntervalSince(proTrial.clock())), repeats: false) { [weak self] _ in
+            Task { @MainActor in self?.resumeEntitlement() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        trialExpiryTimer = timer
     }
 
     @Published var shareAnonymousScore: Bool {
@@ -374,7 +410,9 @@ final class SnapshotStore: ObservableObject {
          tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) },
          scoreReporter: ScoreReporter? = nil,
          licensePublicKeyBase64: String = License.publicKeyBase64,
-         weeklyNotifications: WeeklyNotificationScheduling? = nil) {
+         weeklyNotifications: WeeklyNotificationScheduling? = nil,
+         proTrial: ProTrial? = nil) {
+        self.proTrial = proTrial ?? ProTrial(defaults: defaults)
         self.weeklyNotifications = weeklyNotifications
         self.licensePublicKeyBase64 = licensePublicKeyBase64
         self.defaults = defaults
@@ -398,8 +436,14 @@ final class SnapshotStore: ObservableObject {
         enabledTools = defaults.stringArray(forKey: "enabledTools") ?? Self.allTools
         let interval = defaults.integer(forKey: "refreshSeconds")
         refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
-        revalidateLicense()
+        revalidateEntitlement()
         updateWeeklyNotifications()
+        for (center, name) in [(NotificationCenter.default, NSApplication.didBecomeActiveNotification),
+                               (NSWorkspace.shared.notificationCenter, NSWorkspace.didWakeNotification)] {
+            center.publisher(for: name).sink { [weak self] _ in
+                Task { @MainActor in self?.resumeEntitlement() }
+            }.store(in: &lifecycleObservers)
+        }
     }
 
     func startTimer() {
@@ -411,7 +455,7 @@ final class SnapshotStore: ObservableObject {
 
     @discardableResult
     func refresh() -> Task<Void, Never>? {
-        revalidateLicense()
+        revalidateEntitlement()
         guard !isRefreshing else { return nil }
         isRefreshing = true
         let tools = enabledTools

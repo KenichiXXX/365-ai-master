@@ -43,6 +43,92 @@ final class ProFeaturesTests: XCTestCase {
         store.openWeeklyReview()
         XCTAssertTrue(store.showWeeklyReview)
     }
+    func testTrialUsesAllExistingFeatureGatesAndExpiryKeepsFreePractice() async throws {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        var now = Date(timeIntervalSince1970: 1_800_000_000)
+        var state: Data?
+        var transports = 0
+        var downloads = 0
+        let reporter = ScoreReporter(defaults: defaults, transport: { _ in
+            transports += 1
+            throw URLError(.notConnectedToInternet)
+        })
+        let result = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":80,"score_version":"1"},"dimensions":[{"key":"routing","label":"Routing","score":80},{"key":"timing","label":"Timing","score":80},{"key":"context","label":"Context","score":80},{"key":"leverage","label":"Leverage","score":80}]}"#.utf8), status: 0)
+        let notifications = NotificationSpy()
+        let store = SnapshotStore(defaults: defaults, load: { _, _ in result }, scoreReporter: reporter,
+            weeklyNotifications: notifications,
+            proTrial: ProTrial(clock: { now }, read: { state }, write: { state = $0 }))
+        store.downloadContent = { downloads += 1; return false }
+        let today = SkillCard(id: "today", title: "Today", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
+        let other = SkillCard(id: "other", title: "Other", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
+        let lit = SkillCard(id: "lit", title: "Lit", why: "Why", prompt: "Prompt", level: 1, lit: true, how: "log")
+        let rows = (1...25).map { Ranking(name: "Row \($0)", url: "https://example.com", tagline: "Tag", installed: false) }
+        for phase in 0...2 {
+            if phase == 1 { store.startProTrial() }
+            if phase == 2 { now += 14 * 86400; store.resumeEntitlement() }
+            await store.refresh()?.value
+            await store.refreshContent().value
+            await store.notificationTask?.value
+            let pro = phase == 1
+            XCTAssertEqual(store.features.growthCurve, pro)
+            XCTAssertEqual(store.features.weeklyReview, pro)
+            XCTAssertEqual(store.features.canLearn(other, todayID: today.id), pro)
+            XCTAssertTrue(store.features.canLearn(today, todayID: today.id))
+            XCTAssertTrue(store.features.canLearn(lit, todayID: today.id))
+            XCTAssertEqual(store.features.rankings(rows, expanded: true).count, pro ? 20 : 5)
+            XCTAssertEqual(store.features.rankings(rows, expanded: false).count, 5)
+            XCTAssertNil(store.features.dimensionCaption(store.ranking, key: "routing", locale: "en"))
+            XCTAssertEqual(store.snapshotJSON, result.json)
+        }
+        XCTAssertEqual(transports, 0)
+        XCTAssertEqual(downloads, 0)
+        XCTAssertEqual(notifications.requests, 0)
+        XCTAssertNil(defaults.string(forKey: "anonDeviceToken"))
+    }
+
+    func testTrialDimensionComparisonStillRequiresSeparateRankingConsent() async throws {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        var data: Data?
+        var calls = 0
+        let reporter = ScoreReporter(defaults: defaults, transport: { _ in
+            calls += 1
+            return (Data(#"{"score_version":"1","total":20,"rank":5,"percentile":80,"small_sample":false,"dims":{"routing":{"rank":5,"percentile":80},"timing":{"rank":5,"percentile":80},"context":{"rank":5,"percentile":80},"leverage":{"rank":5,"percentile":80}}}"#.utf8), 200)
+        })
+        let result = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":80,"score_version":"1"},"dimensions":[{"key":"routing","label":"Routing","score":80},{"key":"timing","label":"Timing","score":80},{"key":"context","label":"Context","score":80},{"key":"leverage","label":"Leverage","score":80}]}"#.utf8), status: 0)
+        let store = SnapshotStore(defaults: defaults, load: { _, _ in result }, scoreReporter: reporter,
+            proTrial: ProTrial(read: { data }, write: { data = $0 }))
+        store.startProTrial()
+        await store.refresh()?.value
+        XCTAssertNil(store.features.dimensionCaption(store.ranking, key: "routing", locale: "en"))
+        XCTAssertEqual(calls, 0)
+        await store.allowScoreSharing()
+        XCTAssertEqual(calls, 1)
+        XCTAssertEqual(store.features.dimensionCaption(store.ranking, key: "routing", locale: "en"), "Beat 80%")
+        store.shareAnonymousScore = false
+        XCTAssertNil(store.features.dimensionCaption(store.ranking, key: "routing", locale: "en"))
+    }
+
+    func testExpiredTrialRemovesWeeklyReminderAndPreservesDailyPreference() async {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        defaults.set(true, forKey: "dailyPracticeReminders")
+        defaults.set(true, forKey: "notificationsEnabled")
+        let notifications = NotificationSpy()
+        var now = Date(timeIntervalSince1970: 1_800_000_000)
+        var data: Data?
+        let store = SnapshotStore(defaults: defaults, weeklyNotifications: notifications,
+            proTrial: ProTrial(clock: { now }, read: { data }, write: { data = $0 }))
+        store.startProTrial()
+        await store.notificationTask?.value
+        XCTAssertTrue(notifications.context?.reviewEntitled == true)
+        now += 14 * 86400
+        store.openWeeklyReview()
+        await store.notificationTask?.value
+        XCTAssertTrue(notifications.context?.daily == true)
+        XCTAssertFalse(notifications.context?.reviewEntitled == true)
+        XCTAssertTrue(store.dailyPracticeReminders)
+        XCTAssertEqual(notifications.requests, 0)
+    }
+
     func testDecodesGrowthWeeklyAndOldSnapshots() throws {
         let data = Data(#"{"schema":2,"growth":{"days":[{"date":"2026-10-21","score":88}],"week_delta":3},"weekly":{"week_start":"2026-10-19","score_delta":3,"cards_lit_this_week":["a"],"quests_passed_this_week":["first_edit"],"days_active":2}}"#.utf8)
         let snapshot = try EngineRunner.decode(data, status: 0).snapshot

@@ -52,6 +52,7 @@ struct PopoverView: View {
                 Button(action: { settings = true }) { Text("Settings", bundle: .module) }
             }
         }
+        .onAppear { store.resumeEntitlement() }
         .padding(16)
         .frame(width: 440, height: 720)
         .sheet(isPresented: $store.showWeeklyReview) {

@@ -2,6 +2,8 @@ import Foundation
 
 struct ProFeatures {
     let isPro: Bool
+    init(isPro: Bool) { self.isPro = isPro }
+    init(entitlement: ProEntitlement) { isPro = entitlement.isPro }
     var growthCurve: Bool { isPro }
     var weeklyReview: Bool { isPro }
 

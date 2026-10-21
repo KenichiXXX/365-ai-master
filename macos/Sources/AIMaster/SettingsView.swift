@@ -73,6 +73,8 @@ struct ProSettingsSection: View {
             if store.isPro, let license = store.license {
                 Text(verbatim: zh ? "Pro 已激活，到期 \(license.exp)" : "Pro activated, expires \(license.exp)")
             } else {
+                ProTrialSection(store: store, zh: zh)
+                Divider()
                 Text(zh ? "创始价 $12/年" : "Founding price $12/year")
                 Text(zh ? "成长曲线：30 天分数走势、本周比上周" : "Growth curve: 30-day scores and week-over-week change")
                 Text(zh ? "每周复盘：本地生成一页周报，可选开启提醒" : "Weekly review: a local report with optional reminders")
@@ -119,5 +121,39 @@ struct ReminderSettings: View {
                  : "Quiet hours 21:00–09:00. Missed reminders are skipped. Focus is respected.")
                 .font(.caption).foregroundStyle(.secondary)
         }
+    }
+}
+
+struct ProTrialSection: View {
+    @ObservedObject var store: SnapshotStore
+    let zh: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            switch store.trialStatus {
+            case .eligible:
+                Text(zh ? "免费体验 Pro 14 天" : "Try Pro free for 14 days").font(.headline)
+                Text(zh ? "无需银行卡，不自动扣款。体验到期后回到免费版，历史记录保留。"
+                     : "No card required and no automatic charge. After the trial, return to Free and keep your history.")
+                Button(zh ? "开始体验" : "Start trial") { store.startProTrial() }
+            case .active(let end):
+                Text(verbatim: (zh ? "体验至 " : "Trial until ") + formatted(end))
+                Text(zh ? "无需银行卡，不自动扣款。体验到期后回到免费版，历史记录保留。"
+                     : "No card required and no automatic charge. After the trial, return to Free and keep your history.")
+            case .expired(let reason):
+                if reason == .clockRollback {
+                    Text(zh ? "设备时间发生回拨，体验已结束" : "The device clock moved backwards. The trial has ended.")
+                }
+                Text(zh ? "体验已结束，历史记录已保留" : "Trial ended. Your history is preserved.")
+            }
+        }
+    }
+
+    private func formatted(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: zh ? "zh_CN" : "en_US")
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }

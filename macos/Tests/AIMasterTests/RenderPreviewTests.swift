@@ -5,6 +5,31 @@ import SwiftUI
 // Opt-in local preview; real usage and generated PNGs must never be committed.
 @MainActor
 final class RenderPreviewTests: XCTestCase {
+    func testRenderTrialEligibleActiveAndExpiredInBothLanguages() throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        for locale in ["zh", "en"] {
+            for phase in ["eligible", "active", "expired", "rollback"] {
+                var now = Date(timeIntervalSince1970: 1_800_000_000)
+                var data: Data?
+                let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                    proTrial: ProTrial(clock: { now }, read: { data }, write: { data = $0 }))
+                if phase != "eligible" { store.startProTrial() }
+                if phase == "expired" { now += 14 * 86400; store.resumeEntitlement() }
+                if phase == "rollback" { now -= 1; store.resumeEntitlement() }
+                let view = ProSettingsSection(store: store, zh: locale == "zh").padding(20).frame(width: 380)
+                    .background(Color(nsColor: .windowBackgroundColor))
+                let hosting = NSHostingView(rootView: view)
+                hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+                hosting.layoutSubtreeIfNeeded()
+                XCTAssertEqual(hosting.bounds.width, 380)
+                let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+                try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                    .write(to: URL(fileURLWithPath: out + "-trial-" + phase + "-" + locale + ".png"))
+            }
+        }
+    }
+
     func testRenderRankingSampleCaptions() throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         for locale in ["zh", "en"] {

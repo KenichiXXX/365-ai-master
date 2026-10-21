@@ -1,6 +1,19 @@
 import Foundation
 import CryptoKit
 
+enum ProEntitlement {
+    case free
+    case trial(until: Date)
+    case licensed(License.Payload)
+
+    var isPro: Bool {
+        switch self {
+        case .free: return false
+        case .trial, .licensed: return true
+        }
+    }
+}
+
 enum License {
     static let publicKeyBase64 = "REPLACE_PUBLIC_KEY"
     static let checkoutURL = "REPLACE_WAFFO_CHECKOUT"
