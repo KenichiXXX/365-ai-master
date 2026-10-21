@@ -90,3 +90,26 @@ def test_license_transport_is_separate_exact_and_bounded():
     for forbidden in ('device_token', 'anonDeviceToken', 'app_version', 'scoreVersion', 'Authorization', 'courseSource'):
         assert forbidden not in transport
     assert 'completionHandler(nil)' in source
+
+
+def test_phase4_cli_exports_and_logs_reject_all_private_sentinels(tmp_path, capsys):
+    import json
+    from agentfit.engine.__main__ import main
+    from tests.engine.test_phase4_flow import NOW, SENTINELS, append_event
+    home, state = tmp_path / "home", tmp_path / "state"
+    append_event(home, "synthetic", NOW)
+    for locale in ("zh", "en"):
+        assert main(["snapshot", "--json", "--home", str(home), "--state-dir", str(state),
+                     "--locale", locale]) == 0
+        output = capsys.readouterr()
+        snapshot = json.loads(output.out)
+        assert snapshot["schema"] == 3
+        assert output.err == ""
+        for sentinel in (*SENTINELS, str(home)):
+            assert sentinel not in output.out + output.err
+            assert sentinel not in snapshot["weekly"]["report_text"]
+    # Internal scan cursors contain source paths by design; they are not an export.
+    for name in ("progress.json", "local_metrics.json"):
+        saved = (state / name).read_text()
+        for sentinel in (*SENTINELS, str(home)):
+            assert sentinel not in saved

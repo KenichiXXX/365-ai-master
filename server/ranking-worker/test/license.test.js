@@ -90,3 +90,18 @@ test("pre-subscription manual issuance metadata authorizes only its original sig
   }), bindings);
   expect(await response.json()).toEqual({ status: "manual" });
 });
+
+
+test("phase4 license endpoints reject score, source and private practice fields", async () => {
+  for (const extra of [{ device_token: "private-token-p4", score: 80 },
+                        { course_source: "synthetic", prompt: "private-prompt-p4" },
+                        { path: "/private/project-p4", arguments: "private-argument-p4" }]) {
+    expect((await issue({ order_ref: "isolated", days: 365, ...extra })).status).toBe(422);
+    const response = await worker.fetch(new Request("https://test.local/v1/license/refresh", {
+      method: "POST", body: JSON.stringify({ lic: "abcdefghijklmnop", key: "AIM1.fake.proof", ...extra }),
+    }), bindings);
+    expect(response.status).toBe(422);
+    expect(await response.text()).not.toContain("private-");
+  }
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM licenses").first()).n).toBe(0);
+});

@@ -274,3 +274,16 @@ def test_missing_release_dates_or_reviewed_compatibility_are_not_fabricated():
     assert h.fetch_tool_updates([review], fetch=lambda _: [{"id": 123}], today=TODAY) == []
     with pytest.raises(KeyError):
         h.fetch_tool_updates([review], fetch=lambda _: [{"id": 123, "published_at": "2026-10-20T12:00:00Z"}], today=TODAY)
+
+
+def test_phase4_harvest_keeps_practice_contract_and_empty_course_catalogue():
+    base = load_content(None)
+    item = h.to_ranking_item("synthetic/repo", "https://github.com/synthetic/repo", "Synthetic", "合成条目", 500, None)
+    first = h.build_content(base, [item], [], TODAY)
+    second = h.build_content(first, [item], [], TODAY)
+    assert first == second and validate(second)
+    for key in ("skills", "review_exercises", "course_sources", "prices"):
+        assert second[key] == base[key]
+    assert second["course_sources"] == []
+    assert len({c["id"] for c in second["skills"]}) == 24
+    assert second["tool_updates"] == []

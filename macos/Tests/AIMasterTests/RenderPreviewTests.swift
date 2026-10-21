@@ -381,4 +381,50 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testRenderPhase4ThreeTabsAppearance() async throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        let root = URL(fileURLWithPath: out + "-matrix-fixture")
+        let home = root.appendingPathComponent("empty-home")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        for locale in ["zh", "en"] {
+            let process = Process()
+            process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
+            process.arguments = ["snapshot", "--json", "--home", home.path, "--tools", "", "--locale", locale,
+                                 "--state-dir", root.appendingPathComponent(locale).path]
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = FileHandle.nullDevice
+            try process.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            let result = try EngineRunner.decode(data, status: process.terminationStatus)
+            let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, load: { _, _ in result })
+            store.actionCommand = { _ in true }
+            await store.refresh()?.value
+            store.dismissOnboarding()
+            try data.write(to: URL(fileURLWithPath: out + "-matrix-" + locale + ".json"))
+            let tabs: [(String, AnyView)] = [
+                ("checkup", AnyView(CheckupTab(snapshot: result.snapshot, store: store))),
+                ("today", AnyView(TodaySkillTab(snapshot: result.snapshot, store: store))),
+                ("training", AnyView(TrainingTab(snapshot: result.snapshot, store: store)))
+            ]
+            for (name, tab) in tabs {
+                for (appearance, scheme) in [("light", ColorScheme.light), ("dark", ColorScheme.dark)] {
+                    let hosting = NSHostingView(rootView: ScrollView { tab.padding(16) }
+                        .frame(width: 440, height: 720)
+                        .environment(\.locale, Locale(identifier: locale))
+                        .environment(\.colorScheme, scheme)
+                        .background(scheme == .dark ? Color.black : Color.white))
+                    hosting.frame = NSRect(x: 0, y: 0, width: 440, height: 720)
+                    hosting.layoutSubtreeIfNeeded()
+                    XCTAssertEqual(hosting.bounds.size, NSSize(width: 440, height: 720))
+                    let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                    hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+                    try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
+                        URL(fileURLWithPath: out + "-matrix-" + name + "-" + locale + "-" + appearance + ".png"))
+                }
+            }
+        }
+    }
+
 }

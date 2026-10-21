@@ -160,3 +160,41 @@ def test_first_practice_is_bundled_even_with_all_sources_declined(tmp_path):
         assert s["village"]["quests"][0]["status"] == "current"
         assert all(q["evidence_kind"] == "unsupported" for q in s["village"]["quests"])
         assert json.loads((tmp_path / locale / "progress.json").read_text())["passed"] == {}
+
+
+def test_phase4_unsupported_and_denied_sources_never_verify_practice(tmp_path, monkeypatch):
+    from agentfit.engine.collectors.base import REGISTRY
+    from agentfit.engine.codex_book import practice_command
+    home, state = tmp_path / "home", tmp_path / "state"
+    log = home / ".claude/projects/synthetic/log.jsonl"
+    log.parent.mkdir(parents=True)
+    log.write_text('{"type":"unknown-future-format"}\n')
+    snapshot = build_snapshot(home, state, "en", NOW, enabled={"claude_code"})
+    assert snapshot["coverage"]["claude_code"]["status"] == "unsupported"
+    assert practice_command("web_search", "start", state / "progress.json", NOW)
+    collector = next(c for c in REGISTRY if c.tool == "claude_code")
+    def denied(*args):
+        raise PermissionError("private-prompt-p4 /private/project-p4")
+    monkeypatch.setattr(collector, "scan", denied)
+    for _ in range(2):
+        snapshot = build_snapshot(home, state, "en", NOW, enabled={"claude_code"})
+        assert snapshot["coverage"]["claude_code"]["status"] == "permission_denied"
+        assert snapshot["local_validation"]["funnel"]["observed"] == 0
+        assert snapshot["overall"]["score"] is None
+        assert "private-prompt-p4" not in json.dumps(snapshot)
+    assert len(json.loads((state / "progress.json").read_text())["practice"]["attempts"]) == 1
+
+
+def test_phase4_corrupt_progress_fails_safely_without_overwriting_history(tmp_path, capsys):
+    from agentfit.engine.__main__ import main
+    state = tmp_path / "state"
+    state.mkdir()
+    corrupt = '{"history": "private-token-p4"'
+    (state / "progress.json").write_text(corrupt)
+    for _ in range(2):
+        assert main(["snapshot", "--json", "--home", str(tmp_path / "home"),
+                     "--state-dir", str(state)]) == 2
+        captured = capsys.readouterr()
+        assert json.loads(captured.out) == {"schema": 3, "error": "JSONDecodeError"}
+        assert captured.err == ""
+        assert (state / "progress.json").read_text() == corrupt

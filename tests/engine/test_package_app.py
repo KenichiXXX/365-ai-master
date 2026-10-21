@@ -53,3 +53,13 @@ def test_real_app_bundle(tmp_path):
     verify = subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)],
                             capture_output=True, text=True)
     assert verify.returncode == 0, verify.stderr
+
+
+def test_phase4_packager_keeps_one_offline_engine_and_localizations():
+    # Source inspection only: Task 37's execution constraints prohibit packaging.
+    source = (ROOT / "scripts/package_app.sh").read_text()
+    assert 'cp dist/365engine "$APP/Contents/Resources/365engine"' in source
+    assert 'cp -R "$BIN_DIR/AIMaster_AIMaster.bundle"' in source
+    build = (ROOT / "scripts/build_engine.sh").read_text()
+    assert "--add-data agentfit/engine/content_pool.json:agentfit/engine" in build
+    assert "--onefile" in build and ".venv/bin/python -m PyInstaller" in build

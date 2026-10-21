@@ -253,3 +253,37 @@ test("only authenticated management metadata is stored, separate from responses 
   expect((await env.DB.prepare("SELECT management_url FROM subscriptions").first()).management_url).toBe(managementURL);
   expect((await env.DB.prepare("SELECT count(*) AS n FROM cohort_devices").first()).n).toBe(0);
 });
+
+
+test("phase4 annual payment, cancel, renewal, outage and repeated callbacks preserve one license", async () => {
+  const created = event();
+  const cancelled = event({ eventId: "cancel-2", revision: 2, status: "cancelled", autoRenew: false });
+  await webhook(created);
+  const old = await currentKey();
+  const original = payload(old);
+  expect((await webhook(cancelled)).status).toBe(200);
+  expect(await (await refresh(original.lic, old)).json()).toMatchObject({
+    status: "active", key: old, auto_renew: false,
+  });
+  const renewal = event({ eventId: "renew-3", orderRef: "order-2", revision: 3,
+    periodStart: "2027-10-21T00:00:00Z", paidThrough: "2028-10-21T00:00:00Z" });
+  expect((await webhook(renewal)).status).toBe(200);
+  const fresh = await currentKey();
+  expect(payload(fresh)).toMatchObject({ lic: original.lic, exp: "2028-10-20" });
+  for (let replay = 0; replay < 2; replay++) {
+    for (const value of [created, cancelled, renewal]) expect((await webhook(value)).status).toBe(200);
+    expect(await currentKey()).toBe(fresh);
+    expect((await env.DB.prepare("SELECT count(*) AS n FROM subscriptions").first()).n).toBe(1);
+    expect((await env.DB.prepare("SELECT count(*) AS n FROM subscription_periods").first()).n).toBe(2);
+    expect((await env.DB.prepare("SELECT count(*) AS n FROM subscription_events").first()).n).toBe(3);
+    expect((await env.DB.prepare("SELECT count(*) AS n FROM license_keys").first()).n).toBe(2);
+  }
+  // Restore the latest authoritative provider state after replaying historical callback envelopes.
+  provider.add(renewal);
+  expect(await (await refresh(original.lic, old)).json()).toMatchObject({ status: "active", key: fresh });
+  expect(await crypto.subtle.verify("Ed25519", publicKey, decode(fresh.split(".")[2]), decode(fresh.split(".")[1]))).toBe(true);
+  provider.available = false;
+  expect(await (await refresh(original.lic, fresh)).json()).toEqual({ status: "unavailable" });
+  expect(await currentKey()).toBe(fresh);
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM cohort_devices").first()).n).toBe(0);
+});

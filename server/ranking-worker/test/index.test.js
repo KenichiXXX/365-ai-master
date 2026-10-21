@@ -245,3 +245,17 @@ test("versioned overall buckets move after one hour and repeated accepted values
   expect(await buckets()).toEqual([{ score: 50, n: 1 }, { score: 90, n: 1 }]);
   expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM cohort_devices WHERE score_version = '1'").first()).n).toBe(2);
 });
+
+
+test("phase4 ranking never accepts license or practice payload fields", async () => {
+  for (const extra of [{ lic: "abcdefghijklmnop", key: "AIM1.private-token-p4.proof" },
+                        { prompt: "private-prompt-p4", path: "/private/project-p4" },
+                        { arguments: "private-argument-p4", trial_start: true }]) {
+    const response = await versionedPost({ ...payload(), ...extra });
+    expect(response.status).toBe(422);
+    const body = await response.text();
+    expect(body).toBe('{"error":"invalid"}');
+    expect(body).not.toContain("private-");
+  }
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM cohort_devices").first()).n).toBe(0);
+});
