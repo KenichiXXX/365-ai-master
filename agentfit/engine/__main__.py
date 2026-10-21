@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     try:
         from agentfit.engine.content import locale_from_env
         from agentfit.engine.snapshot import build_snapshot
@@ -18,7 +18,7 @@ def main() -> int:
                               default=Path.home() / "Library/Application Support/365AIMaster")
         snapshot.add_argument("--locale", choices=("zh", "en"), default=locale_from_env())
         snapshot.add_argument("--tools")
-        args = parser.parse_args()
+        args = parser.parse_args(argv)
         enabled = None if args.tools is None else {tool.strip() for tool in args.tools.split(",") if tool.strip()}
         result = build_snapshot(args.home, args.state_dir, args.locale, enabled=enabled)
         output = json.dumps(result, ensure_ascii=False)
