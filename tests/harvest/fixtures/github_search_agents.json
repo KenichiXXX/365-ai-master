@@ -1,0 +1,138 @@
+{
+  "total_count": 12,
+  "incomplete_results": false,
+  "items": [
+    {
+      "full_name": "owner/agent-0",
+      "html_url": "https://github.com/owner/agent-0",
+      "description": "Coding agent 0",
+      "stargazers_count": 2000,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-1",
+      "html_url": "https://github.com/owner/agent-1",
+      "description": "Coding agent 1",
+      "stargazers_count": 2010,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-2",
+      "html_url": "https://github.com/owner/agent-2",
+      "description": "Coding agent 2",
+      "stargazers_count": 2020,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-3",
+      "html_url": "https://github.com/owner/agent-3",
+      "description": "Coding agent 3",
+      "stargazers_count": 2030,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-4",
+      "html_url": "https://github.com/owner/agent-4",
+      "description": "Coding agent 4",
+      "stargazers_count": 2040,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-5",
+      "html_url": "https://github.com/owner/agent-5",
+      "description": "Coding agent 5",
+      "stargazers_count": 2050,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-6",
+      "html_url": "https://github.com/owner/agent-6",
+      "description": "Coding agent 6",
+      "stargazers_count": 2060,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-7",
+      "html_url": "https://github.com/owner/agent-7",
+      "description": "Coding agent 7",
+      "stargazers_count": 2070,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-8",
+      "html_url": "https://github.com/owner/agent-8",
+      "description": "Coding agent 8",
+      "stargazers_count": 2080,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-9",
+      "html_url": "https://github.com/owner/agent-9",
+      "description": "Coding agent 9",
+      "stargazers_count": 2090,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-10",
+      "html_url": "https://github.com/owner/agent-10",
+      "description": "Coding agent 10",
+      "stargazers_count": 2100,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    },
+    {
+      "full_name": "owner/agent-11",
+      "html_url": "https://github.com/owner/agent-11",
+      "description": "Coding agent 11",
+      "stargazers_count": 2110,
+      "archived": false,
+      "fork": false,
+      "license": {
+        "spdx_id": "MIT"
+      }
+    }
+  ]
+}

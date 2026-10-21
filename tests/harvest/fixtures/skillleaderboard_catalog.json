@@ -1,0 +1,210 @@
+{
+  "metrics": {},
+  "facets": {},
+  "catalog": [
+    {
+      "repo": "owner/skill-0",
+      "owner": "owner",
+      "name": "skill-0",
+      "rank": 1,
+      "category": "coding",
+      "tagline": "Skill 0",
+      "summary": "Useful coding skill 0",
+      "stars": 500,
+      "forks": 0,
+      "stars7d": 0,
+      "stars30d": 0,
+      "tractionScore": 0,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-1",
+      "owner": "owner",
+      "name": "skill-1",
+      "rank": 2,
+      "category": "coding",
+      "tagline": "Skill 1",
+      "summary": "Useful coding skill 1",
+      "stars": 510,
+      "forks": 1,
+      "stars7d": 1,
+      "stars30d": 2,
+      "tractionScore": 1,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-2",
+      "owner": "owner",
+      "name": "skill-2",
+      "rank": 3,
+      "category": "coding",
+      "tagline": "Skill 2",
+      "summary": "Useful coding skill 2",
+      "stars": 520,
+      "forks": 2,
+      "stars7d": 2,
+      "stars30d": 4,
+      "tractionScore": 2,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-3",
+      "owner": "owner",
+      "name": "skill-3",
+      "rank": 4,
+      "category": "coding",
+      "tagline": "Skill 3",
+      "summary": "Useful coding skill 3",
+      "stars": 530,
+      "forks": 3,
+      "stars7d": 3,
+      "stars30d": 6,
+      "tractionScore": 3,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-4",
+      "owner": "owner",
+      "name": "skill-4",
+      "rank": 5,
+      "category": "coding",
+      "tagline": "Skill 4",
+      "summary": "Useful coding skill 4",
+      "stars": 540,
+      "forks": 4,
+      "stars7d": 4,
+      "stars30d": 8,
+      "tractionScore": 4,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-5",
+      "owner": "owner",
+      "name": "skill-5",
+      "rank": 6,
+      "category": "coding",
+      "tagline": "Skill 5",
+      "summary": "Useful coding skill 5",
+      "stars": 550,
+      "forks": 5,
+      "stars7d": 5,
+      "stars30d": 10,
+      "tractionScore": 5,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-6",
+      "owner": "owner",
+      "name": "skill-6",
+      "rank": 7,
+      "category": "coding",
+      "tagline": "Skill 6",
+      "summary": "Useful coding skill 6",
+      "stars": 560,
+      "forks": 6,
+      "stars7d": 6,
+      "stars30d": 12,
+      "tractionScore": 6,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-7",
+      "owner": "owner",
+      "name": "skill-7",
+      "rank": 8,
+      "category": "coding",
+      "tagline": "Skill 7",
+      "summary": "Useful coding skill 7",
+      "stars": 570,
+      "forks": 7,
+      "stars7d": 7,
+      "stars30d": 14,
+      "tractionScore": 7,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-8",
+      "owner": "owner",
+      "name": "skill-8",
+      "rank": 9,
+      "category": "coding",
+      "tagline": "Skill 8",
+      "summary": "Useful coding skill 8",
+      "stars": 580,
+      "forks": 8,
+      "stars7d": 8,
+      "stars30d": 16,
+      "tractionScore": 8,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-9",
+      "owner": "owner",
+      "name": "skill-9",
+      "rank": 10,
+      "category": "coding",
+      "tagline": "Skill 9",
+      "summary": "Useful coding skill 9",
+      "stars": 590,
+      "forks": 9,
+      "stars7d": 9,
+      "stars30d": 18,
+      "tractionScore": 9,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-10",
+      "owner": "owner",
+      "name": "skill-10",
+      "rank": 11,
+      "category": "coding",
+      "tagline": "Skill 10",
+      "summary": "Useful coding skill 10",
+      "stars": 600,
+      "forks": 10,
+      "stars7d": 10,
+      "stars30d": 20,
+      "tractionScore": 10,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    },
+    {
+      "repo": "owner/skill-11",
+      "owner": "owner",
+      "name": "skill-11",
+      "rank": 12,
+      "category": "coding",
+      "tagline": "Skill 11",
+      "summary": "Useful coding skill 11",
+      "stars": 610,
+      "forks": 11,
+      "stars7d": 11,
+      "stars30d": 22,
+      "tractionScore": 11,
+      "compatibleAgents": [
+        "Claude Code"
+      ]
+    }
+  ]
+}

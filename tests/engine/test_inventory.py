@@ -92,3 +92,17 @@ def test_collectors_delegate_inventory(tmp_path):
     assert ClaudeCodeCollector().inventory(tmp_path, {str(project)}) == claude_inventory(tmp_path, {str(project)})
     assert ClaudeCodeCollector().inventory(tmp_path) == claude_inventory(tmp_path, set())
     assert CodexCollector().inventory(tmp_path) == codex_inventory(tmp_path)
+
+
+def test_plugin_names_stay_internal(tmp_path):
+    root = tmp_path / ".claude"
+    root.mkdir()
+    (root / "settings.json").write_text(json.dumps({"enabledPlugins": {
+        "Superpowers@market": True, "disabled@market": False, "another@m": 1}}))
+    inv = claude_inventory(tmp_path, set())
+    assert inv.plugins_installed == ["Superpowers", "another"]
+    public = inv.to_public()
+    assert public["plugins"] == 2
+    assert "plugins_installed" not in public
+    assert "Superpowers" not in json.dumps(public)
+    assert codex_inventory(tmp_path).plugins_installed == []

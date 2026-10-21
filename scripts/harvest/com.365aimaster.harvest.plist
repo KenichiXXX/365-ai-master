@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.365aimaster.harvest</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>__REPO__/scripts/harvest/run_daily.sh</string>
+		<string>__REPO__</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>7</integer>
+		<key>Minute</key>
+		<integer>30</integer>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>__HOME__/Library/Logs/365aimaster-harvest.log</string>
+	<key>StandardErrorPath</key>
+	<string>__HOME__/Library/Logs/365aimaster-harvest.log</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:__HOME__/.local/bin:/usr/bin:/bin</string>
+	</dict>
+</dict>
+</plist>

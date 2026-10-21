@@ -98,14 +98,16 @@ def mark_tried(card_id: str, progress_path: Path, now: datetime) -> bool:
 
 def daily_rankings(content: dict, inv: dict[str, Inventory], locale: str,
                    today: date, n: int = 5) -> dict:
-    installed = {name for item in inv.values() for name in item.skills_installed}
-    result = {}
+    installed = {name.casefold() for item in inv.values()
+                 for name in item.skills_installed + item.plugins_installed}
+    rankings = content["rankings"]
+    result = {key: rankings[key] for key in ("source", "updated_at") if key in rankings}
     for kind in ("skill", "agent"):
-        items = content["rankings"][kind]
-        offset = today.toordinal() % len(items) if items else 0
+        items = rankings[kind]
+        offset = today.toordinal() % len(items) if items and rankings.get("rotate", True) else 0
         result[kind] = [
             {"name": item["name"], "url": item["url"], "tagline": item["tagline"][locale],
-             "installed": any(name in installed for name in item["match"])}
+             "installed": any(name.casefold() in installed for name in item["match"])}
             for item in (items[offset:] + items[:offset])[:n]
         ]
     return result

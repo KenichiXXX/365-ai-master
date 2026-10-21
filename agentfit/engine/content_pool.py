@@ -45,6 +45,11 @@ def validate(d: object) -> bool:
         if not all(_bilingual(card.get(key)) for key in ("title", "why", "prompt")):
             return False
 
+    if "rotate" in rankings and type(rankings["rotate"]) is not bool:
+        return False
+    if any(key in rankings and not _text(rankings[key]) for key in ("source", "updated_at")):
+        return False
+
     for kind in ("skill", "agent"):
         items = rankings.get(kind)
         if not isinstance(items, list):
@@ -54,6 +59,10 @@ def validate(d: object) -> bool:
                 return False
             if not _bilingual(item.get("tagline")):
                 return False
+            for key in ("stars", "stars7d"):
+                if key in item and not (key == "stars7d" and item[key] is None):
+                    if type(item[key]) not in (int, float):
+                        return False
             match = item.get("match")
             if not isinstance(match, list) or not all(_text(name) for name in match):
                 return False

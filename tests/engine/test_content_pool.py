@@ -174,3 +174,26 @@ def test_malformed_section_returns_false(section, bad):
 def test_build_includes_content_bundle():
     script = (ROOT / "scripts/build_engine.sh").read_text(encoding="utf-8")
     assert "--add-data agentfit/engine/content_pool.json:agentfit/engine" in script
+
+
+@pytest.mark.parametrize("field,value", [("rotate", "false"), ("source", 7), ("updated_at", None)])
+def test_invalid_ranking_metadata(field, value):
+    data = load_content(None)
+    data["rankings"][field] = value
+    assert not validate(data)
+
+
+@pytest.mark.parametrize("field,value", [("stars", "500"), ("stars", True),
+                                         ("stars7d", "10"), ("stars7d", False)])
+def test_invalid_ranking_stars(field, value):
+    data = load_content(None)
+    data["rankings"]["skill"][0][field] = value
+    assert not validate(data)
+
+
+def test_optional_ranking_metadata():
+    data = load_content(None)
+    data["rankings"].update(rotate=False, source="GitHub", updated_at="2026-10-21")
+    data["rankings"]["skill"][0].update(stars=1234, stars7d=None)
+    data["rankings"]["agent"][0].update(stars=1234, stars7d=-2)
+    assert validate(data)

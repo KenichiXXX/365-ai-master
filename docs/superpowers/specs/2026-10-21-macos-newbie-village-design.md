@@ -199,5 +199,5 @@ v1 为不签名的内测包（首次需右键「打开」）。正式对外发�
    - 修炼：新手村 9 格 + 技能图鉴（N/总数 已点亮）+ 连续天数与徽章。
 2. **技能图鉴**：约 24 张 Claude Code / Codex 能力卡。能从日志判定的，用过一次自动点亮；判定不了的，用户点「试过了」自评点亮（标"自评"）。点亮永久保留。
 3. **连续天数**：按日志里有 AI 使用的日期计算（不是按打开 App），徽章：连续 3 / 7 / 14 / 30 天，图鉴点亮 5 / 10 / 20 / 全部，新手村通关。
-4. **每日公开内容**（底线修订）：App 每天最多一次，用 HTTPS GET 下载一份公开内容文件 `https://raw.githubusercontent.com/19800104zhao-svg/365-ai-master/main/content/daily.json`。**不上传任何数据**：请求不带任何用户信息（无查询参数、无自定义头、无 Cookie），只写入 `Application Support/365AIMaster/content.json`。下载失败或文件无效时使用 App 内置的同格式内容。引擎本身仍然零网络。宣传口径从"不联网"改为"不上传任何数据"。
+4. **每日公开内容**（底线修订）：App 每天最多一次，用 HTTPS GET 下载 `content` 分支的公开内容文件 `daily.json`（`https://raw.githubusercontent.com/19800104zhao-svg/365-ai-master/content/daily.json`）。**不上传任何数据**：请求不带任何用户信息（无查询参数、无自定义头、无 Cookie），只写入 `Application Support/365AIMaster/content.json`。下载失败或文件无效时使用 App 内置的同格式内容。引擎本身仍然零网络。宣传口径从"不联网"改为"不上传任何数据"。
 5. 内容文件更新（每日采集并推送到公开仓库）是单独的运营流程，需 Kenichi 另行批准，不在本次开发范围；在那之前线上文件 = 内置内容。

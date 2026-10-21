@@ -166,3 +166,19 @@ def test_active_dates_use_local_usage_days(monkeypatch):
             assert profile.active_dates_30d == ["2026-10-21"]
     finally:
         time.tzset()
+
+
+def test_live_rankings_match_plugins_case_insensitively_and_keep_order():
+    content = load_content(None)
+    rows = [{"name": str(i), "url": "https://example.org", "tagline": {"en": "English", "zh": "中文"},
+             "match": ["SUPERPOWERS"] if i == 0 else ["TDD"]} for i in range(7)]
+    content["rankings"] = {"skill": rows, "agent": rows, "rotate": False,
+                           "source": "The Skill Leaderboard · GitHub", "updated_at": "2026-10-21"}
+    inv = inventory(skills=["tdd"])
+    inv.plugins_installed = ["superpowers"]
+    result = daily_rankings(content, {"claude_code": inv}, "zh", TODAY)
+    assert [row["name"] for row in result["skill"]] == [str(i) for i in range(5)]
+    assert all(row["installed"] for row in result["skill"])
+    assert result["source"] == content["rankings"]["source"]
+    assert result["updated_at"] == "2026-10-21"
+    assert daily_rankings(content, {"claude_code": inv}, "zh", TODAY + timedelta(days=1)) == result

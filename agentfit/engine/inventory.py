@@ -1,5 +1,5 @@
 """Local environment counts; instruction and skill bodies are never read."""
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import json
 from pathlib import Path
 import stat
@@ -15,9 +15,13 @@ class Inventory:
     mcp_servers: int
     subagents: int
     plugins: int
+    plugins_installed: list[str] = field(default_factory=list)
 
     def to_public(self) -> dict:
-        return {**asdict(self), "skills_installed": len(self.skills_installed)}
+        public = asdict(self)
+        public.pop("plugins_installed")
+        public["skills_installed"] = len(self.skills_installed)
+        return public
 
 
 def _mapping(value) -> dict:
@@ -75,6 +79,8 @@ def claude_inventory(home: Path, project_dirs: set[str]) -> Inventory:
         mcp_servers=len(mcp),
         subagents=len(_files(root, "agents/*.md")),
         plugins=sum(bool(value) for value in _mapping(settings.get("enabledPlugins")).values()),
+        plugins_installed=sorted({name.split("@", 1)[0] for name, value
+                                  in _mapping(settings.get("enabledPlugins")).items() if value}),
     )
 
 
