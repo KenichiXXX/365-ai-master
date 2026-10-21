@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
                                     enabled=enabled, content=args.content)
         output = json.dumps(result, ensure_ascii=False)
     except Exception as exc:
-        print(json.dumps({"schema": 2, "error": type(exc).__name__}))
+        print(json.dumps({"schema": 3, "error": type(exc).__name__}))
         return 2
     print(output)
     return 0

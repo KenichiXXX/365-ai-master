@@ -5,7 +5,7 @@ final class SnapshotStoreTests: XCTestCase {
     func testRunnerRejectsFailureAndUnsupportedSchema() throws {
         XCTAssertThrowsError(try EngineRunner.decode(Data("{\"schema\":1,\"error\":\"ValueError\"}".utf8), status: 2))
         XCTAssertThrowsError(try EngineRunner.decode(Data("not json".utf8), status: 0))
-        XCTAssertThrowsError(try EngineRunner.decode(Data("{\"schema\":3}".utf8), status: 0))
+        XCTAssertThrowsError(try EngineRunner.decode(Data("{\"schema\":4}".utf8), status: 0))
         XCTAssertThrowsError(try EngineRunner.decode(Data("{\"schema\":1,\"error\":\"ValueError\"}".utf8), status: 0))
     }
 
@@ -16,12 +16,12 @@ final class SnapshotStoreTests: XCTestCase {
         let store = SnapshotStore(defaults: defaults, load: { _, _ in result })
         await store.refresh()?.value
         let lastRun = store.lastRun
-        XCTAssertEqual(store.snapshot?.schema, 2)
+        XCTAssertEqual(store.snapshot?.schema, 3)
         XCTAssertNotNil(lastRun)
         XCTAssertTrue(store.snapshotJSON.contains("inventory"))
         store.load = { _, _ in throw EngineError.failed(2) }
         await store.refresh()?.value
-        XCTAssertEqual(store.snapshot?.schema, 2)
+        XCTAssertEqual(store.snapshot?.schema, 3)
         XCTAssertEqual(store.lastRun, lastRun)
         XCTAssertNotNil(store.lastError)
     }

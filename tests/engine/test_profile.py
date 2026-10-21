@@ -44,9 +44,9 @@ def test_dedupe_merges_signals_without_mutating_events():
     p = build_profile(events, NOW)
     assert p.usage_by_model_7d["claude-sonnet-5"]["tokens"] == 50
     assert p.usage_by_model_7d["claude-sonnet-5"]["requests"] == 2
-    assert p.tool_calls_14d == {"Edit": 3}
-    assert p.skill_calls_14d == {"tdd": 3}
-    assert (p.turns_14d, p.aborted_14d, p.compactions_14d, p.hook_success_14d) == (5, 1, 3, 1)
+    assert p.tool_calls_14d == {"Edit": 2}
+    assert p.skill_calls_14d == {"tdd": 2}
+    assert (p.turns_14d, p.aborted_14d, p.compactions_14d, p.hook_success_14d) == (3, 1, 2, 1)
     assert p.sidechain_14d == 1
     assert p.project_dirs_14d == {"/project"}
     assert p.cache_hit_rate_7d == 20 / 35

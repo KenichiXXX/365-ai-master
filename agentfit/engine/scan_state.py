@@ -1,10 +1,10 @@
 """Incremental binary cursors and compact event caches for local logs."""
-from datetime import datetime
-from hashlib import sha1
 import json
 import os
-from pathlib import Path
 import tempfile
+from datetime import datetime
+from hashlib import sha1
+from pathlib import Path
 
 from agentfit.engine.events import CompactEvent
 
@@ -13,6 +13,7 @@ class ScanState:
     def __init__(self, path: Path):
         self.path = path
         self.state: dict = {"tools": {}}
+        self.issues: dict[str, list[str]] = {}
         try:
             state = json.loads(path.read_text(encoding="utf-8"))
             # Validate persisted cursors before trusting offsets or cached events.
@@ -24,13 +25,19 @@ class ScanState:
                         raise ValueError("Invalid head")
                     for event in cursor["events"]:
                         CompactEvent.from_dict(event).dt()
+                    # Prior adapters could retain arguments as skill names. Rebuild
+                    # old caches once from the allowlisted source, not legacy text.
+                    if cursor.get("adapter_version") != "1":
+                        cursor.clear()
+                        cursor.update(size=0, offset=0, head=sha1(b"").hexdigest(),
+                                      events=[], adapter_version="1")
             self.state = state
         except (OSError, ValueError, TypeError, KeyError, AttributeError):
             pass
 
     def _cursor(self, tool: str, file: Path) -> dict:
         return self.state["tools"].setdefault(tool, {}).setdefault(
-            str(file), {"size": 0, "offset": 0, "head": sha1(b"").hexdigest(), "events": []}
+            str(file), {"size": 0, "offset": 0, "head": sha1(b"").hexdigest(), "events": [], "adapter_version": "1"}
         )
 
     def read_new_lines(self, tool: str, file: Path) -> tuple[list[str], bool]:
@@ -49,7 +56,15 @@ class ScanState:
         cursor.update(size=size, offset=offset + complete, head=sha1(head).hexdigest())
         if reset:
             cursor["events"] = []
+            cursor["malformed"] = cursor["skipped"] = 0
         return [line.decode("utf-8", errors="ignore") for line in lines], reset
+
+    def note(self, tool: str, file: Path, kind: str) -> None:
+        cursor = self._cursor(tool, file)
+        cursor[kind] = cursor.get(kind, 0) + 1
+
+    def issue(self, tool: str, kind: str) -> None:
+        self.issues.setdefault(tool, []).append(kind)
 
     def cached_events(self, tool: str, file: Path) -> list[CompactEvent]:
         cursor = self.state["tools"].get(tool, {}).get(str(file), {})

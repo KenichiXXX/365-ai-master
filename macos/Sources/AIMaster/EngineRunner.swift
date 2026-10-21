@@ -63,7 +63,7 @@ struct EngineRunner {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         guard let snapshot = try? decoder.decode(Snapshot.self, from: data),
-              [1, 2].contains(snapshot.schema), snapshot.error == nil else { throw EngineError.badJSON }
+              [1, 2, 3].contains(snapshot.schema), snapshot.error == nil else { throw EngineError.badJSON }
         let object = try JSONSerialization.jsonObject(with: data)
         let pretty = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
         return EngineResult(snapshot: snapshot, json: String(decoding: pretty, as: UTF8.self))

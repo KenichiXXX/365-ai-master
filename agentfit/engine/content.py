@@ -416,3 +416,15 @@ def skill_level_title(level: int, locale: str) -> str:
               2: {"zh": "进阶", "en": "Intermediate"},
               3: {"zh": "高手", "en": "Advanced"}}
     return titles[level][locale]
+
+
+_COVERAGE_LABELS = {
+    "no_logs": ("尚无使用记录", "No usage records yet"),
+    "permission_denied": ("无法读取日志，可稍后重试", "Logs cannot be read. Try again later"),
+    "unsupported": ("此日志格式暂不支持", "This log format is not supported yet"),
+    "partial": ("部分记录可用", "Some records are available"),
+    "configuration_found": ("配置存在，尚未验证使用", "Configuration found; use has not been verified"),
+}
+for _key, (_zh, _en) in _COVERAGE_LABELS.items():
+    _LABELS["zh"][_key] = _zh
+    _LABELS["en"][_key] = _en

@@ -19,7 +19,7 @@ def test_main_accepts_argv(tmp_path, capsys):
         "--state-dir", str(tmp_path / "state"), "--locale", "en",
     ]) == 0
     snapshot = json.loads(capsys.readouterr().out)
-    assert snapshot["schema"] == 2
+    assert snapshot["schema"] == 3
     assert len(snapshot["tools"]) == 5
 
 
@@ -46,7 +46,7 @@ def test_standalone_engine_without_python_on_path(tmp_path):
     )
     assert run.returncode == 0, run.stderr
     snapshot = json.loads(run.stdout)
-    assert snapshot["schema"] == 2
+    assert snapshot["schema"] == 3
     assert len(snapshot["tools"]) == 5
     assert {t["tool"] for t in snapshot["tools"] if t["detected"]} == {"claude_code", "codex"}
     assert all(t["error"] is None for t in snapshot["tools"])

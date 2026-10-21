@@ -1,21 +1,31 @@
 """Read local Codex usage, activity markers, and rate-limit snapshots."""
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path
 
+from agentfit.engine.collectors._usage import (
+    allowed,
+    identifier,
+    number,
+    safe_key,
+    source_files,
+)
 from agentfit.engine.collectors.base import register
 from agentfit.engine.events import CompactEvent
 from agentfit.engine.inventory import Inventory, codex_inventory
 from agentfit.engine.scan_state import ScanState
 
 
-def _session_files(home: Path) -> list[Path]:
+def _session_files(home: Path, state: ScanState | None = None) -> list[Path]:
     root = home / ".codex"
     return sorted(
         file
         for directory in ("sessions", "archived_sessions")
-        for file in (root / directory).rglob("*.jsonl")
+        for file in source_files(root / directory, state, "codex")
+        if file.suffix == ".jsonl"
         if not any(word in file.name.lower() for word in ("auth", "token"))
+        and allowed(file, root / directory)
     )
 
 
@@ -27,6 +37,14 @@ def _record(raw: str) -> dict | None:
     if not isinstance(row, dict) or not isinstance(row.get("payload"), dict):
         return None
     return row
+
+
+def _identity(row):
+    # Only supported metadata contributes to id-less marker identities.
+    payload = row["payload"]
+    identity = {"timestamp": row.get("timestamp"), "type": row.get("type"),
+                **{key: payload.get(key) for key in ("type", "turn_id", "id", "name")}}
+    return sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
 
 
 def _event(row: dict, context: dict, file: Path, line_no: int) -> CompactEvent | None:
@@ -44,29 +62,30 @@ def _event(row: dict, context: dict, file: Path, line_no: int) -> CompactEvent |
         event.key = payload.get("response_id") or payload.get("turn_id")
         if not event.key or not isinstance(usage, dict):
             return None
-        event.model = context.get("model") or "codex-unknown"
-        event.cache_read = usage.get("cached_input_tokens", 0)
-        event.input = max(0, usage.get("input_tokens", 0) - event.cache_read)
-        event.output = usage.get("output_tokens", 0)
-        event.cache_write = usage.get("cache_write_input_tokens") or 0
+        event.model = identifier(context.get("model")) or "codex-unknown"
+        event.cache_read = number(usage.get("cached_input_tokens", 0))
+        event.input = max(0, number(usage.get("input_tokens", 0)) - event.cache_read)
+        event.output = number(usage.get("output_tokens", 0))
+        event.cache_write = number(usage.get("cache_write_input_tokens") or 0)
     elif kind == "response_item" and subtype in {"function_call", "custom_tool_call"}:
-        name = payload.get("name")
-        if not isinstance(name, str):
+        name = identifier(payload.get("name"))
+        if not name:
             return None
-        event.key = f"tool:{payload['call_id']}" if payload.get("call_id") else f"tool:{file.stem}:{line_no}"
+        event.key = f"tool:{payload['call_id']}" if payload.get("call_id") else f"tool:{_identity(row)}"
         event.tool_calls = {name: 1}
         event.sidechain = name.startswith("spawn_agent")
     elif kind == "event_msg" and subtype == "task_started":
-        event.key = f"turn:{file.stem}:{line_no}"
+        event.key = f"turn:{_identity(row)}"
         event.turn_start = 1
     elif kind == "event_msg" and subtype == "turn_aborted":
-        event.key = f"abort:{file.stem}:{line_no}"
+        event.key = f"abort:{_identity(row)}"
         event.aborted = 1
     elif kind == "response_item" and subtype == "compaction":
-        event.key = f"compact:{file.stem}:{line_no}"
+        event.key = f"compact:{_identity(row)}"
         event.compacted = 1
     else:
         return None
+    event.key = safe_key(event.key)
     return event
 
 
@@ -81,10 +100,14 @@ class CodexCollector:
         return codex_inventory(home)
 
     def scan(self, home: Path, state: ScanState) -> list[CompactEvent]:
-        files = _session_files(home)
+        files = _session_files(home, state)
         result = []
         for file in files:
-            lines, reset = state.read_new_lines(self.tool, file)
+            try:
+                lines, reset = state.read_new_lines(self.tool, file)
+            except PermissionError:
+                state.issue(self.tool, "permission_denied")
+                continue
             cursor = state.state["tools"][self.tool][str(file)]
             # Context can precede any usage, so persist it independently of events.
             context = {} if reset else cursor.get("context", {})
@@ -95,18 +118,36 @@ class CodexCollector:
                 line_no += 1
                 row = _record(raw)
                 if row is None:
+                    state.note(self.tool, file, "malformed")
                     continue
                 if row.get("type") == "turn_context":
-                    context = {key: row["payload"].get(key) for key in ("model", "effort", "cwd")}
+                    context = {"model": identifier(row["payload"].get("model")),
+                               "cwd": row["payload"].get("cwd")}
+                    effort = row["payload"].get("effort")
+                    context["effort"] = effort if effort in {"low", "medium", "high", "xhigh"} else None
                     continue
-                event = _event(row, context, file, line_no)
+                try:
+                    event = _event(row, context, file, line_no)
+                    if event is not None:
+                        event.dt()
+                except (ValueError, TypeError, KeyError, AttributeError):
+                    state.note(self.tool, file, "malformed")
+                    continue
                 if event is None:
+                    if (row.get("type") == "event_msg" and row["payload"].get("type") == "token_count"
+                            and row["payload"].get("info") is not None):
+                        state.note(self.tool, file, "skipped")
+                        state.issue(self.tool, "partial")
+                    elif row.get("type") not in {"session_meta", "response_item", "event_msg"}:
+                        state.note(self.tool, file, "skipped")
                     continue
                 if event.model:
                     if event.key in seen:
                         continue
                     seen.add(event.key)
                 events.append(event)
+            if cursor.get("skipped", 0):
+                state.issue(self.tool, "partial")
             cursor.update(context=context, line_no=line_no)
             state.set_events(self.tool, file, events)
             result.extend(events)

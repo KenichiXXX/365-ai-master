@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class Collector(Protocol):
     tool: str
     tier: str
+    # Adapter 1 coverage is defined centrally in coverage.py.
 
     def detect(self, home: Path) -> bool: ...
 

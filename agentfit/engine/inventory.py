@@ -1,10 +1,9 @@
 """Local environment counts; instruction and skill bodies are never read."""
-from dataclasses import dataclass, asdict, field
 import json
-from pathlib import Path
 import stat
 import tomllib
-
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 
 @dataclass
@@ -12,7 +11,7 @@ class Inventory:
     skills_installed: list[str]
     instructions_bytes: int
     hooks: int
-    mcp_servers: int
+    mcp_servers: int | None
     subagents: int
     plugins: int
     plugins_installed: list[str] = field(default_factory=list)
@@ -32,11 +31,13 @@ def _config(path: Path, *, toml: bool = False) -> dict:
     # Collector registration imports Inventory; defer the shared path guard.
     from agentfit.engine.collectors._usage import allowed
 
-    if not allowed(path):
+    fields = {"settings.json": {"hooks", "enabledPlugins"}, "config.toml": {"mcp_servers"}}
+    if path.name not in fields or not allowed(path, path.parent):
         return {}
     try:
         with path.open("rb" if toml else "r") as source:
-            return _mapping(tomllib.load(source) if toml else json.load(source))
+            config = _mapping(tomllib.load(source) if toml else json.load(source))
+            return {key: value for key, value in config.items() if key in fields[path.name]}
     except (OSError, ValueError, UnicodeError):
         return {}
 
@@ -54,7 +55,8 @@ def _files(root: Path, pattern: str) -> list[Path]:
     try:
         for path in root.glob(pattern):
             try:
-                if path.is_file():
+                from agentfit.engine.collectors._usage import allowed
+                if allowed(path, root) and path.is_file():
                     result.append(path)
             except OSError:
                 continue
@@ -69,27 +71,28 @@ def claude_inventory(home: Path, project_dirs: set[str]) -> Inventory:
     skills += _files(root, "plugins/cache/*/*/*/skills/*/SKILL.md")
     instructions = [root / "CLAUDE.md"]
     instructions += [Path(project) / "CLAUDE.md" for project in project_dirs]
-    settings = _config(root / "settings.json")
-    # Only the MCP mapping is used; account data is never inspected or retained.
-    mcp = _mapping(_config(home / ".claude.json").get("mcpServers"))
+    from agentfit.engine.collectors._usage import allowed, identifier
+    settings = _config(root / "settings.json") if allowed(root, home) else {}
+    # MCP data is unavailable: its mixed account configuration is never opened.
     return Inventory(
-        skills_installed=sorted({path.parent.name for path in skills}),
+        skills_installed=sorted({path.parent.name for path in skills if identifier(path.parent.name)}),
         instructions_bytes=max(_size(path) for path in instructions),
         hooks=len(_mapping(settings.get("hooks"))),
-        mcp_servers=len(mcp),
+        mcp_servers=None,
         subagents=len(_files(root, "agents/*.md")),
         plugins=sum(bool(value) for value in _mapping(settings.get("enabledPlugins")).values()),
         plugins_installed=sorted({name.split("@", 1)[0] for name, value
-                                  in _mapping(settings.get("enabledPlugins")).items() if value}),
+                                  in _mapping(settings.get("enabledPlugins")).items() if value and identifier(name.split("@", 1)[0])}),
     )
 
 
 def codex_inventory(home: Path) -> Inventory:
     root = home / ".codex"
-    config = _config(root / "config.toml", toml=True)
+    from agentfit.engine.collectors._usage import allowed, identifier
+    config = _config(root / "config.toml", toml=True) if allowed(root, home) else {}
     servers = _mapping(config.get("mcp_servers"))
     return Inventory(
-        skills_installed=sorted({path.parent.name for path in _files(root, "skills/*/SKILL.md")}),
+        skills_installed=sorted({path.parent.name for path in _files(root, "skills/*/SKILL.md") if identifier(path.parent.name)}),
         instructions_bytes=_size(root / "AGENTS.md"),
         hooks=0,
         mcp_servers=sum(isinstance(value, dict) for value in servers.values()),

@@ -66,14 +66,15 @@ def _dedupe(events: list[CompactEvent]) -> list[CompactEvent]:
         chosen = event if event.output > previous.output else previous
         merged[key] = replace(
             chosen,
-            tool_calls=dict(Counter(previous.tool_calls) + Counter(event.tool_calls)),
-            skill_calls=dict(Counter(previous.skill_calls) + Counter(event.skill_calls)),
+            tool_calls=dict(Counter(previous.tool_calls) | Counter(event.tool_calls)),
+            skill_calls=dict(Counter(previous.skill_calls) | Counter(event.skill_calls)),
+            markers=previous.markers | event.markers,
             sidechain=previous.sidechain or event.sidechain,
             effort=chosen.effort or previous.effort or event.effort,
-            turn_start=previous.turn_start + event.turn_start,
-            aborted=previous.aborted + event.aborted,
-            compacted=previous.compacted + event.compacted,
-            hook_success=previous.hook_success + event.hook_success,
+            turn_start=max(previous.turn_start, event.turn_start),
+            aborted=max(previous.aborted, event.aborted),
+            compacted=max(previous.compacted, event.compacted),
+            hook_success=max(previous.hook_success, event.hook_success),
             cwd=chosen.cwd or previous.cwd or event.cwd,
         )
     return list(merged.values())
@@ -94,7 +95,13 @@ def build_profile(events: list[CompactEvent], now: datetime) -> Profile:
     tokens_30d = fast_30d = 0
     active_dates: set[str] = set()
 
+    seen_markers: set[tuple[str, str]] = set()
     for event in _dedupe(events):
+        if event.markers:
+            fresh = {k: v for k, v in event.markers.items() if (event.tool, k) not in seen_markers}
+            seen_markers.update((event.tool, k) for k in event.markers)
+            event = replace(event, tool_calls=dict(Counter(v for v in fresh.values() if not v.startswith("skill:"))),
+                            skill_calls=dict(Counter(v[6:] for v in fresh.values() if v.startswith("skill:"))))
         timestamp = event.dt()
         if timestamp < cutoff_30d or timestamp > now:
             continue

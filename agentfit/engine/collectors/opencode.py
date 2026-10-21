@@ -1,9 +1,17 @@
 """Read OpenCode's local message database and legacy message JSON files."""
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
+from agentfit.engine.collectors._usage import (
+    event,
+    number,
+    readonly_db,
+    record,
+    safe_files,
+    signature,
+    source_files,
+)
 from agentfit.engine.collectors.base import register
-from agentfit.engine.collectors._usage import allowed, event, number, readonly_db, record, signature
 from agentfit.engine.scan_state import ScanState
 
 
@@ -36,8 +44,9 @@ class OpenCodeCollector:
     def scan(self, home: Path, state: ScanState) -> list:
         root = home / ".local/share/opencode"
         database = root / "opencode.db"
-        files = ([database] if database.is_file() else []) + sorted((root / "storage/message").glob("ses_*/msg_*.json"))
-        files = [p for p in files if allowed(p)]
+        files = ([database] if database.is_file() else []) + [p for p in source_files(root / "storage/message", state, self.tool)
+            if p.parent.name.startswith("ses_") and p.name.startswith("msg_") and p.suffix == ".json"]
+        files = safe_files(files, root, state, self.tool)
         result = {}
         for path in files:
             sig = signature(path)
@@ -49,6 +58,8 @@ class OpenCodeCollector:
                 max_rowid = 0
                 max_time = 0
                 try:
+                    cursor = state._cursor(self.tool, path)
+                    cursor["malformed"] = cursor["skipped"] = 0
                     if path == database:
                         with readonly_db(path) as db:
                             # Rows can be edited during streaming. Refresh changed databases
@@ -62,11 +73,16 @@ class OpenCodeCollector:
                                 e = _message(record(raw), identity, created)
                                 if e is not None:
                                     events.append(e)
+                                elif not record(raw) or record(raw).get("role") == "assistant":
+                                    state.note(self.tool, path, "malformed")
                     else:
                         e = _message(record(path.read_text(encoding="utf-8")))
                         if e is not None:
                             events.append(e)
-                except (OSError, UnicodeError, sqlite3.Error):
+                        else:
+                            state.note(self.tool, path, "skipped")
+                except (OSError, UnicodeError, sqlite3.Error) as exc:
+                    state.issue(self.tool, "permission_denied" if isinstance(exc, PermissionError) else "partial")
                     events = state.cached_events(self.tool, path)
                     for e in events:
                         result.setdefault(e.key, e)

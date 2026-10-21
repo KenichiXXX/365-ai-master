@@ -13,7 +13,7 @@ def _home(tmp_path):
 
 def test_snapshot_shape(tmp_path):
     s = build_snapshot(_home(tmp_path), tmp_path / "state", "zh", now=NOW)
-    assert s["schema"] == 2 and s["locale"] == "zh"
+    assert s["schema"] == 3 and s["locale"] == "zh"
     assert {t["tool"] for t in s["tools"] if t["detected"]} == {"claude_code", "codex"}
     assert [d["key"] for d in s["dimensions"]] == ["routing", "timing", "context", "leverage"]
     assert s["dimensions"][0]["label"] == "模型路由"
@@ -35,7 +35,7 @@ def test_cli_entry(tmp_path):
     out = subprocess.run([sys.executable, "-m", "agentfit.engine", "snapshot", "--json", "--home", str(_home(tmp_path)),
                           "--state-dir", str(tmp_path / "st"), "--locale", "en"], capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
-    assert json.loads(out.stdout)["schema"] == 2
+    assert json.loads(out.stdout)["schema"] == 3
 
 
 def test_inventory_import_in_fresh_process():
@@ -78,7 +78,7 @@ def test_cli_error_is_sanitized(tmp_path):
                           "--home", str(tmp_path / "empty"), "--state-dir", str(state)],
                          capture_output=True, text=True)
     assert out.returncode == 2
-    assert json.loads(out.stdout) == {"schema": 2, "error": "FileExistsError"}
+    assert json.loads(out.stdout) == {"schema": 3, "error": "FileExistsError"}
     assert out.stderr == ""
 
 

@@ -13,7 +13,7 @@ def test_claude_inventory(tmp_path):
     proj = tmp_path / "proj"; proj.mkdir(); (proj / "CLAUDE.md").write_text("z" * 900)
     inv = claude_inventory(tmp_path, {str(proj)})
     assert inv.skills_installed == ["tdd"]
-    assert (inv.instructions_bytes, inv.hooks, inv.mcp_servers, inv.subagents, inv.plugins) == (900, 2, 2, 1, 1)
+    assert (inv.instructions_bytes, inv.hooks, inv.mcp_servers, inv.subagents, inv.plugins) == (900, 2, None, 1, 1)
     assert set(inv.to_public()) == {"skills_installed", "instructions_bytes", "hooks", "mcp_servers", "subagents", "plugins"}
     assert inv.to_public()["skills_installed"] == 1
 
@@ -26,7 +26,7 @@ def test_codex_inventory(tmp_path):
 
 def test_missing_everything(tmp_path):
     inv = claude_inventory(tmp_path, set())
-    assert inv.to_public() == {"skills_installed": 0, "instructions_bytes": 0, "hooks": 0, "mcp_servers": 0, "subagents": 0, "plugins": 0}
+    assert inv.to_public() == {"skills_installed": 0, "instructions_bytes": 0, "hooks": 0, "mcp_servers": None, "subagents": 0, "plugins": 0}
 
 
 def test_plugins_dedup_and_metadata_only(tmp_path, monkeypatch):
@@ -51,7 +51,8 @@ def test_plugins_dedup_and_metadata_only(tmp_path, monkeypatch):
     inv = claude_inventory(tmp_path, {str(tmp_path / "missing")})
     assert inv.skills_installed == ["a", "b", "z"]
     assert inv.instructions_bytes == 600 and inv.subagents == 1
-    assert all(isinstance(v, int) for v in inv.to_public().values())
+    assert all(isinstance(v, int) for k, v in inv.to_public().items() if k != "mcp_servers")
+    assert inv.mcp_servers is None
     assert codex_inventory(tmp_path).instructions_bytes == 400
 
 

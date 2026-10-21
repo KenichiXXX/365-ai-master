@@ -51,7 +51,7 @@ def test_incremental_scan_preserves_context_and_line_numbers(tmp_path):
     usage = [e for e in events if e.model]
     assert len(usage) == 1
     assert (usage[0].model, usage[0].effort, usage[0].cwd) == ("gpt-6.1-sol", "low", "/tmp/x")
-    assert "turn:rollout-1:3" in {e.key for e in events}
+    assert len({e.key for e in events if e.turn_start}) == 1
     assert CodexCollector().scan(home, state) == events
     with log.open("a") as stream:
         stream.write(rows[2] + "\n" + rows[4] + "\n")

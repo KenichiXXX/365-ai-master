@@ -21,6 +21,7 @@ class CompactEvent:
     aborted: int = 0
     compacted: int = 0
     hook_success: int = 0
+    markers: dict[str, str] = field(default_factory=dict)
     cwd: str | None = None  # Internal only; never include in public snapshots.
 
     def to_dict(self) -> dict:

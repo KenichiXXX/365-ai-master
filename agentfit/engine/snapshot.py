@@ -3,14 +3,21 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from agentfit.checkup import overall_from_dimensions, tier_for_score
+from agentfit.engine.codex_book import (
+    badges,
+    book_groups,
+    daily_rankings,
+    daily_tip,
+    next_badge,
+    streak,
+    update_book,
+)
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
-from agentfit.engine.codex_book import (
-    badges, book_groups, daily_rankings, daily_tip, next_badge, streak, update_book,
-)
-from agentfit.engine.content_pool import load_content
-from agentfit.engine.history import record_history
 from agentfit.engine.content import label
+from agentfit.engine.content_pool import load_content
+from agentfit.engine.coverage import source_coverage
+from agentfit.engine.history import record_history
 from agentfit.engine.profile import build_profile, dimensions
 from agentfit.engine.scan_state import ScanState
 from agentfit.engine.village import advance, evaluate, today_tip, village_block
@@ -23,18 +30,24 @@ def build_snapshot(
     now = now or datetime.now(timezone.utc)
     state = ScanState(state_dir / "scan.json")
     events, tools, collectors = [], [], []
+    coverage = {}
     for collector in REGISTRY:
         if enabled is not None and collector.tool not in enabled:
             continue
         row = {"tool": collector.tool, "tier": collector.tier,
                "detected": False, "error": None}
         tools.append(row)
+        collected = []
+        coverage_error = None
         try:
             row["detected"] = collector.detect(home)
             if row["detected"]:
-                events.extend(collector.scan(home, state))
-        except Exception:
+                collected = collector.scan(home, state)
+                events.extend(collected)
+        except Exception as exc:
             row["error"] = "unavailable"
+            coverage_error = "permission_denied" if isinstance(exc, PermissionError) else "partial"
+        coverage[collector.tool] = source_coverage(collector.tool, row["detected"], collected, state, coverage_error)
         collectors.append((collector, row))
     cutoff = now - timedelta(days=30)
     state.prune_before(cutoff)
@@ -83,7 +96,7 @@ def build_snapshot(
     notices = [] if any(row["tier"] == "deep" and row["detected"] for row in tools) else ["no_tools"]
     notices.extend(f"regressed:{key}" for key in progress["regressed"])
     return {
-        "schema": 2, "generated_at": now.isoformat(), "locale": locale,
+        "schema": 3, "coverage": coverage, "generated_at": now.isoformat(), "locale": locale,
         "tools": tools, "quota": {"codex": quota},
         "dimensions": [{"key": d.key, "label": label(d.key, locale), "score": d.score} for d in dims],
         "overall": {"score": score, "tier": tier_for_score(score)},

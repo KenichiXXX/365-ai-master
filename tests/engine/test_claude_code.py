@@ -19,8 +19,8 @@ def test_parses_and_dedupes(tmp_path):
     assert m1.tool_calls == {"Read": 1, "Edit": 1, "Skill": 1}
     assert m1.skill_calls == {"tdd": 1} and m1.effort == "high"
     assert usage["msg_2"].sidechain and usage["msg_2"].tool_calls == {"mcp": 1}
-    assert sum(e.turn_start for e in ev) == 1
-    assert sum(e.aborted for e in ev) == 1
+    assert sum(e.turn_start for e in ev) == 2
+    assert sum(e.aborted for e in ev) == 0
     assert sum(e.compacted for e in ev) == 1
     assert sum(e.hook_success for e in ev) == 1
 
@@ -51,14 +51,14 @@ def test_append_merges_usage_and_calls_after_reload(tmp_path):
     events = collector.scan(home, state)
     event = next(e for e in events if e.key == "msg_1")
     assert (event.input, event.output) == (10, 50)
-    assert event.tool_calls == {"Read": 2, "Edit": 1, "Skill": 1}
+    assert event.tool_calls == {"Read": 1, "Edit": 1, "Skill": 1}
     row["message"]["usage"].update(input_tokens=20, output_tokens=80)
     with log.open("a") as stream:
         stream.write(json.dumps(row) + "\n")
     events = collector.scan(home, state)
     event = next(e for e in events if e.key == "msg_1")
     assert (event.input, event.output) == (20, 80)
-    assert event.tool_calls == {"Read": 3, "Edit": 1, "Skill": 1}
+    assert event.tool_calls == {"Read": 1, "Edit": 1, "Skill": 1}
     assert [e.to_dict() for e in collector.scan(home, state)] == [e.to_dict() for e in events]
 
 
@@ -111,5 +111,5 @@ def test_registered_and_inventory(tmp_path):
     assert (collector.tool, collector.tier) == ("claude_code", "deep")
     assert collector.inventory(tmp_path).to_public() == {
         "skills_installed": 0, "instructions_bytes": 0, "hooks": 0,
-        "mcp_servers": 0, "subagents": 0, "plugins": 0,
+        "mcp_servers": None, "subagents": 0, "plugins": 0,
     }

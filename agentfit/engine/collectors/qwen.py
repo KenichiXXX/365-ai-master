@@ -1,10 +1,17 @@
 """Read Qwen usage requests and cumulative session summaries."""
-from dataclasses import replace
 import json
+from dataclasses import replace
 from pathlib import Path
 
+from agentfit.engine.collectors._usage import (
+    event,
+    identifier,
+    number,
+    record,
+    safe_files,
+    source_files,
+)
 from agentfit.engine.collectors.base import register
-from agentfit.engine.collectors._usage import allowed, event, number, record
 from agentfit.engine.scan_state import ScanState
 
 
@@ -20,22 +27,32 @@ class QwenCollector:
 
     def scan(self, home: Path, state: ScanState) -> list:
         paths = [home / ".qwen/usage_record.jsonl"]
-        paths += sorted((home / ".qwen/usage").glob("token-usage-*.jsonl"))
-        paths = [p for p in paths if p.is_file() and allowed(p)]
+        paths += [p for p in source_files(home / ".qwen/usage", state, self.tool)
+                  if p.parent == home / ".qwen/usage" and p.name.startswith("token-usage-") and p.suffix == ".jsonl"]
+        paths = safe_files(paths, home / ".qwen", state, self.tool)
         summaries = []
         requests = {}
         for path in paths:
             if path.name == "usage_record.jsonl":
-                summaries = self._summaries(path, state)
+                try:
+                    summaries = self._summaries(path, state)
+                except PermissionError:
+                    state.issue(self.tool, "permission_denied")
                 continue
-            lines, reset = state.read_new_lines(self.tool, path)
+            try:
+                lines, reset = state.read_new_lines(self.tool, path)
+            except PermissionError:
+                state.issue(self.tool, "permission_denied")
+                continue
             cached = {} if reset else {e.key: e for e in state.cached_events(self.tool, path)}
             for raw in lines:
                 row = record(raw)
                 if row.get("schemaVersion") != 1:
+                    state.note(self.tool, path, "skipped" if row else "malformed")
                     continue
                 session, ident = row.get("sessionId"), row.get("id")
-                if not all(isinstance(v, str) and v for v in (session, ident)):
+                if not all(identifier(v) for v in (session, ident)):
+                    state.note(self.tool, path, "malformed")
                     continue
                 try:
                     total = number(row.get("inputTokens", 0))
@@ -46,6 +63,7 @@ class QwenCollector:
                               number(row.get("outputTokens", 0)) + number(row.get("thoughtsTokens", 0)),
                               cached_tokens)
                 except (ValueError, TypeError, OverflowError, OSError):
+                    state.note(self.tool, path, "malformed")
                     continue
                 cached[key] = e
             state.set_events(self.tool, path, list(cached.values()))
@@ -75,7 +93,8 @@ class QwenCollector:
             row = record(raw)
             session = row.get("sessionId")
             models = row.get("models")
-            if row.get("version") != 1 or not isinstance(session, str) or not session or not isinstance(models, dict):
+            if row.get("version") != 1 or not identifier(session) or not isinstance(models, dict):
+                state.note(self.tool, path, "skipped" if row else "malformed")
                 continue
             # A summary replaces the previous snapshot, including removed models.
             prefix = str(len(session)) + ":" + session + ":"
@@ -93,6 +112,7 @@ class QwenCollector:
                               number(usage.get("outputTokens", 0)) + number(usage.get("thoughtsTokens", 0)), cached)
                     replacement[e.key] = e
             except (ValueError, TypeError, OverflowError, OSError):
+                state.note(self.tool, path, "malformed")
                 continue
             events = {k: e for k, e in events.items() if not k.startswith(prefix)}
             events.update(replacement)

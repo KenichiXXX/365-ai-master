@@ -1,11 +1,19 @@
 """Gemini CLI JSON journals and conversation databases, parsed locally."""
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
+from agentfit.engine.collectors._usage import (
+    event,
+    number,
+    readonly_db,
+    record,
+    safe_files,
+    safe_key,
+    signature,
+    source_files,
+)
 from agentfit.engine.collectors.base import register
-from agentfit.engine.collectors._usage import allowed, event, number, readonly_db, record, signature
 from agentfit.engine.scan_state import ScanState
-
 
 ROOTS = ("tmp", "antigravity-cli/conversations", "antigravity/conversations",
          "antigravity-ide/conversations", "gemini-cli/conversations")
@@ -57,7 +65,7 @@ def _one(fields, number, wire, default=None):
     return fields.get((number, wire), [default])[-1]
 
 
-def _database(path):
+def _database(path, note=lambda kind: None):
     events = []
     with readonly_db(path) as db:
         steps = {}
@@ -66,6 +74,7 @@ def _database(path):
                 try:
                     steps[index] = _one(_fields(_one(_fields(metadata), 1, 2)), 1, 0)
                 except (ValueError, TypeError):
+                    note("malformed")
                     continue
         for index, blob in db.execute("SELECT idx, data FROM gen_metadata ORDER BY idx"):
             try:
@@ -78,6 +87,7 @@ def _database(path):
                         references.append(ref)
                 fallback = next((steps[r] for r in references if steps.get(r) is not None), None)
             except (ValueError, TypeError):
+                note("malformed")
                 continue
             for ordinal, generation in enumerate(row.get((1, 2), [])):
                 try:
@@ -104,11 +114,12 @@ def _database(path):
                     events.append(event("gemini_cli", f"{path.stem}:{index}:{ordinal}",
                                         ts, model, inp, output, cached))
                 except (ValueError, TypeError, UnicodeError, OverflowError, OSError):
+                    note("malformed")
                     continue
     return path.stem, events
 
 
-def _journal(path):
+def _journal(path, note=lambda kind: None):
     messages = {}
     session = path.stem
     if path.suffix == ".json":
@@ -117,6 +128,9 @@ def _journal(path):
         with path.open(encoding="utf-8") as stream:
             rows = [record(line) for line in stream if line.endswith("\n")]
     for row in rows:
+        if not row:
+            note("malformed")
+            continue
         if isinstance(row.get("$rewindTo"), str):
             keys = list(messages)
             boundary = keys.index(row["$rewindTo"]) if row["$rewindTo"] in messages else 0
@@ -127,9 +141,12 @@ def _journal(path):
             continue
         update = row.get("$set", row.get("$push", row))
         if not isinstance(update, dict):
+            note("skipped")
             continue
         if isinstance(update.get("sessionId"), str):
             session = update["sessionId"]
+        if "sessionId" not in update and "messages" not in update:
+            note("skipped")
         batch = update.get("messages")
         if isinstance(batch, list):
             if "$set" in row:
@@ -137,9 +154,17 @@ def _journal(path):
             for message in batch:
                 if isinstance(message, dict) and isinstance(message.get("id"), str):
                     messages[message["id"]] = message
+                else:
+                    note("malformed")
+    session = safe_key(session)
     events = []
     for identity, message in messages.items():
-        if message.get("type") != "gemini" or not isinstance(message.get("tokens"), dict):
+        if message.get("type") != "gemini":
+            if message.get("type") not in {"user", "info", "error"}:
+                note("skipped")
+            continue
+        if not isinstance(message.get("tokens"), dict):
+            note("skipped")
             continue
         usage = message["tokens"]
         try:
@@ -149,6 +174,7 @@ def _journal(path):
                                 max(0, number(usage.get("input", 0)) - cached),
                                 number(usage.get("output", 0)) + number(usage.get("thoughts", 0)), cached))
         except (ValueError, TypeError, OverflowError, OSError):
+            note("malformed")
             continue
     return session, events
 
@@ -167,9 +193,12 @@ class GeminiCollector:
         files = set()
         for directory in ROOTS:
             root = home / ".gemini" / directory
-            for pattern in ("**/session-*.json", "**/session-*.jsonl", "*/chats/**/*.jsonl", "**/*.db"):
-                files.update(p for p in root.glob(pattern) if p.is_file() and allowed(p)
-                             and p.name != "conversation_summaries.db")
+            files.update(p for p in source_files(root, state, self.tool)
+                         if p.name != "conversation_summaries.db" and (
+                             p.suffix == ".db" or
+                             (p.name.startswith("session-") and p.suffix in {".json", ".jsonl"}) or
+                             (p.suffix == ".jsonl" and "chats" in p.relative_to(root).parts)))
+        files = safe_files(sorted(files), home / ".gemini", state, self.tool)
         sessions = {}
         for path in sorted(files):
             sig = signature(path)
@@ -178,12 +207,18 @@ class GeminiCollector:
                 session, events = cursor["session"], state.cached_events(self.tool, path)
             else:
                 try:
-                    session, events = _database(path) if path.suffix == ".db" else _journal(path)
-                except (OSError, UnicodeError, sqlite3.Error):
+                    cursor = state._cursor(self.tool, path)
+                    cursor["malformed"] = cursor["skipped"] = 0
+                    note = lambda kind: state.note(self.tool, path, kind)
+                    session, events = _database(path, note) if path.suffix == ".db" else _journal(path, note)
+                except (OSError, UnicodeError, sqlite3.Error) as exc:
+                    state.issue(self.tool, "permission_denied" if isinstance(exc, PermissionError) else "partial")
                     session, events = cursor.get("session", path.stem), state.cached_events(self.tool, path)
                 else:
                     state.set_events(self.tool, path, events)
                     state.state["tools"][self.tool][str(path)].update(signature=sig, session=session)
+                    if not events and not cursor.get("skipped") and not cursor.get("malformed"):
+                        state.note(self.tool, path, "skipped")
             # Migrated journals supersede legacy snapshots of the same session.
             priority = ({".json":1, ".jsonl":2, ".db":3}[path.suffix], sig[0][2])
             if session not in sessions or priority > sessions[session][0]:

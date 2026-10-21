@@ -10,12 +10,15 @@ final class RenderPreviewTests: XCTestCase {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: "render-preview")!) { locale, tools in
             let process = Process()
             process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
-            // Use this worktree's content with real usage logs and isolated progress.
+            // Use bundled content and isolated progress; optionally a synthetic home.
             let content = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
                 .appendingPathComponent("../../../content/daily.json").standardizedFileURL
             process.arguments = EngineRunner.snapshotArguments(locale: locale, tools: tools, content: content)
                 + ["--state-dir", URL(fileURLWithPath: out).deletingLastPathComponent()
                     .appendingPathComponent("render-state").path]
+            if let home = ProcessInfo.processInfo.environment["AIMASTER_PREVIEW_HOME"] {
+                process.arguments! += ["--home", home, "--state-dir", out + ".state"]
+            }
             let pipe = Pipe(); process.standardOutput = pipe
             process.standardError = FileHandle.nullDevice
             try process.run()
@@ -25,7 +28,7 @@ final class RenderPreviewTests: XCTestCase {
         }
         await store.refresh()?.value
         let snap = try XCTUnwrap(store.snapshot, store.lastError ?? "no snapshot")
-        XCTAssertEqual(snap.schema, 2, "Rebuild dist/365engine before rendering")
+        XCTAssertEqual(snap.schema, 3, "Rebuild dist/365engine before rendering")
         let views: [(String, AnyView)] = [
             ("checkup", AnyView(CheckupTab(snapshot: snap, store: store))),
             ("today", AnyView(TodaySkillTab(snapshot: snap, store: store))),

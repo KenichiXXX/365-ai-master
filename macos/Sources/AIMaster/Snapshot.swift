@@ -1,6 +1,7 @@
 import Foundation
 
 struct Snapshot: Decodable {
+    let coverage: [String: SourceCoverage]?
     let schema: Int
     let generatedAt: String?
     let locale: String?
@@ -259,4 +260,24 @@ struct WeeklyReview: Decodable {
         }
         return "\(daysActive) active days · \(cardsLitThisWeek.count) new skills · " + (change.map { "Score \($0)" } ?? "No data last week")
     }
+}
+
+// Schema 1/2 omit coverage; their legacy observations remain decodable.
+struct SourceCoverage: Decodable {
+    enum Status: String, Decodable {
+        case notDetected = "not_detected"
+        case noLogs = "no_logs"
+        case permissionDenied = "permission_denied"
+        case unsupported, partial, ok
+    }
+    enum Availability: String, Decodable { case available, unknown, unsupported }
+    let adapterVersion: String
+    let format: String
+    let status: Status
+    let startUtc: String?
+    let endUtc: String?
+    let validUsageCount: Int
+    let malformedCount: Int
+    let skippedCount: Int
+    let signals: [String: Availability]
 }
