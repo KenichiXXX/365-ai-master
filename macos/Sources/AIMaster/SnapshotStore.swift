@@ -3,6 +3,34 @@ import Combine
 
 @MainActor
 final class SnapshotStore: ObservableObject {
+    @Published var shareAnonymousScore: Bool {
+        didSet {
+            defaults.set(shareAnonymousScore, forKey: "shareAnonymousScore")
+            if shareAnonymousScore {
+                scoreReporter.deviceToken()
+                Task { await refreshRanking() }
+            } else { reportedScore = nil }
+        }
+    }
+    @Published private var reportedScore: AppScoreOut?
+    private let scoreReporter: ScoreReporter
+    var ranking: AppScoreOut? {
+        guard shareAnonymousScore, scoreReporter.cached() != nil else { return nil }
+        return reportedScore
+    }
+
+    private func refreshRanking() async {
+        guard shareAnonymousScore, let overall = snapshot?.overall,
+              let dimensions = snapshot?.dimensions else { return }
+        let scores = Dictionary(dimensions.map { ($0.key, $0.score) }, uniquingKeysWith: { first, _ in first })
+        guard let routing = scores["routing"], let timing = scores["timing"],
+              let context = scores["context"], let leverage = scores["leverage"] else { return }
+        let result = await scoreReporter.report(score: overall.score,
+            dims: .init(routing: routing, timing: timing, context: context, leverage: leverage),
+            appVersion: String((Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0").prefix(20)))
+        reportedScore = shareAnonymousScore ? result : nil
+    }
+
     enum TriedFeedback { case notSeen, lit }
     @Published private(set) var triedFeedback: TriedFeedback?
     @Published private(set) var onboarded: Bool
@@ -64,6 +92,10 @@ final class SnapshotStore: ObservableObject {
          load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) },
          tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) }) {
         self.defaults = defaults
+        let reporter = ScoreReporter(defaults: defaults)
+        scoreReporter = reporter
+        shareAnonymousScore = defaults.bool(forKey: "shareAnonymousScore")
+        reportedScore = reporter.cached()
         self.load = load
         self.tryCard = tryCard
         onboarded = defaults.bool(forKey: "onboarded")
@@ -93,6 +125,7 @@ final class SnapshotStore: ObservableObject {
                 snapshotJSON = result.json
                 lastRun = Date()
                 lastError = nil
+                await refreshRanking()
             } catch {
                 lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
             }

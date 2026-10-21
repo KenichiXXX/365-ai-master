@@ -35,7 +35,12 @@ struct SettingsView: View {
             if loginError { Text("Login item unavailable", bundle: .module).font(.system(size: 11)).foregroundStyle(.orange) }
             Button(action: { showSnapshot = true }) { Text("View my snapshot", bundle: .module) }
                 .disabled(store.snapshot == nil)
-            Text("Usage stays local. Only public content is downloaded.", bundle: .module).font(.system(size: 11))
+            Toggle(store.locale == "zh" ? "匿名参与全球排名" : "Join the anonymous global ranking",
+                   isOn: $store.shareAnonymousScore)
+            Text(ScoreConsent.explanation(locale: store.locale)).font(.system(size: 11))
+            Text(store.locale == "zh" ? "关闭后停止上报，服务器上已有的排名记录仍会保留。"
+                 : "Turning sharing off stops reporting. Your existing ranking record stays on the server.")
+                .font(.system(size: 11)).foregroundStyle(.secondary)
             Button(action: { NSApp.terminate(nil) }) { Text("Quit", bundle: .module) }
             Button(action: { dismiss() }) { Text("Done", bundle: .module) }
         }
