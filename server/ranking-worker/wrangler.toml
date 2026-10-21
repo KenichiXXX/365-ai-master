@@ -5,5 +5,5 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "365aimaster-ranking"
-database_id = "REPLACE_AFTER_CREATE"
+database_id = "e94d4f5c-bdad-44e2-b9ba-28f12c6b4853"
 migrations_dir = "migrations"

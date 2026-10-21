@@ -30,7 +30,9 @@ final class ScoreReporterTests: XCTestCase {
         XCTAssertEqual(calls, 0)
         XCTAssertNil(defaults.string(forKey: "anonDeviceToken"))
         defaults.set(true, forKey: "shareAnonymousScore")
-        let placeholder = ScoreReporter(defaults: defaults, transport: { _ in
+        let placeholder = ScoreReporter(defaults: defaults,
+                                        endpoint: URL(string: "https://365aimaster-ranking.REPLACE.workers.dev/v1/score")!,
+                                        transport: { _ in
             XCTFail("Placeholder must not send"); return (Data(), 500)
         })
         _ = await placeholder.report(score: 75, dims: dims, appVersion: "1.0", now: now)

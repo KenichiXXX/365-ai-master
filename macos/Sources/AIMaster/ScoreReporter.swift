@@ -31,7 +31,7 @@ struct AppScoreOut: Codable {
 
 @MainActor
 final class ScoreReporter {
-    nonisolated static let endpoint = URL(string: "https://365aimaster-ranking.REPLACE.workers.dev/v1/score")!
+    nonisolated static let endpoint = URL(string: "https://365aimaster-ranking.viberankworkersdev.workers.dev/v1/score")!
     struct Dims: Encodable {
         let routing: Int
         let timing: Int
