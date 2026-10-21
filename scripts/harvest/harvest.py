@@ -57,15 +57,16 @@ def fetch_github_agents(run_gh=subprocess_gh, today=None) -> list[dict]:
 
 def select_skills(items, n=20) -> list[dict]:
     eligible = [item for item in items if item["stars"] >= 300
-                and (item.get("summary", "").strip() or item.get("tagline", "").strip())]
-    return sorted(eligible, key=lambda item: (item["stars7d"], item["stars"]), reverse=True)[:n]
+                and ((item.get("summary") or "").strip() or (item.get("tagline") or "").strip())]
+    # The live catalog sometimes has "stars7d": null — rank those after known growth.
+    return sorted(eligible, key=lambda item: (item.get("stars7d") or 0, item["stars"]), reverse=True)[:n]
 
 
 def select_agents(items, history: dict, n=20, *, today=None) -> list[dict]:
     previous = history.get(((today or date.today()) - timedelta(days=7)).isoformat(), {})
     unique = {}
     for item in items:
-        if (item.get("archived") or item.get("fork") or not item.get("description", "").strip()
+        if (item.get("archived") or item.get("fork") or not (item.get("description") or "").strip()
                 or not item.get("license")):
             continue
         repo = item["full_name"]
@@ -135,8 +136,8 @@ def main(argv=None) -> int:
         agents = select_agents(raw_agents, history, today=today)
         if len(skills) < 10 or len(agents) < 10:
             raise ValueError("each ranking requires at least 10 eligible items")
-        texts = [item.get("tagline", "").strip() or item["summary"].strip() for item in skills]
-        texts += [item["description"].strip() for item in agents]
+        texts = [(item.get("tagline") or "").strip() or (item.get("summary") or "").strip() for item in skills]
+        texts += [(item.get("description") or "").strip() for item in agents]
         translations = [None] * len(texts) if args.no_translate else translate_zh(texts)
         skill_rows = [to_ranking_item(item["repo"], "https://github.com/" + item["repo"],
                                      texts[i], translations[i], item["stars"], item["stars7d"])

@@ -207,3 +207,22 @@ def test_main_abort_does_not_create_files(tmp_path, monkeypatch):
     monkeypatch.setattr(h, "fetch_skill_leaderboard", lambda: [])
     assert h.main(args) == 3
     assert not out.exists() and not history.exists()
+
+
+def test_select_skills_tolerates_missing_stars7d():
+    """Regression: the live catalog has items with "stars7d": null (2026-10-21)."""
+    items = [
+        {"repo": "a/known", "stars": 900, "stars7d": 50, "summary": "known growth"},
+        {"repo": "b/unknown", "stars": 5000, "stars7d": None, "summary": "no 7d data"},
+    ]
+    assert [i["repo"] for i in h.select_skills(items)] == ["a/known", "b/unknown"]
+
+
+def test_null_text_fields_are_skipped_not_crashing():
+    """Regression: GitHub returns "description": null; the catalog can return null summary/tagline."""
+    skills = [{"repo": "a/x", "stars": 900, "stars7d": 1, "summary": None, "tagline": None},
+              {"repo": "b/y", "stars": 900, "stars7d": 2, "summary": None, "tagline": "ok"}]
+    assert [i["repo"] for i in h.select_skills(skills)] == ["b/y"]
+    agents = [{"full_name": "c/z", "stargazers_count": 5000, "description": None, "license": {"key": "mit"}},
+              {"full_name": "d/w", "stargazers_count": 4000, "description": "agent", "license": {"key": "mit"}}]
+    assert [i["full_name"] for i in h.select_agents(agents, {})] == ["d/w"]
