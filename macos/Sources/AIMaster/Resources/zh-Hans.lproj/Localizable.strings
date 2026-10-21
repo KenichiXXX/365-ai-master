@@ -6,7 +6,6 @@
 "stale" = "数据可能过期";
 "Launch at login" = "开机启动";
 "View my snapshot" = "查看我的快照";
-"This app makes no network connections." = "本应用不联网。";
 "Refresh interval" = "刷新间隔";
 "Loading" = "正在读取本地用量…";
 "Refresh failed" = "刷新失败，请重试。";
@@ -14,3 +13,7 @@
 "7 days" = "7 日";
 "Done" = "完成";
 "Login item unavailable" = "无法启用开机启动，请检查系统登录项设置及应用安装状态。";
+"Check-up" = "体检";
+"New today" = "今日新技能";
+"Training" = "修炼";
+"Usage stays local. Only public content is downloaded." = "用量留在本机，仅下载公开内容。";

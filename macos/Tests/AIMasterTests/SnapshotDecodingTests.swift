@@ -5,7 +5,14 @@ final class SnapshotDecodingTests: XCTestCase {
         let url = Bundle.module.url(forResource: "snapshot", withExtension: "json", subdirectory: "Fixtures")!
         let dec = JSONDecoder(); dec.keyDecodingStrategy = .convertFromSnakeCase
         let s = try dec.decode(Snapshot.self, from: Data(contentsOf: url))
-        XCTAssertEqual(s.schema, 1)
+        XCTAssertEqual(s.schema, 2)
+        XCTAssertNotNil(s.book?.today)
+        XCTAssertGreaterThan(s.book?.total ?? 0, 0)
+        XCTAssertNotNil(s.usageSummary?.tokens7d)
+        XCTAssertNotNil(s.rankings?.skill)
+        XCTAssertNotNil(s.dailyTip)
+        XCTAssertNotNil(s.streak)
+        XCTAssertNotNil(s.badges)
         let claude = try XCTUnwrap(s.tools?.first { $0.tool == "claude_code" })
         XCTAssertNotNil(claude.usage7d)
         XCTAssertGreaterThan(claude.usage7d?.tokens ?? 0, 0)

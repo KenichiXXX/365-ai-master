@@ -13,6 +13,12 @@ struct Snapshot: Decodable {
     let notices: [String]?
     let error: String?
     let labels: SnapshotLabels?
+    let book: SkillBook?
+    let rankings: Rankings?
+    let dailyTip: DailyTip?
+    let streak: Streak?
+    let badges: [Badge]?
+    let usageSummary: UsageSummary?
 }
 
 struct ToolUsage: Decodable, Identifiable {
@@ -99,4 +105,83 @@ struct TipSource: Decodable {
 struct SnapshotLabels: Decodable {
     let noTools: String
     let toolUnavailable: String
+}
+
+struct SkillBook: Decodable {
+    let lit: Int
+    let total: Int
+    let cards: [SkillCard]
+    let today: SkillCard?
+}
+
+struct SkillCard: Decodable, Identifiable {
+    let id: String
+    let title: String
+    let why: String
+    let prompt: String
+    let level: Int
+    let lit: Bool
+    let how: String?
+}
+
+struct Rankings: Decodable {
+    let skill: [Ranking]?
+    let agent: [Ranking]?
+    let source: String?
+}
+
+struct Ranking: Decodable {
+    let name: String
+    let url: String
+    let tagline: String
+    let installed: Bool
+}
+
+struct DailyTip: Decodable {
+    let title: String
+    let detail: String
+    let source: String?
+}
+
+struct Streak: Decodable { let days: Int }
+
+struct Badge: Decodable, Identifiable {
+    let id: String
+    let title: String
+    let earned: Bool
+}
+
+struct UsageSummary: Decodable {
+    let tokens7d: Int
+    let costUsd7d: Double
+    let codexQuotaPct: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case tokens7d = "tokens7D", costUsd7d = "costUsd7D", codexQuotaPct
+    }
+
+    static func tokens(_ count: Int, locale: String) -> String {
+        let units: [(Double, String)] = locale == "zh"
+            ? [(1e8, "亿"), (1e4, "万")]
+            : [(1e9, "B"), (1e6, "M"), (1e3, "K")]
+        for (divisor, suffix) in units where Double(count) >= divisor {
+            let value = (Double(count) / divisor * 10).rounded() / 10
+            let text = value.formatted(.number.locale(Locale(identifier: "en_US_POSIX"))
+                .grouping(.never).precision(.fractionLength(0...1)))
+            return text + suffix
+        }
+        return String(count)
+    }
+
+    func caption(locale: String) -> String {
+        let zh = locale == "zh"
+        let cost = String(format: "%.0f", locale: Locale(identifier: "en_US_POSIX"), costUsd7d)
+        var text = zh ? "本周 \(Self.tokens(tokens7d, locale: locale)) tokens · 折算 $\(cost)"
+            : "This week \(Self.tokens(tokens7d, locale: locale)) tokens · ≈$\(cost) API-equivalent"
+        if let quota = codexQuotaPct {
+            let pct = String(format: "%.0f", locale: Locale(identifier: "en_US_POSIX"), quota)
+            text += zh ? " · Codex 周额度 \(pct)%" : " · Codex weekly \(pct)%"
+        }
+        return text
+    }
 }

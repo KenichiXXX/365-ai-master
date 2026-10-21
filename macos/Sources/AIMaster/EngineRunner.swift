@@ -15,11 +15,35 @@ struct EngineRunner {
         return Bundle.main.url(forResource: "365engine", withExtension: nil)
     }
 
+    static var contentURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("365AIMaster/content.json")
+    }
+
+    static func snapshotArguments(locale: String, tools: [String], content: URL = contentURL) -> [String] {
+        var arguments = ["snapshot", "--json", "--locale", locale, "--tools", tools.joined(separator: ",")]
+        if FileManager.default.fileExists(atPath: content.path) { arguments += ["--content", content.path] }
+        return arguments
+    }
+
+    // The engine owns the self-report allowlist and rejects log-detectable cards.
+    static func markTried(id: String) throws {
+        guard let url = engineURL() else { throw EngineError.missing }
+        let process = Process()
+        process.executableURL = url
+        process.arguments = ["mark-tried", id]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        try process.run()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else { throw EngineError.failed(process.terminationStatus) }
+    }
+
     static func run(locale: String, tools: [String]) throws -> EngineResult {
         guard let url = engineURL() else { throw EngineError.missing }
         let process = Process()
         process.executableURL = url
-        process.arguments = ["snapshot", "--json", "--locale", locale, "--tools", tools.joined(separator: ",")]
+        process.arguments = snapshotArguments(locale: locale, tools: tools)
         let output = Pipe()
         process.standardOutput = output
         process.standardError = FileHandle.nullDevice
@@ -34,7 +58,7 @@ struct EngineRunner {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         guard let snapshot = try? decoder.decode(Snapshot.self, from: data),
-              snapshot.schema == 1, snapshot.error == nil else { throw EngineError.badJSON }
+              [1, 2].contains(snapshot.schema), snapshot.error == nil else { throw EngineError.badJSON }
         let object = try JSONSerialization.jsonObject(with: data)
         let pretty = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
         return EngineResult(snapshot: snapshot, json: String(decoding: pretty, as: UTF8.self))

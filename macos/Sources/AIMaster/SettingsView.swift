@@ -35,7 +35,7 @@ struct SettingsView: View {
             if loginError { Text("Login item unavailable", bundle: .module).font(.caption).foregroundStyle(.orange) }
             Button(action: { showSnapshot = true }) { Text("View my snapshot", bundle: .module) }
                 .disabled(store.snapshot == nil)
-            Text("This app makes no network connections.", bundle: .module).font(.caption)
+            Text("Usage stays local. Only public content is downloaded.", bundle: .module).font(.caption)
             Button(action: { dismiss() }) { Text("Done", bundle: .module) }
         }
         .padding(20).frame(width: 340)

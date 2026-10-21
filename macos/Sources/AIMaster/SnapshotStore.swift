@@ -20,6 +20,25 @@ final class SnapshotStore: ObservableObject {
     var load: @Sendable (String, [String]) throws -> EngineResult
     private let defaults: UserDefaults
     private var timer: Timer?
+    private lazy var contentUpdater = ContentUpdater(defaults: defaults)
+
+    func refreshContent() {
+        Task { if await contentUpdater.refreshIfNeeded() { refresh() } }
+    }
+
+    func markTried(_ card: SkillCard) {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        Task {
+            do {
+                try await Task.detached { try EngineRunner.markTried(id: card.id) }.value
+            } catch {
+                lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
+            }
+            isRefreshing = false
+            refresh()
+        }
+    }
 
     init(defaults: UserDefaults = .standard,
          load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) }) {

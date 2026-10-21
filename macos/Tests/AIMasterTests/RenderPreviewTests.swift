@@ -22,16 +22,24 @@ final class RenderPreviewTests: XCTestCase {
         }
         await store.refresh()?.value
         let snap = try XCTUnwrap(store.snapshot, store.lastError ?? "no snapshot")
-        let view = VStack(alignment: .leading, spacing: 16) {
-            if let tip = snap.todayTip { TipCard(tip: tip, store: store) }
-            if let v = snap.village { VillageGrid(village: v) }
-            DimensionRings(dimensions: snap.dimensions ?? [])
-            UsageSection(snapshot: snap)
+        XCTAssertEqual(snap.schema, 2, "Rebuild dist/365engine before rendering")
+        let views: [(String, AnyView)] = [
+            ("checkup", AnyView(CheckupTab(snapshot: snap, store: store))),
+            ("today", AnyView(TodaySkillTab(snapshot: snap, store: store))),
+            ("training", AnyView(TrainingTab(snapshot: snap)))
+        ]
+        for (name, tab) in views {
+            let view = tab.padding(16).frame(width: 360)
+                .background(Color(nsColor: .windowBackgroundColor))
+            let renderer = ImageRenderer(content: view); renderer.scale = 2
+            let img = try XCTUnwrap(renderer.nsImage)
+            let rep = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(img.tiffRepresentation)))
+            try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+                .write(to: URL(fileURLWithPath: out + "-" + name + ".png"))
         }
-        .padding(16).frame(width: 360).background(Color(nsColor: .windowBackgroundColor))
-        let r = ImageRenderer(content: view); r.scale = 2
-        let img = try XCTUnwrap(r.nsImage)
-        let rep = NSBitmapImageRep(data: img.tiffRepresentation!)!
-        try rep.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: out))
+        let popover = ImageRenderer(content: PopoverView(store: store)); popover.scale = 2
+        let image = try XCTUnwrap(popover.nsImage)
+        XCTAssertEqual(image.size.width, 360)
+        XCTAssertLessThanOrEqual(image.size.height, 600)
     }
 }
