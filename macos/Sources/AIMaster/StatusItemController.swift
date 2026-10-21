@@ -3,17 +3,21 @@ import Combine
 import SwiftUI
 
 @MainActor
-final class StatusItemController: NSObject {
+final class StatusItemController: NSObject, NSPopoverDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private let store = SnapshotStore()
+    private var clickMonitor: Any?
     private var subscription: AnyCancellable?
 
     override init() {
         super.init()
-        popover.contentSize = NSSize(width: 360, height: 600)
+        popover.contentSize = NSSize(width: 440, height: 720)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: PopoverView(store: store))
+        popover.delegate = self
+        popover.contentViewController = NSHostingController(rootView: PopoverView(store: store).onExitCommand { [weak self] in
+            self?.popover.performClose(nil)
+        })
         statusItem.button?.title = Self.badgeTitle(snapshot: nil)
         statusItem.button?.target = self
         statusItem.button?.action = #selector(togglePopover)
@@ -33,13 +37,25 @@ final class StatusItemController: NSObject {
         return numbers[index] + (snapshot?.book?.today?.lit == false ? " •" : "")
     }
 
+    func popoverDidClose(_ notification: Notification) {
+        if let clickMonitor { NSEvent.removeMonitor(clickMonitor) }
+        clickMonitor = nil
+    }
+
     @objc private func togglePopover() {
         guard let button = statusItem.button else { return }
         if popover.isShown { popover.performClose(nil) }
         else {
             store.refreshContent()
+            store.refresh()
+            NSApp.activate(ignoringOtherApps: true)
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
+            if clickMonitor == nil {
+                clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                    Task { @MainActor in self?.popover.performClose(nil) }
+                }
+            }
         }
     }
 }

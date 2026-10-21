@@ -22,7 +22,7 @@ struct SettingsView: View {
                 ))
             }
             Picker(selection: $store.refreshSeconds) {
-                ForEach([30, 60, 300], id: \.self) { seconds in Text("\(seconds) s").tag(seconds) }
+                ForEach(SnapshotStore.refreshIntervals, id: \.self) { seconds in Text("\(seconds) s").tag(seconds) }
             } label: { Text("Refresh interval", bundle: .module) }
             Toggle(isOn: Binding(get: { launchAtLogin }, set: { enabled in
                 do {
@@ -32,17 +32,18 @@ struct SettingsView: View {
                     loginError = enabled && !launchAtLogin
                 } catch { loginError = true }
             })) { Text("Launch at login", bundle: .module) }
-            if loginError { Text("Login item unavailable", bundle: .module).font(.caption).foregroundStyle(.orange) }
+            if loginError { Text("Login item unavailable", bundle: .module).font(.system(size: 11)).foregroundStyle(.orange) }
             Button(action: { showSnapshot = true }) { Text("View my snapshot", bundle: .module) }
                 .disabled(store.snapshot == nil)
-            Text("Usage stays local. Only public content is downloaded.", bundle: .module).font(.caption)
+            Text("Usage stays local. Only public content is downloaded.", bundle: .module).font(.system(size: 11))
+            Button(action: { NSApp.terminate(nil) }) { Text("Quit", bundle: .module) }
             Button(action: { dismiss() }) { Text("Done", bundle: .module) }
         }
         .padding(20).frame(width: 340)
         .sheet(isPresented: $showSnapshot) {
             VStack {
                 ScrollView([.horizontal, .vertical]) {
-                    Text(store.snapshotJSON).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
+                    Text(store.snapshotJSON).font(.system(size: 11, design: .monospaced)).textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Button(action: { showSnapshot = false }) { Text("Done", bundle: .module) }

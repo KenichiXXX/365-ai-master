@@ -30,7 +30,7 @@ final class RenderPreviewTests: XCTestCase {
             ("training", AnyView(TrainingTab(snapshot: snap)))
         ]
         for (name, tab) in views {
-            let view = tab.padding(16).frame(width: 360)
+            let view = tab.padding(16).frame(width: 440)
                 .background(Color(nsColor: .windowBackgroundColor))
             let renderer = ImageRenderer(content: view); renderer.scale = 2
             let img = try XCTUnwrap(renderer.nsImage)
@@ -40,7 +40,7 @@ final class RenderPreviewTests: XCTestCase {
         }
         let popover = ImageRenderer(content: PopoverView(store: store)); popover.scale = 2
         let image = try XCTUnwrap(popover.nsImage)
-        XCTAssertEqual(image.size.width, 360)
-        XCTAssertLessThanOrEqual(image.size.height, 600)
+        XCTAssertEqual(image.size.width, 440)
+        XCTAssertLessThanOrEqual(image.size.height, 720)
     }
 }

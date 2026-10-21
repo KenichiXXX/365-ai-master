@@ -1,16 +1,40 @@
 import SwiftUI
+import ServiceManagement
 
 struct CheckupTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
 
+    @State private var loginError = false
+    private var zh: Bool { snapshot.locale == "zh" }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
+            if !store.onboarded {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(zh ? "365 AI Master 每天读你本机的 AI 使用记录（只读、不上传），给你一个提升动作和一个新技能。"
+                         : "365 AI Master reads your local AI usage records each day (read-only, never uploaded) and gives you one improvement action and one new skill.")
+                        .font(.body)
+                    HStack {
+                        Button(zh ? "开机自动启动" : "Launch at login") {
+                            do {
+                                try SMAppService.mainApp.register()
+                                if SMAppService.mainApp.status == .enabled { store.dismissOnboarding() }
+                                else { loginError = true }
+                            } catch { loginError = true }
+                        }
+                        Button(zh ? "知道了" : "Got it") { store.dismissOnboarding() }
+                    }
+                    if loginError {
+                        Text("Login item unavailable", bundle: .module).font(.system(size: 11)).foregroundStyle(.orange)
+                    }
+                }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            }
             VStack(spacing: 10) {
-                RingView(score: snapshot.overall?.score ?? 0)
+                RingView(score: snapshot.overall?.score ?? 0, size: 150)
                 if let village = snapshot.village {
-                    Text(village.rankTitle).font(.title3.bold())
-                    Text(progressLine).font(.caption).foregroundStyle(.secondary)
+                    Text(village.rankTitle).font(.title2.bold())
+                    Text(progressLine).font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }.frame(maxWidth: .infinity).padding(.top, 8)
             DimensionRings(dimensions: snapshot.dimensions ?? [])
@@ -18,7 +42,7 @@ struct CheckupTab: View {
             if let tip = snapshot.todayTip { TipCard(tip: tip, store: store) }
             if let usage = snapshot.usageSummary {
                 Text(usage.caption(locale: snapshot.locale ?? store.locale))
-                    .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }

@@ -3,6 +3,10 @@ import Combine
 
 @MainActor
 final class SnapshotStore: ObservableObject {
+    enum TriedFeedback { case notSeen, lit }
+    @Published private(set) var triedFeedback: TriedFeedback?
+    @Published private(set) var onboarded: Bool
+    static let refreshIntervals = [60, 300, 900]
     static let allTools = ["claude_code", "codex", "gemini_cli", "opencode", "qwen_code"]
     static let toolNames = ["claude_code": "Claude Code", "codex": "Codex", "gemini_cli": "Gemini CLI", "opencode": "OpenCode", "qwen_code": "Qwen Code"]
     @Published private(set) var snapshot: Snapshot?
@@ -18,6 +22,7 @@ final class SnapshotStore: ObservableObject {
     }
     let locale = Locale.preferredLanguages.first?.hasPrefix("zh") == true ? "zh" : "en"
     var load: @Sendable (String, [String]) throws -> EngineResult
+    var tryCard: @Sendable (String) throws -> Bool
     private let defaults: UserDefaults
     private var timer: Timer?
     private lazy var contentUpdater = ContentUpdater(defaults: defaults)
@@ -26,27 +31,45 @@ final class SnapshotStore: ObservableObject {
         Task { if await contentUpdater.refreshIfNeeded() { refresh() } }
     }
 
-    func markTried(_ card: SkillCard) {
-        guard !isRefreshing else { return }
+    func dismissOnboarding() {
+        onboarded = true
+        defaults.set(true, forKey: "onboarded")
+    }
+
+    @discardableResult
+    func markTried(_ card: SkillCard) -> Task<Void, Never>? {
+        guard !isRefreshing else { return nil }
+        triedFeedback = nil
         isRefreshing = true
-        Task {
+        let reporter = tryCard
+        return Task {
             do {
-                try await Task.detached { try EngineRunner.markTried(id: card.id) }.value
+                if card.isSelfReport {
+                    let accepted = try await Task.detached { try reporter(card.id) }.value
+                    guard accepted else { throw EngineError.badJSON }
+                }
+                isRefreshing = false
+                await refresh()?.value
+                guard lastError == nil else { return }
+                let lit = snapshot?.book?.cards.first(where: { $0.id == card.id })?.lit == true
+                triedFeedback = lit ? .lit : .notSeen
             } catch {
                 lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
+                isRefreshing = false
             }
-            isRefreshing = false
-            refresh()
         }
     }
 
     init(defaults: UserDefaults = .standard,
-         load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) }) {
+         load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) },
+         tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) }) {
         self.defaults = defaults
         self.load = load
+        self.tryCard = tryCard
+        onboarded = defaults.bool(forKey: "onboarded")
         enabledTools = defaults.stringArray(forKey: "enabledTools") ?? Self.allTools
         let interval = defaults.integer(forKey: "refreshSeconds")
-        refreshSeconds = [30, 60, 300].contains(interval) ? interval : 60
+        refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
     }
 
     func startTimer() {

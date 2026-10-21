@@ -71,17 +71,31 @@ def update_book(content: dict, p: Profile, inv: dict[str, Inventory],
             lit.setdefault(card["id"], {"at": now.isoformat(), "how": "log"})
         record = lit.get(card["id"])
         cards.append({
-            **{key: card[key] for key in ("id", "title", "why", "prompt", "level")},
+            **{key: card[key] for key in ("id", "title", "why", "prompt", "level", "detect")},
             "lit": record is not None, "how": record["how"] if record else None,
         })
+    today = now.astimezone().date()
+    yesterday = (today - timedelta(days=1)).isoformat()
+    seen = progress.get("book_seen", {})
+    choice = today_skill(cards, today, seen.get(yesterday))
+    progress["book_seen"] = {day: card_id for day, card_id in seen.items()
+                             if day == yesterday}
+    if choice:
+        progress["book_seen"][today.isoformat()] = choice["id"]
     _save_progress(progress_path, progress)
     return {"lit": sum(c["lit"] for c in cards), "total": len(cards), "cards": cards,
-            "today": today_skill(cards, now.astimezone().date())}
+            "today": choice}
 
 
-def today_skill(cards: list[dict], today: date) -> dict:
-    candidates = [card for card in cards if not card["lit"]] or cards
-    return candidates[today.toordinal() % len(candidates)] if candidates else {}
+def today_skill(cards: list[dict], today: date, yesterday_id: str | None = None) -> dict:
+    unlit = [card for card in cards if not card["lit"]]
+    candidates = unlit or cards
+    if not candidates:
+        return {}
+    index = today.toordinal() % len(candidates)
+    if len(unlit) > 1 and candidates[index]["id"] == yesterday_id:
+        index = (index + 1) % len(candidates)
+    return candidates[index]
 
 
 def mark_tried(card_id: str, progress_path: Path, now: datetime) -> bool:
@@ -106,7 +120,8 @@ def daily_rankings(content: dict, inv: dict[str, Inventory], locale: str,
         items = rankings[kind]
         offset = today.toordinal() % len(items) if items and rankings.get("rotate", True) else 0
         result[kind] = [
-            {"name": item["name"], "url": item["url"], "tagline": item["tagline"][locale],
+            {**{key: item[key] for key in ("stars", "stars7d") if key in item},
+             "name": item["name"], "url": item["url"], "tagline": item["tagline"][locale],
              "installed": any(name.casefold() in installed for name in item["match"])}
             for item in (items[offset:] + items[:offset])[:n]
         ]

@@ -27,16 +27,21 @@ struct EngineRunner {
     }
 
     // The engine owns the self-report allowlist and rejects log-detectable cards.
-    static func markTried(id: String) throws {
+    static func markTried(id: String) throws -> Bool {
         guard let url = engineURL() else { throw EngineError.missing }
         let process = Process()
         process.executableURL = url
         process.arguments = ["mark-tried", id]
-        process.standardOutput = FileHandle.nullDevice
+        let output = Pipe()
+        process.standardOutput = output
         process.standardError = FileHandle.nullDevice
         try process.run()
+        let data = output.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
         guard process.terminationStatus == 0 else { throw EngineError.failed(process.terminationStatus) }
+        guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Bool],
+              let ok = response["ok"] else { throw EngineError.badJSON }
+        return ok
     }
 
     static func run(locale: String, tools: [String]) throws -> EngineResult {

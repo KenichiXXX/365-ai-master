@@ -7,8 +7,8 @@ struct DimensionRings: View {
         HStack(alignment: .top) {
             ForEach(dimensions) { dimension in
                 VStack(spacing: 6) {
-                    RingView(score: dimension.score, size: 42)
-                    Text(dimension.label).font(.caption2).multilineTextAlignment(.center)
+                    RingView(score: dimension.score, size: 64)
+                    Text(dimension.label).font(.system(size: 11)).multilineTextAlignment(.center)
                 }.frame(maxWidth: .infinity)
             }
         }

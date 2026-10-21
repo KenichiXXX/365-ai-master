@@ -182,3 +182,35 @@ def test_live_rankings_match_plugins_case_insensitively_and_keep_order():
     assert result["source"] == content["rankings"]["source"]
     assert result["updated_at"] == "2026-10-21"
     assert daily_rankings(content, {"claude_code": inv}, "zh", TODAY + timedelta(days=1)) == result
+
+
+def test_today_skill_skips_yesterdays_card_when_pool_shrinks(tmp_path):
+    content = load_content(None)
+    # Four cards yesterday, three today; today's modulo points to yesterday's card.
+    content["skills"] = [{**content["skills"][0], "id": str(i), "detect": "self"}
+                         for i in range(4)]
+    path = tmp_path / "progress.json"
+    yesterday = NOW - timedelta(days=1)
+    previous = update_book(content, Profile(now=yesterday), {}, path, yesterday)["today"]
+    assert previous["id"] == "1"
+    assert mark_tried("3", path, NOW)
+    book = update_book(content, Profile(now=NOW), {}, path, NOW)
+    assert book["today"]["id"] == "2"
+    assert book["today"]["id"] != previous["id"]
+    assert update_book(content, Profile(now=NOW), {}, path, NOW)["today"] == book["today"]
+    assert all(c["detect"] == "self" for c in book["cards"])
+    content["skills"] = [next(c for c in content["skills"] if c["id"] == book["today"]["id"])]
+    tomorrow = NOW + timedelta(days=1)
+    assert update_book(content, Profile(now=tomorrow), {}, path, tomorrow)["today"]["id"] == book["today"]["id"]
+
+
+def test_rankings_emit_growth_metrics():
+    content = load_content(None)
+    content["rankings"] = {"skill": [
+        {"name": "a/b", "url": "https://example.org", "tagline": {"zh": "中文", "en": "English"},
+         "match": [], "stars": 302_000, "stars7d": 3946},
+        {"name": "a/c", "url": "https://example.org", "tagline": {"zh": "中文", "en": "English"},
+         "match": [], "stars": 2000, "stars7d": None}], "agent": [], "rotate": False}
+    rows = daily_rankings(content, {}, "en", TODAY)["skill"]
+    assert (rows[0]["stars"], rows[0]["stars7d"]) == (302_000, 3946)
+    assert rows[1]["stars7d"] is None

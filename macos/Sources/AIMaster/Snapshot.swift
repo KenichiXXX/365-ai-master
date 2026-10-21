@@ -122,6 +122,9 @@ struct SkillCard: Decodable, Identifiable {
     let level: Int
     let lit: Bool
     let how: String?
+    var detect: String? = nil
+
+    var isSelfReport: Bool { detect == "self" || how == "self" }
 }
 
 struct Rankings: Decodable {
@@ -135,6 +138,26 @@ struct Ranking: Decodable {
     let url: String
     let tagline: String
     let installed: Bool
+    var stars: Int? = nil
+    var stars7d: Int? = nil
+
+    func growth(locale: String) -> String {
+        guard let stars else { return "" }
+        let zh = locale == "zh"
+        var count = UsageSummary.tokens(stars, locale: locale)
+        if zh, stars >= 10_000 {
+            let divisor = stars >= 100_000_000 ? 1e8 : 1e4
+            count = (Double(stars) / divisor).formatted(.number.locale(Locale(identifier: "en_US"))
+                .grouping(.never).precision(.fractionLength(0...1))) + (stars >= 100_000_000 ? "亿" : "万")
+        }
+        var text = "★ " + count
+        if let stars7d {
+            let delta = stars7d.formatted(.number.locale(Locale(identifier: "en_US")))
+            let signed = stars7d >= 0 ? "+" + delta : delta
+            text += zh ? " · 本周 \(signed)" : " · \(signed) this week"
+        }
+        return text
+    }
 }
 
 struct DailyTip: Decodable {

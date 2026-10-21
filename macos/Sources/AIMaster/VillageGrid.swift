@@ -10,7 +10,7 @@ struct VillageGrid: View {
                 ForEach(Array(village.quests.enumerated()), id: \.element.id) { index, quest in
                     VStack(spacing: 4) {
                         Text(quest.status == "passed" ? "✓" : String(index + 1)).font(.headline)
-                        Text(quest.title).font(.caption).multilineTextAlignment(.center)
+                        Text(quest.title).font(.system(size: 11)).multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity, minHeight: 62)
                     .padding(4)

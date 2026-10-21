@@ -1,5 +1,4 @@
 import SwiftUI
-import AppKit
 
 struct TipCard: View {
     let tip: Tip
@@ -7,16 +6,15 @@ struct TipCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(tip.title).font(.headline)
-            Text(tip.why).font(.subheadline).foregroundStyle(.secondary)
+            Text(tip.title).font(.title2.bold())
+            Text(tip.why).font(.body).foregroundStyle(.secondary)
             ForEach(Array(tip.steps.enumerated()), id: \.offset) { index, step in
                 Text("\(index + 1). \(step)").font(.callout)
             }
             HStack {
-                Button(action: {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(tip.promptForClaude, forType: .string)
-                }) { Text("Copy prompt", bundle: .module) }
+                CopyButton(prompt: tip.promptForClaude,
+                           title: NSLocalizedString("Copy prompt", bundle: .module, comment: ""),
+                           locale: store.locale)
                 Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
                     .disabled(store.isRefreshing)
             }.controlSize(.small)

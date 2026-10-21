@@ -17,7 +17,7 @@ struct PopoverView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     if let snapshot = store.snapshot {
                         if snapshot.notices?.contains("no_tools") == true {
-                            Text(snapshot.labels?.noTools ?? "").font(.caption).foregroundStyle(.secondary)
+                            Text(snapshot.labels?.noTools ?? "").font(.system(size: 11)).foregroundStyle(.secondary)
                             Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
                         }
                         switch selectedTab {
@@ -41,14 +41,13 @@ struct PopoverView: View {
                         }
                     }
                     if store.lastError != nil { Text("stale", bundle: .module).foregroundStyle(.orange) }
-                }.font(.caption2)
+                }.font(.system(size: 11))
                 Spacer()
                 Button(action: { settings = true }) { Text("Settings", bundle: .module) }
-                Button(action: { NSApp.terminate(nil) }) { Text("Quit", bundle: .module) }
             }
         }
         .padding(16)
-        .frame(width: 360, height: 600)
+        .frame(width: 440, height: 720)
         .sheet(isPresented: $settings) { SettingsView(store: store) }
     }
 }
