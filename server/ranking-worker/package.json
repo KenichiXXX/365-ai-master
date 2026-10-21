@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run",
+    "test": "WRANGLER_LOG_PATH=.wrangler/logs/test.log WRANGLER_SEND_METRICS=false vitest run",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },

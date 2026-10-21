@@ -13,3 +13,6 @@ dist/
 node_modules/
 *.spec
 macos/.build/
+
+server/ranking-worker/node_modules/
+server/ranking-worker/.wrangler/
