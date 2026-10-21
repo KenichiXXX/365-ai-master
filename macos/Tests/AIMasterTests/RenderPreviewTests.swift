@@ -10,9 +10,10 @@ final class RenderPreviewTests: XCTestCase {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: "render-preview")!) { locale, tools in
             let process = Process()
             process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
-            process.arguments = ["snapshot", "--json", "--locale", locale, "--tools", tools.joined(separator: ","),
-                                 "--state-dir", URL(fileURLWithPath: out).deletingLastPathComponent()
-                                    .appendingPathComponent("render-state").path]
+            // Same arguments the app uses (incl. the downloaded --content), but an isolated state dir.
+            process.arguments = EngineRunner.snapshotArguments(locale: locale, tools: tools)
+                + ["--state-dir", URL(fileURLWithPath: out).deletingLastPathComponent()
+                    .appendingPathComponent("render-state").path]
             let pipe = Pipe(); process.standardOutput = pipe
             process.standardError = FileHandle.nullDevice
             try process.run()
