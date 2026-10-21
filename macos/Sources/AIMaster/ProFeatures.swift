@@ -5,6 +5,15 @@ struct ProFeatures {
     var growthCurve: Bool { isPro }
     var weeklyReview: Bool { isPro }
 
+    func dimensionCaption(_ ranking: AppScoreOut?, key: String, locale: String) -> String? {
+        guard isPro, let ranking, ranking.isValid, let dimension = ranking.dims?[key] else { return nil }
+        if ranking.small_sample {
+            return locale == "zh" ? "第 \(dimension.rank) 名" : "#\(dimension.rank)"
+        }
+        guard let percentile = dimension.percentile else { return nil }
+        return locale == "zh" ? "击败 \(percentile)%" : "Beat \(percentile)%"
+    }
+
     func canLearn(_ card: SkillCard, todayID: String?) -> Bool {
         isPro || card.lit || card.id == todayID
     }

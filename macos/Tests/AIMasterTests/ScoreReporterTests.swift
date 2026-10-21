@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import AIMaster
 
 final class ScoreReporterTests: XCTestCase {
@@ -109,6 +110,42 @@ final class ScoreReporterTests: XCTestCase {
         store.shareAnonymousScore = false
         XCTAssertNil(store.ranking)
         XCTAssertFalse(SnapshotStore(defaults: defaults).shareAnonymousScore)
+    }
+
+    func testDimensionDecodeAndProGating() throws {
+        let json = Data(#"{"total":25,"rank":13,"percentile":50,"small_sample":false,"dims":{"routing":{"rank":5,"percentile":80},"timing":{"rank":13,"percentile":50},"context":{"rank":1,"percentile":100},"leverage":{"rank":25,"percentile":0}}}"#.utf8)
+        let result = try JSONDecoder().decode(AppScoreOut.self, from: json)
+        XCTAssertTrue(result.isValid)
+        XCTAssertNil(ProFeatures(isPro: false).dimensionCaption(result, key: "routing", locale: "zh"))
+        XCTAssertEqual(ProFeatures(isPro: true).dimensionCaption(result, key: "routing", locale: "zh"), "击败 80%")
+        XCTAssertEqual(ProFeatures(isPro: true).dimensionCaption(result, key: "timing", locale: "en"), "Beat 50%")
+        XCTAssertEqual(ProFeatures(isPro: true).dimensionCaption(result, key: "leverage", locale: "zh"), "击败 0%")
+        XCTAssertNil(ProFeatures(isPro: true).dimensionCaption(nil, key: "routing", locale: "zh"))
+        let early = try JSONDecoder().decode(AppScoreOut.self, from: Data(#"{"total":3,"rank":2,"percentile":null,"small_sample":true,"dims":{"routing":{"rank":2,"percentile":null},"timing":{"rank":1,"percentile":null},"context":{"rank":1,"percentile":null},"leverage":{"rank":3,"percentile":null}}}"#.utf8))
+        XCTAssertEqual(ProFeatures(isPro: true).dimensionCaption(early, key: "routing", locale: "zh"), "第 2 名")
+        XCTAssertEqual(ProFeatures(isPro: true).dimensionCaption(early, key: "routing", locale: "en"), "#2")
+        let old = AppScoreOut(total: 25, rank: 13, percentile: 50, small_sample: false)
+        XCTAssertNil(ProFeatures(isPro: true).dimensionCaption(old, key: "routing", locale: "zh"))
+        for invalid in ["\"rank\":5,\"percentile\":101", "\"rank\":0,\"percentile\":80"] {
+            let changed = String(decoding: json, as: UTF8.self).replacingOccurrences(of: "\"rank\":5,\"percentile\":80", with: invalid)
+            XCTAssertFalse(try JSONDecoder().decode(AppScoreOut.self, from: Data(changed.utf8)).isValid)
+        }
+    }
+
+    @MainActor func testDimensionRingsRenderRankingOnlyForPro() throws {
+        let ranking = try JSONDecoder().decode(AppScoreOut.self, from: Data(#"{"total":25,"rank":13,"percentile":50,"small_sample":false,"dims":{"routing":{"rank":5,"percentile":80},"timing":{"rank":13,"percentile":50},"context":{"rank":1,"percentile":100},"leverage":{"rank":25,"percentile":0}}}"#.utf8))
+        for locale in ["zh", "en"] {
+            let dimensions = [Dimension(key: "routing", label: locale == "zh" ? "模型调度" : "Routing", score: 80)]
+            func image(pro: Bool, ranking: AppScoreOut?) throws -> NSImage {
+                let renderer = ImageRenderer(content: DimensionRings(dimensions: dimensions, ranking: ranking,
+                    features: ProFeatures(isPro: pro), locale: locale).frame(width: 408))
+                return try XCTUnwrap(renderer.nsImage)
+            }
+            let free = try image(pro: false, ranking: ranking)
+            let pro = try image(pro: true, ranking: ranking)
+            XCTAssertGreaterThan(pro.size.height, free.size.height)
+            XCTAssertEqual(try image(pro: true, ranking: nil).size.height, free.size.height)
+        }
     }
 
     func testRankingStrings() {

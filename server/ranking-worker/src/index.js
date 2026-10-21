@@ -85,6 +85,15 @@ export default {
         NOT EXISTS (SELECT 1 FROM devices WHERE device_token = ?) OR
         EXISTS (SELECT 1 FROM devices WHERE device_token = ? AND score <> ? AND updated_at <= ?)
       )`).bind(score, token, token, score, cutoff),
+      ...dimensionKeys.flatMap((dim) => [
+        env.DB.prepare(`UPDATE dim_counts SET n = n - 1 WHERE dim = ? AND score = (
+          SELECT ${dim} FROM devices WHERE device_token = ? AND ${dim} <> ? AND updated_at <= ?
+        )`).bind(dim, token, dims[dim], cutoff),
+        env.DB.prepare(`UPDATE dim_counts SET n = n + 1 WHERE dim = ? AND score = ? AND (
+          NOT EXISTS (SELECT 1 FROM devices WHERE device_token = ?) OR
+          EXISTS (SELECT 1 FROM devices WHERE device_token = ? AND ${dim} <> ? AND updated_at <= ?)
+        )`).bind(dim, dims[dim], token, token, dims[dim], cutoff),
+      ]),
       env.DB.prepare(`INSERT INTO devices
         (device_token, score, routing, timing, context, leverage, app_version, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -99,7 +108,14 @@ export default {
       SUM(CASE WHEN score > ? THEN n ELSE 0 END) AS higher FROM score_counts`)
       .bind(score, score).first();
     const total = counts.total;
-    return Response.json({ total, rank: counts.higher + 1,
+    const dimRanks = await env.DB.prepare(`SELECT c.dim,
+      SUM(CASE WHEN c.score > CASE c.dim WHEN 'routing' THEN d.routing WHEN 'timing' THEN d.timing
+        WHEN 'context' THEN d.context WHEN 'leverage' THEN d.leverage END THEN c.n ELSE 0 END) + 1 AS rank,
+      SUM(CASE WHEN c.score < CASE c.dim WHEN 'routing' THEN d.routing WHEN 'timing' THEN d.timing
+        WHEN 'context' THEN d.context WHEN 'leverage' THEN d.leverage END THEN c.n ELSE 0 END) AS beaten
+      FROM dim_counts c JOIN devices d ON d.device_token = ? GROUP BY c.dim`).bind(token).all();
+    return Response.json({ total, dims: Object.fromEntries(dimRanks.results.map(({ dim, rank, beaten }) =>
+      [dim, { rank, percentile: total >= 20 ? Math.round(100 * beaten / (total - 1)) : null }])), rank: counts.higher + 1,
       percentile: total >= 20 ? Math.round(100 * counts.beaten / (total - 1)) : null,
       small_sample: total < 20 });
   },

@@ -8,14 +8,27 @@ private final class ScoreRedirectPolicy: NSObject, URLSessionTaskDelegate {
     }
 }
 
+struct DimensionRank: Codable {
+    let rank: Int
+    let percentile: Int?
+}
+
 struct AppScoreOut: Codable {
     let total: Int
     let rank: Int
     let percentile: Int?
     let small_sample: Bool
+    var dims: [String: DimensionRank]? = nil
 
     var isValid: Bool {
-        total > 0 && rank >= 1 && rank <= total && small_sample == (total < 20)
+        if let dims {
+            guard Set(dims.keys) == Set(["routing", "timing", "context", "leverage"]),
+                  dims.values.allSatisfy({ value in
+                      value.rank >= 1 && value.rank <= total && (small_sample ? value.percentile == nil
+                          : value.percentile.map { (0...100).contains($0) } == true)
+                  }) else { return false }
+        }
+        return total > 0 && rank >= 1 && rank <= total && small_sample == (total < 20)
             && (small_sample ? percentile == nil : percentile.map { (0...100).contains($0) } == true)
     }
 

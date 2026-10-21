@@ -33,7 +33,8 @@ struct CheckupTab: View {
                     Text(progressLine).font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }.frame(maxWidth: .infinity).padding(.top, 8)
-            DimensionRings(dimensions: snapshot.dimensions ?? [])
+            DimensionRings(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
+                           features: store.features, locale: snapshot.locale ?? store.locale)
             if store.features.growthCurve, let growth = snapshot.growth {
                 GrowthCurve(growth: growth, zh: zh)
             }
