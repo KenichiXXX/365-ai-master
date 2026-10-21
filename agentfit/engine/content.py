@@ -552,3 +552,16 @@ _REVIEW_COPY = {
 
 def review_labels(locale):
     return dict(_REVIEW_COPY[locale])
+
+
+def practice_calendar_labels(locale):
+    rows = {
+        "title": ("实践历", "Practice calendar"),
+        "observed": ("日志实践", "Observed practice"),
+        "self_reported": ("自报尝试", "Self-reported attempt"),
+        "usage_only": ("仅有使用记录", "Usage only"),
+        "unavailable": ("数据不可用", "Data unavailable"),
+        "rest": ("休息不会扣除已获成就", "Rest does not remove earned achievements"),
+        "streak": ("连续有 AI 使用记录 {n} 天", "AI usage recorded for {n} consecutive days"),
+    }
+    return {key: values[0 if locale == "zh" else 1] for key, values in rows.items()}

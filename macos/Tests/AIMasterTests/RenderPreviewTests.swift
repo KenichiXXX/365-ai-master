@@ -208,4 +208,27 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testRenderPracticeCalendarInBothLanguages() throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        for locale in ["zh", "en"] {
+            let labels = locale == "zh"
+                ? ["title": "实践历", "observed": "日志实践", "self_reported": "自报尝试", "usage_only": "仅有使用记录",
+                   "unavailable": "数据不可用", "rest": "休息不会扣除已获成就"]
+                : ["title": "Practice calendar", "observed": "Observed practice", "self_reported": "Self-reported attempt",
+                   "usage_only": "Usage only", "unavailable": "Data unavailable", "rest": "Rest does not remove earned achievements"]
+            let states = ["observed", "self_reported", "usage_only", "unavailable"]
+            let days = (1...30).map { PracticeCalendarDay(date: String(format: "2026-10-%02d", $0), state: states[($0 - 1) % 4]) }
+            let calendar = PracticeCalendarData(days: days, labels: labels)
+            XCTAssertEqual(days[0].accessibilityLabel(labels: labels), "2026-10-01, " + labels["observed"]!)
+            let renderer = ImageRenderer(content: PracticeCalendar(data: calendar).padding(16).frame(width: 440)
+                .background(Color(nsColor: .windowBackgroundColor)))
+            renderer.scale = 2
+            let image = try XCTUnwrap(renderer.nsImage)
+            XCTAssertLessThan(image.size.height, 360)
+            let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
+            try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+                .write(to: URL(fileURLWithPath: out + "-calendar-" + locale + ".png"))
+        }
+    }
+
 }

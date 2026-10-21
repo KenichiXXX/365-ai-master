@@ -11,10 +11,14 @@ from agentfit.engine.codex_book import (
     next_badge,
     streak,
     update_book,
+    usage_dates,
+    retain_badges,
+    _read_progress,
+    _save_progress,
 )
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
-from agentfit.engine.content import first_practice, label, practice_evidence_label, review_labels
+from agentfit.engine.content import first_practice, label, practice_evidence_label, review_labels, practice_calendar_labels
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.coverage import source_coverage
 from agentfit.engine.history import record_history
@@ -92,10 +96,17 @@ def build_snapshot(
         for key in ("title", "why", "prompt", "steps", "expected_signal", "limitations"):
             card[key] = card[key][locale]
     today = now.astimezone().date()
+    persisted = _read_progress(state_dir / "progress.json")
+    profile.active_dates_30d = [day for day in usage_dates(persisted, now)
+                               if (today - timedelta(days=29)).isoformat() <= day <= today.isoformat()]
     streak_days = streak(profile.active_dates_30d, today)
+    earned_badges = retain_badges(persisted, badges(streak_days, book["lit"], book["total"],
+                                                  len(progress["passed"]), locale))
+    _save_progress(state_dir / "progress.json", persisted)
+    book["practice_calendar"]["labels"] = practice_calendar_labels(locale)
     book["groups"] = book_groups(book["cards"], locale)
     book["next_badge"] = next_badge(streak_days, book["lit"], book["total"],
-                                    len(progress["passed"]), locale)
+                                    len(progress["passed"]), locale, persisted["badges"])
     growth, weekly = record_history(
         state_dir / "progress.json", now, score, {d.key: d.score for d in dims},
         profile.active_dates_30d, coverage=coverage, locale=locale,
@@ -104,7 +115,6 @@ def build_snapshot(
     )
     tip = today_tip(progress, dims, locale, today, state_dir / "progress.json",
                     supported_quests(coverage, inventories))
-    from agentfit.engine.codex_book import _read_progress, _save_progress
     persisted = _read_progress(state_dir / "progress.json")
     action_id = tip.get("action_id")
     if action_id:
@@ -137,8 +147,8 @@ def build_snapshot(
         "rankings": daily_rankings(pool, inventories, locale, today, n=20),
         "growth": growth, "weekly": weekly,
         "daily_tip": daily_tip(pool, locale, today),
-        "streak": {"days": streak_days},
-        "badges": badges(streak_days, book["lit"], book["total"], len(progress["passed"]), locale),
+        "streak": {"days": streak_days, "label": practice_calendar_labels(locale)["streak"].format(n=streak_days)},
+        "badges": earned_badges,
         "usage_summary": {
             "tokens_7d": sum(usage["tokens"] for usage in profile.usage_by_model_7d.values()),
             "cost_usd_7d": profile.total_cost_7d,

@@ -10,6 +10,7 @@ final class SnapshotStore: ObservableObject {
     private let weeklyNotifications: WeeklyNotificationScheduling?
     private(set) var notificationTask: Task<Void, Never>?
     @Published var showWeeklyReview = false
+    @Published var reminderCard: SkillCard?
     @Published var showProSettings = false
     var features: ProFeatures { ProFeatures(isPro: isPro) }
 
@@ -19,18 +20,45 @@ final class SnapshotStore: ObservableObject {
     }
 
     private func updateWeeklyNotifications(requestPermission: Bool = false) {
+        revalidateLicense()
         guard let weeklyNotifications else { return }
+        if remindersPaused || (!dailyPracticeReminders && !(notificationsEnabled && features.weeklyReview)) {
+            weeklyNotifications.cancel()
+        }
         let previous = notificationTask
         notificationTask = Task {
             await previous?.value
-            guard isPro, notificationsEnabled else { weeklyNotifications.cancel(); return }
-            if requestPermission, !defaults.bool(forKey: "weeklyPermissionRequested") {
-                defaults.set(true, forKey: "weeklyPermissionRequested")
-                guard await weeklyNotifications.requestPermission() else { return }
+            revalidateLicense()
+            guard dailyPracticeReminders || (notificationsEnabled && features.weeklyReview) else {
+                weeklyNotifications.cancel()
+                return
             }
-            guard isPro, notificationsEnabled else { weeklyNotifications.cancel(); return }
-            await weeklyNotifications.schedule(review: snapshot?.weekly, locale: locale)
+            if requestPermission, !defaults.bool(forKey: "reminderPermissionRequested") {
+                defaults.set(true, forKey: "reminderPermissionRequested")
+                guard await weeklyNotifications.requestPermission() else { weeklyNotifications.cancel(); return }
+            }
+            guard !remindersPaused else { weeklyNotifications.cancel(); return }
+            await weeklyNotifications.schedule(context: ReminderContext(snapshot: snapshot,
+                daily: dailyPracticeReminders, weekly: notificationsEnabled, reviewEntitled: features.weeklyReview,
+                paused: remindersPaused, hour: reminderHour, minute: 0, locale: locale))
         }
+    }
+
+    @discardableResult
+    func openReminder(_ route: [AnyHashable: Any]) -> Bool {
+        revalidateLicense()
+        if let id = route["daily_id"] as? String, WeeklyNotifications.safeID(id),
+           let day = route["daily_date"] as? String, day == snapshot?.book?.practiceCalendar?.days.last?.date,
+           let card = snapshot?.book?.today, card.id == id {
+            reminderCard = card
+            return true
+        }
+        if features.weeklyReview, let id = route["review_id"] as? String,
+           id == snapshot?.weekly?.weekStart, snapshot?.weekly?.hasReminderContent == true {
+            showWeeklyReview = true
+            return true
+        }
+        return false
     }
 
     @discardableResult
@@ -40,10 +68,9 @@ final class SnapshotStore: ObservableObject {
                                              publicKeyBase64: licensePublicKeyBase64)
             defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: "licenseKey")
             license = payload
-            let wasPro = isPro
             isPro = true
             licenseError = nil
-            updateWeeklyNotifications(requestPermission: !wasPro && notificationsEnabled)
+            updateWeeklyNotifications()
             return true
         } catch {
             licenseError = error as? License.Failure ?? .format
@@ -63,10 +90,11 @@ final class SnapshotStore: ObservableObject {
         license = defaults.string(forKey: "licenseKey").flatMap {
             try? License.verify($0, publicKeyBase64: licensePublicKeyBase64)
         }
+        let wasPro = isPro
         isPro = license != nil
         if !isPro {
             showWeeklyReview = false
-            weeklyNotifications?.cancel()
+            if wasPro { weeklyNotifications?.cancel() }
         }
     }
 
@@ -232,10 +260,28 @@ final class SnapshotStore: ObservableObject {
     @Published var publicDownloads: Bool? {
         didSet { defaults.set(publicDownloads, forKey: "publicDownloads") }
     }
+    @Published var dailyPracticeReminders: Bool {
+        didSet {
+            defaults.set(dailyPracticeReminders, forKey: "dailyPracticeReminders")
+            updateWeeklyNotifications(requestPermission: dailyPracticeReminders && !oldValue)
+        }
+    }
+    @Published var remindersPaused: Bool {
+        didSet {
+            defaults.set(remindersPaused, forKey: "remindersPaused")
+            updateWeeklyNotifications()
+        }
+    }
+    @Published var reminderHour: Int {
+        didSet {
+            defaults.set(reminderHour, forKey: "reminderHour")
+            updateWeeklyNotifications()
+        }
+    }
     @Published var notificationsEnabled: Bool {
         didSet {
             defaults.set(notificationsEnabled, forKey: "notificationsEnabled")
-            updateWeeklyNotifications(requestPermission: notificationsEnabled)
+            updateWeeklyNotifications(requestPermission: notificationsEnabled && !oldValue)
         }
     }
     @Published private(set) var onboardingStep: OnboardingStep
@@ -333,13 +379,16 @@ final class SnapshotStore: ObservableObject {
         practiceStatus = FirstPracticeStatus(rawValue: defaults.string(forKey: "firstPracticeStatus") ?? "") ?? .ready
         firstPracticeBranch = FirstPracticeBranch(rawValue: defaults.string(forKey: "firstPracticeBranch") ?? "") ?? .noLogs
         publicDownloads = defaults.object(forKey: "publicDownloads") as? Bool
-        notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool
-            ?? defaults.bool(forKey: "weeklyPermissionRequested")
+        notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
+        dailyPracticeReminders = defaults.bool(forKey: "dailyPracticeReminders")
+        remindersPaused = defaults.bool(forKey: "remindersPaused")
+        let hour = defaults.object(forKey: "reminderHour") as? Int ?? 9
+        reminderHour = (9..<21).contains(hour) ? hour : 9
         enabledTools = defaults.stringArray(forKey: "enabledTools") ?? Self.allTools
         let interval = defaults.integer(forKey: "refreshSeconds")
         refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
         revalidateLicense()
-        updateWeeklyNotifications(requestPermission: isPro)
+        updateWeeklyNotifications()
     }
 
     func startTimer() {

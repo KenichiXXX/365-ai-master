@@ -13,9 +13,13 @@ struct TrainingTab: View {
                      value: "\(snapshot.village?.quests.filter { $0.status == "passed" }.count ?? 0)/9")
                 stat(zh ? "技能图鉴" : "Skill book",
                      value: "\(snapshot.book?.lit ?? 0)/\(snapshot.book?.total ?? 0)")
-                stat(zh ? "连续" : "Streak",
+                stat(zh ? "AI 使用记录" : "AI usage",
                      value: zh ? "\(snapshot.streak?.days ?? 0) 天" : "\(snapshot.streak?.days ?? 0) days")
             }
+            if let label = snapshot.streak?.label {
+                Text(label).font(.caption).foregroundStyle(.secondary)
+            }
+            if let calendar = snapshot.book?.practiceCalendar { PracticeCalendar(data: calendar) }
             if let village = snapshot.village {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(zh ? "新手村之路" : "Village path").font(.headline)

@@ -117,7 +117,7 @@ struct OptionalPracticePreferences: View {
             if rankingConsent {
                 ScoreConsentPanel(store: store, zh: store.locale == "zh", close: { rankingConsent = false })
             }
-            Toggle(isOn: $store.notificationsEnabled) { Text("Weekly notifications", bundle: .module) }
+            ReminderSettings(store: store)
         }
     }
 }

@@ -100,7 +100,7 @@ final class LicenseTests: XCTestCase {
         XCTAssertTrue(containsText(Text("创始价 $12/年"), in: free))
         XCTAssertTrue(containsText(Text("付款通道开通中，可联系作者获取创始激活码").font(.caption), in: free))
         XCTAssertFalse(containsText(Text("去付款"), in: free))
-        for item in ["成长曲线：30 天分数走势、本周比上周", "每周复盘：周一推送一页周报", "技能图鉴随时选学、完整榜单 Top 20", "四维分别排名"] {
+        for item in ["成长曲线：30 天分数走势、本周比上周", "每周复盘：本地生成一页周报，可选开启提醒", "技能图鉴随时选学、完整榜单 Top 20", "四维分别排名"] {
             XCTAssertTrue(containsText(Text(LocalizedStringKey(item)), in: free))
         }
         XCTAssertTrue(store.activateLicense(try key(exp: "2099-01-01")))

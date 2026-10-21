@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import tempfile
 
-from agentfit.engine.content import badge_title, skill_level_title
+from agentfit.engine.content import badge_title, skill_level_title, practice_calendar_labels
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.inventory import Inventory
 from agentfit.engine.profile import Profile
@@ -136,8 +136,9 @@ def update_book(content: dict, p: Profile, inv: dict[str, Inventory],
                   if received and card and validation_available(card, coverage or {}) else "coverage_missing")
         tracked.append({"attempt_id": attempt["attempt_id"], "skill_id": attempt["skill_id"],
                         "status": status})
+    calendar = practice_calendar(progress, events, now)
     _save_progress(progress_path, progress)
-    return {"lit": sum(c["lit"] for c in cards), "total": len(cards), "cards": cards,
+    return {"practice_calendar": calendar, "lit": sum(c["lit"] for c in cards), "total": len(cards), "cards": cards,
             "today": choice, "yesterday": tracked,
             "configuration_count": len(ledger.state.get("configurations", {})),
             "self_report_count": len(ledger.state.get("self_reports", {}))}
@@ -268,12 +269,54 @@ def book_groups(cards: list[dict], locale: str) -> list[dict]:
 
 
 def next_badge(streak_days: int, lit: int, total: int, village_passed: int,
-               locale: str) -> dict | None:
+               locale: str, earned=()) -> dict | None:
     targets = [(f"streak_{n}", streak_days, n) for n in (3, 7, 14, 30)]
     targets += [(f"book_{n}", lit, n) for n in (5, 10, 20)]
     targets += [("book_all", lit, total), ("village_done", village_passed, 9)]
-    unearned = [(key, have, need) for key, have, need in targets if have < need]
+    unearned = [(key, have, need) for key, have, need in targets if have < need and key not in earned]
     if not unearned:
         return None
     key, have, need = min(unearned, key=lambda row: (row[2] - row[1], row[2]))
     return {"id": key, "title": badge_title(key, locale), "have": have, "need": need}
+
+
+def practice_calendar(progress, events, now):
+    state = progress["practice"]
+    # Migrate usage flags without re-attributing the stored occurrence date or timezone.
+    for event in events:
+        record = state["events"].get(event.identity())
+        if record is not None:
+            record.setdefault("usage", bool(event.model))
+    activity = {}
+    for record in state["events"].values():
+        if datetime.fromisoformat(record["occurred_at"]) > now:
+            continue
+        day = activity.setdefault(record["local_date"], set())
+        if record["kind"] == "log_observed":
+            day.add("observed")
+        if record.get("usage"):
+            day.add("usage_only")
+    reports = list(state.get("self_reports", {}).values()) + list(state.get("self_report_days", {}).values())
+    for record in reports:
+        if datetime.fromisoformat(record["self_reported_at"]) <= now:
+            activity.setdefault(record["local_date"], set()).add("self_reported")
+    today = now.astimezone().date()
+    days = []
+    for offset in range(29, -1, -1):
+        day = (today - timedelta(days=offset)).isoformat()
+        state = next((kind for kind in ("observed", "self_reported", "usage_only")
+                      if kind in activity.get(day, set())), "unavailable")
+        days.append({"date": day, "state": state})
+    return {"days": days, "labels": practice_calendar_labels("en")}
+
+
+def usage_dates(progress, now):
+    return sorted({row["local_date"] for row in progress.get("practice", {}).get("events", {}).values()
+                   if row.get("usage") and datetime.fromisoformat(row["occurred_at"]) <= now})
+
+
+def retain_badges(progress, current):
+    earned = set(progress.get("badges", []))
+    earned.update(row["id"] for row in current if row["earned"])
+    progress["badges"] = sorted(earned)
+    return [{**row, "earned": row["id"] in earned} for row in current]

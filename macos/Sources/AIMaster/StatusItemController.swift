@@ -53,8 +53,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
         Task { @MainActor in
             if response.notification.request.identifier == WeeklyNotifications.identifier {
                 await self.store.refresh()?.value
-                self.store.openWeeklyReview()
-                if self.store.showWeeklyReview { self.showPopover() }
+                if self.store.openReminder(response.notification.request.content.userInfo) { self.showPopover() }
             }
             completionHandler()
         }

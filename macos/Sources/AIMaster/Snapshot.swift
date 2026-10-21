@@ -154,6 +154,7 @@ struct SkillBook: Decodable {
     var yesterday: [TrackedPractice]? = nil
     var configurationCount: Int? = nil
     var selfReportCount: Int? = nil
+    var practiceCalendar: PracticeCalendarData? = nil
 }
 
 struct TrackedPractice: Decodable, Identifiable {
@@ -255,7 +256,7 @@ struct DailyTip: Decodable {
     let source: String?
 }
 
-struct Streak: Decodable { let days: Int }
+struct Streak: Decodable { let days: Int; var label: String? = nil }
 
 struct Badge: Decodable, Identifiable {
     let id: String

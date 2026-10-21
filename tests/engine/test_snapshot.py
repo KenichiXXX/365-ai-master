@@ -124,7 +124,7 @@ def test_snapshot_v2_blocks(tmp_path):
     assert empty["usage_summary"]["tokens_7d"] == 0
     assert empty["usage_summary"]["cost_usd_7d"] is None
     assert empty["usage_summary"]["codex_quota"] is None
-    assert empty["streak"] == {"days": 0}
+    assert empty["streak"] == {"days": 0, "label": "连续有 AI 使用记录 0 天"}
 
 
 def test_content_override_and_mark_tried_cli(tmp_path):

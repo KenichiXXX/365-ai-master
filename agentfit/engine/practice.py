@@ -87,11 +87,14 @@ class PracticeLedger:
             return False
         attempt = next((a for a in reversed(self.attempts) if a["skill_id"] == card["id"]
                         and a["stopped_at"] is None), None)
-        record = self.state.setdefault("self_reports", {}).setdefault(card["id"], {
+        record = {
             "skill_id": card["id"], "kind": "self_reported", "self_reported_at": utc(now),
             "local_date": now.astimezone().date().isoformat(),
             "timezone": os.environ.get("TZ") or str(now.astimezone().tzinfo),
-            "content_revision": card.get("content_revision", "2026-10-21"), "rule_version": "1"})
+            "content_revision": card.get("content_revision", "2026-10-21"), "rule_version": "1"}
+        self.state.setdefault("self_reports", {}).setdefault(card["id"], record)
+        self.state.setdefault("self_report_days", {}).setdefault(
+            record["local_date"] + ":" + card["id"], record)
         if attempt is not None:
             attempt["self_reported_at"] = attempt["self_reported_at"] or record["self_reported_at"]
         return True
@@ -111,6 +114,7 @@ class PracticeLedger:
                       "timezone": os.environ.get("TZ") or str(local.tzinfo),
                       "tool": event.tool, "adapter_version": row.get("adapter_version", "1"),
                       "format": row.get("format", FORMATS.get(event.tool, "unknown")),
+                      "usage": bool(event.model),
                       "event_id": identity, "kind": "historical", "attempt_id": None,
                       "skill_id": None, "action_id": None, "rule_version": "1", "content_revision": None}
             candidates = [a for a in self.attempts if a["stopped_at"] is None

@@ -137,7 +137,7 @@ final class ProFeaturesTests: XCTestCase {
         }
     }
 
-    func testVerifiedPersistedProSchedulesAndFreeCancelsWithoutPermission() async throws {
+    func testLegacyPermissionDoesNotEnableRemindersAndExpiryCancels() async throws {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         defaults.set(try key(), forKey: "licenseKey")
         defaults.set(true, forKey: "weeklyPermissionRequested")
@@ -147,17 +147,18 @@ final class ProFeaturesTests: XCTestCase {
             weeklyNotifications: notifications)
         await store.notificationTask?.value
         XCTAssertEqual(notifications.requests, 0)
-        XCTAssertEqual(notifications.scheduled, 1)
+        XCTAssertEqual(notifications.scheduled, 0)
         store.openWeeklyReview()
         XCTAssertTrue(store.showWeeklyReview)
+        let cancellations = notifications.cancellations
         defaults.set("invalid", forKey: "licenseKey")
         store.openWeeklyReview()
         XCTAssertFalse(store.showWeeklyReview)
         XCTAssertFalse(store.features.growthCurve)
-        XCTAssertGreaterThan(notifications.cancellations, 0)
+        XCTAssertGreaterThan(notifications.cancellations, cancellations)
     }
 
-    func testPermissionOnlyAfterExplicitPreferenceAndMondayNineLocalSchedule() async throws {
+    func testPermissionOnlyAfterExplicitPreferenceAndDaytimeSlot() async throws {
         let notifications = NotificationSpy()
         let store = store(notifications: notifications)
         await store.notificationTask?.value
@@ -173,15 +174,10 @@ final class ProFeaturesTests: XCTestCase {
         XCTAssertTrue(store.activateLicense(try key()))
         await store.notificationTask?.value
         XCTAssertEqual(notifications.requests, 1)
-        let request = WeeklyNotifications.request(review: nil, locale: "zh")
-        let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
-        XCTAssertTrue(trigger.repeats)
-        XCTAssertEqual(trigger.dateComponents.weekday, 2)
-        XCTAssertEqual(trigger.dateComponents.hour, 9)
-        XCTAssertEqual(trigger.dateComponents.minute, 0)
-        XCTAssertNil(trigger.dateComponents.timeZone)
-        XCTAssertEqual(request.content.title, "本周复盘")
-        XCTAssertFalse(request.content.body.isEmpty)
+        XCTAssertEqual(notifications.context?.hour, 9)
+        XCTAssertEqual(notifications.context?.minute, 0)
+        XCTAssertTrue(notifications.context?.weekly == true)
+        XCTAssertTrue(notifications.context?.reviewEntitled == true)
     }
 }
 
@@ -191,6 +187,7 @@ private final class NotificationSpy: WeeklyNotificationScheduling {
     var scheduled = 0
     var cancellations = 0
     func requestPermission() async -> Bool { requests += 1; return true }
-    func schedule(review: WeeklyReview?, locale: String) async { scheduled += 1 }
+    var context: ReminderContext?
+    func schedule(context: ReminderContext) async { scheduled += 1; self.context = context }
     func cancel() { cancellations += 1 }
 }

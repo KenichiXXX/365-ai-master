@@ -75,7 +75,7 @@ struct ProSettingsSection: View {
             } else {
                 Text(zh ? "创始价 $12/年" : "Founding price $12/year")
                 Text(zh ? "成长曲线：30 天分数走势、本周比上周" : "Growth curve: 30-day scores and week-over-week change")
-                Text(zh ? "每周复盘：周一推送一页周报" : "Weekly review: a one-page report on Monday")
+                Text(zh ? "每周复盘：本地生成一页周报，可选开启提醒" : "Weekly review: a local report with optional reminders")
                 Text(zh ? "技能图鉴随时选学、完整榜单 Top 20" : "Learn any skill anytime, full Top 20 ranking")
                 Text(zh ? "四维分别排名" : "Rankings for each of the four dimensions")
                 if License.checkoutURL != "REPLACE_WAFFO_CHECKOUT", let url = URL(string: License.checkoutURL) {
@@ -94,5 +94,30 @@ struct ProSettingsSection: View {
                 Text(error.message(locale: zh ? "zh" : "en")).foregroundStyle(.red)
             }
         }.font(.system(size: 12))
+    }
+}
+
+struct ReminderSettings: View {
+    @ObservedObject var store: SnapshotStore
+    private var zh: Bool { store.locale == "zh" }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(zh ? "提醒默认关闭" : "Reminders are off by default").font(.caption)
+            Toggle(zh ? "每日练习提醒" : "Daily practice reminder", isOn: $store.dailyPracticeReminders)
+            Toggle(zh ? "周复盘提醒" : "Weekly review reminder", isOn: $store.notificationsEnabled)
+                .disabled(!store.features.weeklyReview)
+            if !store.features.weeklyReview {
+                Text(zh ? "周复盘提醒需 Pro 权益" : "Weekly review reminders require Pro").font(.caption)
+            }
+            Toggle(zh ? "暂停提醒" : "Pause reminders", isOn: $store.remindersPaused)
+            Picker(zh ? "提醒时间" : "Reminder time", selection: $store.reminderHour) {
+                ForEach(9..<21, id: \.self) { hour in
+                    Text(String(format: "%02d:00", hour)).tag(hour)
+                }
+            }
+            Text(zh ? "21:00–09:00 静默，错过不补发；系统专注模式照常生效。"
+                 : "Quiet hours 21:00–09:00. Missed reminders are skipped. Focus is respected.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
     }
 }

@@ -65,6 +65,16 @@ struct PopoverView: View {
                 Button(store.locale == "zh" ? "完成" : "Done") { store.showProSettings = false }.padding()
             }.frame(width: 380, height: 480)
         }
+        .sheet(item: $store.reminderCard) { card in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(card.title).font(.title2)
+                    Text(card.why)
+                    PracticeControls(card: card, store: store, locale: store.snapshot?.locale ?? store.locale)
+                    Button(store.locale == "zh" ? "完成" : "Done") { store.reminderCard = nil }
+                }.padding(20)
+            }.frame(width: 440, height: 480)
+        }
         .sheet(isPresented: $settings) { SettingsView(store: store) }
     }
 }
