@@ -31,3 +31,33 @@
 "I have no project" = "没有项目";
 "Not useful right now" = "暂时用不上";
 "Reset suggestion preferences" = "重置推荐偏好";
+
+"Try one step" = "先练一步";
+"View allowed sources" = "查看允许读取的来源";
+"Skip" = "跳过";
+"Cancel scan" = "取消扫描";
+"Retry" = "重试";
+"Practice manually" = "手动练习";
+"Practice copied; not verified yet" = "练习已复制，还未验证";
+"Tried (self-reported)" = "已尝试（自报）";
+"First project prompt" = "请用简单语言解释当前项目如何启动；先不要修改文件。";
+"First planning prompt" = "帮我列出一个想做的小工具的目标和验收清单，先不要执行命令。";
+"Allowed source explanation" = "仅读取所选工具的本机用量日志和安全配置元数据；不读取凭证，不修改来源文件，不输出对话内容或路径。";
+"Practice limitation" = "复制或自报不代表已验证输出正确，也不会自动通过关卡。";
+"Continue" = "继续";
+"What is in the way?" = "有什么阻碍？";
+"No usage records yet" = "尚无使用记录";
+"Logs cannot be read. Try again later" = "无法读取日志，可稍后重试";
+"Usage records available" = "有可用的使用记录";
+"This log format is not supported yet" = "此日志格式暂不支持";
+"Retry or practice manually; broad disk access is not required" = "可重试或手动练习，无需授予广泛磁盘访问权限";
+"Return to check-up" = "返回检查";
+"Scanning allowed sources" = "正在扫描允许的来源";
+"Download public content" = "下载公开内容";
+"Public download explanation" = "仅在开启后下载公开技能和榜单；关闭仍可本地练习。";
+"Join ranking" = "参与匿名排名";
+"Weekly notifications" = "每周复盘通知（Pro）";
+"Historical record, not evidence of this practice" = "历史记录，不代表本次练习";
+
+"Copy practice" = "复制练习";
+"I have a project" = "已有项目";

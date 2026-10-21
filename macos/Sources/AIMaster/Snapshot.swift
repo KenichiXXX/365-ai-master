@@ -2,6 +2,7 @@ import Foundation
 
 struct Snapshot: Decodable {
     let coverage: [String: SourceCoverage]?
+    let firstPractice: FirstPractice?
     let schema: Int
     let generatedAt: String?
     let locale: String?
@@ -114,6 +115,8 @@ struct Quest: Decodable, Identifiable {
     let status: String
     let passedAt: String?
     let progressHint: String?
+    var evidenceKind: String? = nil
+    var evidenceLabel: String? = nil
 }
 
 struct Tip: Decodable {
@@ -309,4 +312,12 @@ struct SourceCoverage: Decodable {
     let malformedCount: Int
     let skippedCount: Int
     let signals: [String: Availability]
+}
+
+struct FirstPractice: Decodable {
+    let title: String
+    let prompt: String
+    let noProjectPrompt: String
+    let limitation: String
+    let validationKind: String
 }

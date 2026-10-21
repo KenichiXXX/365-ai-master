@@ -23,12 +23,12 @@ final class SnapshotStore: ObservableObject {
         let previous = notificationTask
         notificationTask = Task {
             await previous?.value
-            guard isPro else { weeklyNotifications.cancel(); return }
+            guard isPro, notificationsEnabled else { weeklyNotifications.cancel(); return }
             if requestPermission, !defaults.bool(forKey: "weeklyPermissionRequested") {
                 defaults.set(true, forKey: "weeklyPermissionRequested")
                 guard await weeklyNotifications.requestPermission() else { return }
             }
-            guard isPro else { weeklyNotifications.cancel(); return }
+            guard isPro, notificationsEnabled else { weeklyNotifications.cancel(); return }
             await weeklyNotifications.schedule(review: snapshot?.weekly, locale: locale)
         }
     }
@@ -43,7 +43,7 @@ final class SnapshotStore: ObservableObject {
             let wasPro = isPro
             isPro = true
             licenseError = nil
-            updateWeeklyNotifications(requestPermission: !wasPro)
+            updateWeeklyNotifications(requestPermission: !wasPro && notificationsEnabled)
             return true
         } catch {
             licenseError = error as? License.Failure ?? .format
@@ -88,7 +88,6 @@ final class SnapshotStore: ObservableObject {
 
     func allowScoreSharing() async {
         if !shareAnonymousScore { shareAnonymousScore = true }
-        dismissOnboarding()
         await rankingTask?.value
     }
 
@@ -178,18 +177,79 @@ final class SnapshotStore: ObservableObject {
         didSet { defaults.set(refreshSeconds, forKey: "refreshSeconds"); startTimer() }
     }
     let locale = Locale.preferredLanguages.first?.hasPrefix("zh") == true ? "zh" : "en"
-    var load: @Sendable (String, [String]) throws -> EngineResult
+    var load: (@Sendable (String, [String]) throws -> EngineResult)?
+    var cancelLoad: @Sendable () -> Void = {}
+    private var activeScan: EngineScan?
     var tryCard: @Sendable (String) throws -> Bool
     private let defaults: UserDefaults
     private var timer: Timer?
     private lazy var contentUpdater = ContentUpdater(defaults: defaults)
 
-    func refreshContent() {
-        Task { if await contentUpdater.refreshIfNeeded() { refresh() } }
+    var downloadContent: (() async -> Bool)?
+
+    @discardableResult
+    func refreshContent() -> Task<Void, Never> {
+        Task {
+            guard publicDownloads == true else { return }
+            let changed: Bool
+            if let downloadContent { changed = await downloadContent() }
+            else { changed = await contentUpdater.refreshIfNeeded() }
+            if changed, publicDownloads == true { refresh() }
+        }
+    }
+
+    @Published var publicDownloads: Bool? {
+        didSet { defaults.set(publicDownloads, forKey: "publicDownloads") }
+    }
+    @Published var notificationsEnabled: Bool {
+        didSet {
+            defaults.set(notificationsEnabled, forKey: "notificationsEnabled")
+            updateWeeklyNotifications(requestPermission: notificationsEnabled)
+        }
+    }
+    @Published private(set) var onboardingStep: OnboardingStep
+    @Published private(set) var obstacle: PracticeObstacle
+    @Published private(set) var practiceStatus: FirstPracticeStatus
+    @Published private(set) var firstPracticeBranch: FirstPracticeBranch
+
+    func advanceOnboarding() {
+        onboardingStep = .obstacle
+        defaults.set(onboardingStep.rawValue, forKey: "onboardingStep")
+    }
+
+    func chooseObstacle(_ choice: PracticeObstacle) {
+        if choice != obstacle { recordFirstPractice(.ready) }
+        obstacle = choice
+        defaults.set(choice.rawValue, forKey: "practiceObstacle")
+        onboardingStep = .practice
+        defaults.set(onboardingStep.rawValue, forKey: "onboardingStep")
+    }
+
+    func recordFirstPractice(_ status: FirstPracticeStatus) {
+        practiceStatus = status
+        defaults.set(status.rawValue, forKey: "firstPracticeStatus")
+    }
+
+    func firstPracticePrompt(locale: String) -> String {
+        if let practice = snapshot?.firstPractice, snapshot?.locale == locale {
+            return obstacle == .noProject ? practice.noProjectPrompt : practice.prompt
+        }
+        let key = obstacle == .noProject ? "First planning prompt" : "First project prompt"
+        let language = locale == "zh" ? "zh-Hans" : "en"
+        let bundle = Bundle.module.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .module
+        return NSLocalizedString(key, bundle: bundle, comment: "")
+    }
+
+    func cancelRefresh() {
+        guard let activeScan else { return }
+        activeScan.cancel()
+        cancelLoad()
     }
 
     func dismissOnboarding() {
         onboarded = true
+        onboardingStep = .done
+        defaults.set(OnboardingStep.done.rawValue, forKey: "onboardingStep")
         defaults.set(true, forKey: "onboarded")
     }
 
@@ -218,7 +278,7 @@ final class SnapshotStore: ObservableObject {
     }
 
     init(defaults: UserDefaults = .standard,
-         load: @escaping @Sendable (String, [String]) throws -> EngineResult = { try EngineRunner.run(locale: $0, tools: $1) },
+         load: (@Sendable (String, [String]) throws -> EngineResult)? = nil,
          tryCard: @escaping @Sendable (String) throws -> Bool = { try EngineRunner.markTried(id: $0) },
          scoreReporter: ScoreReporter? = nil,
          licensePublicKeyBase64: String = License.publicKeyBase64,
@@ -233,6 +293,13 @@ final class SnapshotStore: ObservableObject {
         self.load = load
         self.tryCard = tryCard
         onboarded = defaults.bool(forKey: "onboarded")
+        onboardingStep = defaults.bool(forKey: "onboarded") ? .done : OnboardingStep(rawValue: defaults.string(forKey: "onboardingStep") ?? "") ?? .sources
+        obstacle = PracticeObstacle(rawValue: defaults.string(forKey: "practiceObstacle") ?? "") ?? .skipped
+        practiceStatus = FirstPracticeStatus(rawValue: defaults.string(forKey: "firstPracticeStatus") ?? "") ?? .ready
+        firstPracticeBranch = FirstPracticeBranch(rawValue: defaults.string(forKey: "firstPracticeBranch") ?? "") ?? .noLogs
+        publicDownloads = defaults.object(forKey: "publicDownloads") as? Bool
+        notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool
+            ?? defaults.bool(forKey: "weeklyPermissionRequested")
         enabledTools = defaults.stringArray(forKey: "enabledTools") ?? Self.allTools
         let interval = defaults.integer(forKey: "refreshSeconds")
         refreshSeconds = Self.refreshIntervals.contains(interval) ? interval : 300
@@ -255,20 +322,35 @@ final class SnapshotStore: ObservableObject {
         let tools = enabledTools
         let language = locale
         let loader = load
+        let scan = EngineScan()
+        activeScan = scan
         return Task {
             do {
-                let result = try await Task.detached { try loader(language, tools) }.value
+                let result = try await Task.detached {
+                    if let loader { return try loader(language, tools) }
+                    return try EngineRunner.run(locale: language, tools: tools, scan: scan)
+                }.value
+                guard !scan.isCancelled else {
+                    activeScan = nil
+                    isRefreshing = false
+                    return
+                }
                 snapshot = result.snapshot
+                firstPracticeBranch = FirstPracticeBranch.from(result.snapshot.coverage)
+                defaults.set(firstPracticeBranch.rawValue, forKey: "firstPracticeBranch")
                 snapshotJSON = result.json
                 lastRun = Date()
                 lastError = nil
                 updateWeeklyNotifications()
                 await refreshRanking()
             } catch {
-                lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
+                if !scan.isCancelled {
+                    lastError = NSLocalizedString("Refresh failed", bundle: .module, comment: "")
+                }
             }
+            activeScan = nil
             isRefreshing = false
-            if tools != enabledTools { refresh() }
+            if !scan.isCancelled, tools != enabledTools { refresh() }
         }
     }
 }

@@ -48,18 +48,10 @@ struct EngineRunner {
         return ok
     }
 
-    static func run(locale: String, tools: [String]) throws -> EngineResult {
+    static func run(locale: String, tools: [String], scan: EngineScan = EngineScan()) throws -> EngineResult {
         guard let url = engineURL() else { throw EngineError.missing }
-        let process = Process()
-        process.executableURL = url
-        process.arguments = snapshotArguments(locale: locale, tools: tools)
-        let output = Pipe()
-        process.standardOutput = output
-        process.standardError = FileHandle.nullDevice
-        try process.run()
-        let data = output.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        return try decode(data, status: process.terminationStatus)
+        let (data, status) = try scan.run(executable: url, arguments: snapshotArguments(locale: locale, tools: tools))
+        return try decode(data, status: status)
     }
 
     static func decode(_ data: Data, status: Int32) throws -> EngineResult {
@@ -71,5 +63,47 @@ struct EngineRunner {
         let object = try JSONSerialization.jsonObject(with: data)
         let pretty = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
         return EngineResult(snapshot: snapshot, json: String(decoding: pretty, as: UTF8.self))
+    }
+}
+
+final class EngineScan: @unchecked Sendable {
+    private let lock = NSLock()
+    private var process: Process?
+    private var cancelled = false
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancelled
+    }
+
+    func cancel() {
+        lock.lock()
+        defer { lock.unlock() }
+        cancelled = true
+        if let process, process.isRunning { process.terminate() }
+    }
+
+    func run(executable: URL, arguments: [String]) throws -> (Data, Int32) {
+        let child = Process()
+        child.executableURL = executable
+        child.arguments = arguments
+        let output = Pipe()
+        child.standardOutput = output
+        child.standardError = FileHandle.nullDevice
+        lock.lock()
+        guard !cancelled else { lock.unlock(); throw CancellationError() }
+        process = child
+        do { try child.run() }
+        catch { process = nil; lock.unlock(); throw error }
+        lock.unlock()
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        child.waitUntilExit()
+        lock.lock()
+        process = nil
+        let discard = cancelled
+        lock.unlock()
+        guard !discard else { throw CancellationError() }
+        return (data, child.terminationStatus)
     }
 }

@@ -14,7 +14,7 @@ from agentfit.engine.codex_book import (
 )
 from agentfit.engine.collectors.base import REGISTRY
 from agentfit.engine.collectors.codex import latest_rate_limits
-from agentfit.engine.content import label
+from agentfit.engine.content import first_practice, label
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.coverage import source_coverage
 from agentfit.engine.history import record_history
@@ -102,7 +102,8 @@ def build_snapshot(
         "dimensions": [{"key": d.key, "label": d.label, "score": d.score,
                         "availability": d.availability, "evidence": d.evidence} for d in dims],
         "overall": assessment,
-        "village": village_block(progress, met, locale),
+        "village": village_block(progress, met, locale, supported_quests(coverage, inventories)),
+        "first_practice": first_practice(locale),
         "today_tip": today_tip(progress, dims, locale, today, state_dir / "progress.json",
                                supported_quests(coverage, inventories)),
         "inventory": {tool: inv.to_public() for tool, inv in inventories.items()},

@@ -141,3 +141,14 @@ def test_content_override_and_mark_tried_cli(tmp_path):
     assert run(snapshot)["book"]["today"]["how"] == "self"
     assert run(["mark-tried", "web_search", "--state-dir", str(state)]) == {"ok": False}
     assert run(["mark-tried", "missing", "--state-dir", str(state)]) == {"ok": False}
+
+
+def test_first_practice_is_bundled_even_with_all_sources_declined(tmp_path):
+    for locale in ("zh", "en"):
+        s = build_snapshot(tmp_path / "empty", tmp_path / locale, locale, now=NOW, enabled=set())
+        practice = s["first_practice"]
+        assert practice["prompt"] and practice["no_project_prompt"]
+        assert practice["validation_kind"] == "self_reported"
+        assert s["village"]["quests"][0]["status"] == "current"
+        assert all(q["evidence_kind"] == "unsupported" for q in s["village"]["quests"])
+        assert json.loads((tmp_path / locale / "progress.json").read_text())["passed"] == {}

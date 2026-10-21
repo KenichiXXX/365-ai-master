@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import tempfile
 
-from agentfit.engine.content import QUESTS, quest_text, rank_title
+from agentfit.engine.content import QUESTS, quest_text, rank_title, quest_evidence_label
 from agentfit.engine.inventory import Inventory
 from agentfit.engine.profile import Profile
 from agentfit.models.checkup import DimensionScore
@@ -84,8 +84,19 @@ def today_tip(state: dict, dims, locale: str, today: date,
                          set(QUESTS) if supported is None else supported)
 
 
-def village_block(state: dict, met: dict, locale: str) -> dict:
+def village_block(state: dict, met: dict, locale: str, supported: set[str] | None = None) -> dict:
     passed, current = state["passed"], state["current"]
+    supported = set(QUESTS) if supported is None else supported
+
+    def evidence_kind(key):
+        if key in passed:
+            return "historical"
+        if key not in supported:
+            return "unsupported"
+        if key in {"rules_file", "declutter"} and met[key][0]:
+            return "configuration"
+        return "historical" if met[key][0] else "not_observed"
+
     return {
         "current": current,
         "rank_title": rank_title(len(passed), locale),
@@ -94,6 +105,8 @@ def village_block(state: dict, met: dict, locale: str) -> dict:
                 "key": key, "title": quest_text(key, locale)["title"],
                 "status": "passed" if key in passed else "current" if key == current else "locked",
                 "passed_at": passed.get(key), "progress_hint": met[key][1],
+                "evidence_kind": evidence_kind(key),
+                "evidence_label": quest_evidence_label(evidence_kind(key), locale),
             }
             for key in QUESTS
         ],

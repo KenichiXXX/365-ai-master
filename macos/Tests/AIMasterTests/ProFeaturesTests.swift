@@ -142,13 +142,16 @@ final class ProFeaturesTests: XCTestCase {
         XCTAssertGreaterThan(notifications.cancellations, 0)
     }
 
-    func testPermissionOnlyOnProActivationAndMondayNineLocalSchedule() async throws {
+    func testPermissionOnlyAfterExplicitPreferenceAndMondayNineLocalSchedule() async throws {
         let notifications = NotificationSpy()
         let store = store(notifications: notifications)
         await store.notificationTask?.value
         XCTAssertEqual(notifications.requests, 0)
         XCTAssertFalse(store.activateLicense("invalid"))
         XCTAssertTrue(store.activateLicense(try key()))
+        await store.notificationTask?.value
+        XCTAssertEqual(notifications.requests, 0)
+        store.notificationsEnabled = true
         await store.notificationTask?.value
         XCTAssertEqual(notifications.requests, 1)
         XCTAssertEqual(notifications.scheduled, 1)

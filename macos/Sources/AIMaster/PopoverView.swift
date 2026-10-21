@@ -15,7 +15,9 @@ struct PopoverView: View {
                 .pickerStyle(.segmented)
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    if let snapshot = store.snapshot {
+                    if !store.onboarded {
+                        FirstPracticeView(store: store)
+                    } else if let snapshot = store.snapshot {
                         if snapshot.notices?.contains("no_tools") == true {
                             Text(snapshot.labels?.noTools ?? "").font(.system(size: 11)).foregroundStyle(.secondary)
                             Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
@@ -27,10 +29,14 @@ struct PopoverView: View {
                         }
                     } else {
                         Text(store.lastError ?? NSLocalizedString("Loading", bundle: .module, comment: ""))
-                        Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
+                        FirstPracticeView(store: store)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }.id(selectedTab)
+            if store.onboarded && store.isRefreshing {
+                ProgressView { Text("Scanning allowed sources", bundle: .module) }
+                Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
+            }
             Divider()
             HStack {
                 VStack(alignment: .leading) {

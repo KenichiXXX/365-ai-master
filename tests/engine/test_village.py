@@ -131,6 +131,7 @@ def test_village_snapshot_and_localized_tip(tmp_path, locale):
             "key": q["key"], "title": C.quest_text(q["key"], locale)["title"],
             "status": q["status"], "passed_at": state["passed"].get(q["key"]),
             "progress_hint": met[q["key"]][1],
+            "evidence_kind": q["evidence_kind"], "evidence_label": q["evidence_label"],
         }
     tip = V.today_tip(state, dims(0, 0, 0, 0), locale, NOW.date())
     copy = C.quest_text("rules_file", locale)
@@ -150,3 +151,25 @@ def test_dimension_tie_order_and_safe_fallback():
     block = V.village_block(state, dict.fromkeys(V.QUESTS, (True, "")), "en")
     assert block["current"] is None and block["rank_title"] == "Grandmaster"
     assert all(q["status"] == "passed" for q in block["quests"])
+
+
+def test_quest_evidence_separates_configuration_history_and_unsupported():
+    state = {"passed": {"first_edit": "2026-10-01"}, "current": "rules_file", "regressed": []}
+    met = V.evaluate(prof(), inv(instructions_bytes=500), [])
+    block = V.village_block(state, met, "en", supported={"rules_file"})
+    quests = {q["key"]: q for q in block["quests"]}
+    assert list(quests) == C.QUESTS
+    assert quests["first_edit"]["passed_at"] == "2026-10-01"
+    assert quests["first_edit"]["evidence_kind"] == "historical"
+    assert quests["rules_file"]["evidence_kind"] == "configuration"
+    assert quests["first_skill"]["evidence_kind"] == "unsupported"
+    assert all(q["evidence_label"] for q in quests.values())
+
+
+def test_practice_copy_and_self_report_never_pass_a_quest(tmp_path):
+    path = tmp_path / "progress.json"
+    path.write_text(json.dumps({"passed": {"first_edit": "2026-10-01"}, "regress_notified": [],
+                                "first_practice": {"status": "self_reported"}}))
+    state = V.advance(V.evaluate(prof(), inv(), []), path, NOW)
+    assert state["passed"] == {"first_edit": "2026-10-01"}
+    assert json.loads(path.read_text())["first_practice"]["status"] == "self_reported"

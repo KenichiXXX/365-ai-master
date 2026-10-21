@@ -31,3 +31,33 @@
 "I have no project" = "I have no project";
 "Not useful right now" = "Not useful right now";
 "Reset suggestion preferences" = "Reset suggestion preferences";
+
+"Try one step" = "Try one step";
+"View allowed sources" = "View allowed sources";
+"Skip" = "Skip";
+"Cancel scan" = "Cancel scan";
+"Retry" = "Retry";
+"Practice manually" = "Practice manually";
+"Practice copied; not verified yet" = "Practice copied; not verified yet";
+"Tried (self-reported)" = "Tried (self-reported)";
+"First project prompt" = "Explain how to start this project in plain language. Do not modify files.";
+"First planning prompt" = "Help me list the goal and acceptance checks for a small tool I want to build. Do not run commands.";
+"Allowed source explanation" = "Read only local usage logs and safe configuration metadata from selected tools. Never read credentials, modify source files, or export conversations or paths.";
+"Practice limitation" = "Copying or self-reporting does not verify correctness or automatically pass a quest.";
+"Continue" = "Continue";
+"What is in the way?" = "What is in the way?";
+"No usage records yet" = "No usage records yet";
+"Logs cannot be read. Try again later" = "Logs cannot be read. Try again later";
+"Usage records available" = "Usage records available";
+"This log format is not supported yet" = "This log format is not supported yet";
+"Retry or practice manually; broad disk access is not required" = "Retry or practice manually; broad disk access is not required";
+"Return to check-up" = "Return to check-up";
+"Scanning allowed sources" = "Scanning allowed sources";
+"Download public content" = "Download public content";
+"Public download explanation" = "Download public skills and rankings only when enabled. Local practice works with downloads off.";
+"Join ranking" = "Join ranking";
+"Weekly notifications" = "Weekly review notifications (Pro)";
+"Historical record, not evidence of this practice" = "Historical record, not evidence of this practice";
+
+"Copy practice" = "Copy prompt";
+"I have a project" = "I have a project";

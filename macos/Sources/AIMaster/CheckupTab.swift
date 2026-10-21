@@ -1,20 +1,14 @@
 import SwiftUI
-import ServiceManagement
 
 struct CheckupTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
 
-    @State private var consentSource: ScoreConsentSource?
+    @State private var showRankingConsent = false
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            if !store.onboarded {
-                CheckupOnboardingBanner(store: store, zh: zh, consentSource: consentSource,
-                                        requestConsent: { consentSource = .banner },
-                                        closeConsent: { consentSource = nil })
-            }
             VStack(spacing: 10) {
                 RingView(score: snapshot.overall?.score, size: 150)
                 if snapshot.overall?.score == nil {
@@ -28,10 +22,10 @@ struct CheckupTab: View {
                             .font(.system(size: 11)).foregroundStyle(.secondary)
                     } else if snapshot.hasEvaluableScores {
                         Button(zh ? "看看你击败了全球多少 AI 用户 →" : "See how you rank worldwide →") {
-                            consentSource = .rankLink
+                            showRankingConsent = true
                         }.buttonStyle(.plain).foregroundStyle(.tint).font(.system(size: 11))
-                        if consentSource == .rankLink {
-                            ScoreConsentPanel(store: store, zh: zh, close: { consentSource = nil })
+                        if showRankingConsent {
+                            ScoreConsentPanel(store: store, zh: zh, close: { showRankingConsent = false })
                         }
                     }
                     Text(progressLine).font(.system(size: 11)).foregroundStyle(.secondary)
@@ -45,6 +39,9 @@ struct CheckupTab: View {
             if store.features.weeklyReview {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
+            DisclosureGroup {
+                FirstPracticeView(store: store)
+            } label: { Text("Practice manually", bundle: .module) }
             Divider()
             if let tip = snapshot.todayTip { TipCard(tip: tip, store: store) }
             if let usage = snapshot.usageSummary {
@@ -64,44 +61,6 @@ struct CheckupTab: View {
     }
 }
 
-
-enum ScoreConsentSource { case banner, rankLink }
-
-struct CheckupOnboardingBanner: View {
-    @ObservedObject var store: SnapshotStore
-    let zh: Bool
-    let consentSource: ScoreConsentSource?
-    let requestConsent: () -> Void
-    let closeConsent: () -> Void
-    @State private var loginError = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(zh ? "365 AI Master 每天读你本机的 AI 使用记录（只读，默认不上传任何数据），给你一个提升动作和一个新技能。"
-                 : "365 AI Master reads your local AI usage every day (read-only; nothing is uploaded unless you opt in) and gives you one thing to improve and one new skill.")
-                .font(.body)
-            HStack {
-                Button(zh ? "开机自动启动" : "Launch at login") {
-                    do {
-                        try SMAppService.mainApp.register()
-                        if SMAppService.mainApp.status == .enabled { store.dismissOnboarding() }
-                        else { loginError = true }
-                    } catch { loginError = true }
-                }
-                if consentSource != .banner {
-                    Button(zh ? "知道了" : "Got it") { store.dismissOnboarding() }
-                }
-                Button(zh ? "参与匿名排名" : "Join ranking", action: requestConsent)
-            }
-            if consentSource == .banner {
-                ScoreConsentPanel(store: store, zh: zh, close: closeConsent)
-            }
-            if loginError {
-                Text("Login item unavailable", bundle: .module).font(.system(size: 11)).foregroundStyle(.orange)
-            }
-        }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-    }
-}
 
 struct ScoreConsentPanel: View {
     @ObservedObject var store: SnapshotStore

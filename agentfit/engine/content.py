@@ -463,3 +463,36 @@ _ACTION_COPY = {
 
 def action_copy(key: str, locale: str) -> str:
     return _ACTION_COPY[locale][key]
+
+
+FIRST_PRACTICE = {
+    "zh": {
+        "title": "先练一步",
+        "prompt": "请用简单语言解释当前项目如何启动；先不要修改文件。",
+        "no_project_prompt": "帮我列出一个想做的小工具的目标和验收清单，先不要执行命令。",
+        "limitation": "复制或自报不代表已验证输出正确，也不会自动通过关卡。",
+    },
+    "en": {
+        "title": "Try one step",
+        "prompt": "Explain how to start this project in plain language. Do not modify files.",
+        "no_project_prompt": "Help me list the goal and acceptance checks for a small tool I want to build. Do not run commands.",
+        "limitation": "Copying or self-reporting does not verify correctness or automatically pass a quest.",
+    },
+}
+
+QUEST_EVIDENCE = {
+    "configuration": ("配置存在，尚未验证使用", "Configuration found; use has not been verified"),
+    "historical": ("历史记录，不代表本次练习", "Historical record, not evidence of this practice"),
+    "new_observed": ("新观察到的使用，不代表输出正确", "Newly observed use, not verified correctness"),
+    "self_reported": ("已尝试（自报）", "Tried (self-reported)"),
+    "unsupported": ("暂不支持自动验证，可手动练习", "Automatic verification unavailable; practice manually"),
+    "not_observed": ("尚未观察到", "Not observed yet"),
+}
+
+
+def first_practice(locale: str) -> dict:
+    return {**FIRST_PRACTICE[locale], "validation_kind": "self_reported"}
+
+
+def quest_evidence_label(kind: str, locale: str) -> str:
+    return QUEST_EVIDENCE[kind][0 if locale == "zh" else 1]

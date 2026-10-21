@@ -20,6 +20,13 @@ struct TrainingTab: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(zh ? "新手村之路" : "Village path").font(.headline)
                     villagePath(village)
+                    if let quest = village.quests.first(where: { $0.key == village.current }) {
+                        DisclosureGroup(quest.title) {
+                            Text(quest.evidenceLabel ?? NSLocalizedString("Historical record, not evidence of this practice", bundle: .module, comment: ""))
+                                .font(.caption)
+                            FirstPracticeView(store: store)
+                        }
+                    }
                     if village.current == nil {
                         Text(zh ? "出师 ✓" : "Graduated ✓")
                             .font(.title2.bold()).frame(maxWidth: .infinity, alignment: .leading)
