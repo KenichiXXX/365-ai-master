@@ -1,0 +1,1 @@
+{"sessionId": "demo-g", "messages": [{"id": "g1", "type": "gemini", "timestamp": "2026-10-20T12:00:00Z", "model": "gemini-example", "tokens": {"input": 90, "output": 12, "cached": 30, "thoughts": 4}}, {"id": "bad", "type": "gemini", "tokens": []}]}

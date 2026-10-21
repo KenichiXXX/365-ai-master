@@ -1,0 +1,1 @@
+{"id": "o1", "sessionID": "demo-o", "role": "assistant", "modelID": "example-model", "time": {"created": 1792497600000}, "tokens": {"input": 70, "output": 11, "reasoning": 3, "cache": {"read": 20, "write": 5}}}
