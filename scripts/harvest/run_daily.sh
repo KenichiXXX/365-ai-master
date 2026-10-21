@@ -7,7 +7,10 @@ LOG="$HOME/Library/Logs/365aimaster-harvest.log"
 mkdir -p "$(dirname "$LOG")"
 exec >>"$LOG" 2>&1
 printf '\nHarvest started %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')"
-ORIGIN="$(git -C "$CHECKOUT" remote get-url origin)"
+# launchd agents cannot read ~/Documents (macOS privacy), so install_daily.sh runs a copy from
+# Application Support and passes the origin and interpreter in via the environment.
+ORIGIN="${HARVEST_ORIGIN:-$(git -C "$CHECKOUT" remote get-url origin)}"
+PYTHON="${HARVEST_PYTHON:-$CHECKOUT/.venv/bin/python}"
 REMOTE_CONTENT="$(git ls-remote --heads "$ORIGIN" refs/heads/content)"
 
 if [[ ! -d "$CLONE/.git" ]]; then
@@ -35,7 +38,7 @@ git config branch.content.merge refs/heads/content
 if [[ -n "$REMOTE_CONTENT" ]]; then
     git pull --ff-only
 fi
-"$CHECKOUT/.venv/bin/python" "$CHECKOUT/scripts/harvest/harvest.py" \
+"$PYTHON" "$CHECKOUT/scripts/harvest/harvest.py" \
     --base "$CHECKOUT/agentfit/engine/content_pool.json" \
     --out "$CLONE/daily.json" --history "$CLONE/stars-history.json"
 if ! git ls-files --error-unmatch daily.json >/dev/null 2>&1 || ! git diff --quiet HEAD -- daily.json; then
