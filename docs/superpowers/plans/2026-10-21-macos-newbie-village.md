@@ -1087,3 +1087,50 @@ Detect rules: `tool:X` → `tool_calls_30d.get(X,0)>=1`; `mcp` → `tool_calls_3
 ### Task 17: Repackage and verify
 
 - [ ] Rebuild with `scripts/package_app.sh` (engine includes `content_pool.json`). Launch the .app for ≤5 s, confirm with `pgrep`, kill it. Run the full Python suite and `swift test`. Commit any packaging changes as `build: repackage v2`.
+
+### Task 18: Daily rankings harvester + publish to the `content` branch + launchd schedule
+
+Context: Kenichi approved a daily job that collects Skill/Agent rankings from public sources and syncs them into the app's public content file. Only the orphan branch `content` of `origin` is pushed — never `main` or `feat/*`.
+
+**Hosting change:** the public file moves to branch `content`, path `daily.json`:
+`https://raw.githubusercontent.com/19800104zhao-svg/365-ai-master/content/daily.json`. Update `ContentUpdater.url`, the privacy test's expected URL, and spec §11.4 wording (`content` branch instead of `main/content/`).
+
+**Sources (verified 2026-10-21 by the reviewer):**
+1. The Skill Leaderboard — `GET https://www.skillleaderboard.com/api/catalog` (declared public dataset in its schema.org `Dataset.distribution`, robots `Allow: /`). JSON `{"metrics","facets","catalog":[...]}`; catalog items have `repo, owner, name, rank, category, tagline, summary, stars, forks, stars7d, stars30d, tractionScore, compatibleAgents`.
+2. GitHub Search API via the `gh` CLI (`gh api search/repositories ...`, user's own auth). Agent queries (each `sort=stars&order=desc&per_page=50`): `topic:ai-agents stars:>1000 archived:false fork:false pushed:>{today-30d}`, same for `topic:ai-agent`, `topic:coding-agent`, `topic:agent-framework`.
+Send `User-Agent: 365aimaster-harvester/0.1 (+https://github.com/19800104zhao-svg/365-ai-master)`; one request per source/query per run; timeout 30 s.
+
+**Files:**
+- Create `scripts/harvest/harvest.py` (stdlib only + subprocess for `gh` and optional `claude`), `scripts/harvest/run_daily.sh`, `scripts/harvest/com.365aimaster.harvest.plist`, `scripts/harvest/install_daily.sh`, `tests/harvest/test_harvest.py`, `tests/harvest/fixtures/{skillleaderboard_catalog.json,github_search_agents.json}` (small hand-made fixtures in the real shapes; no network in tests).
+- Modify `agentfit/engine/inventory.py` (`Inventory.plugins_installed: list[str]` = `enabledPlugins` keys with truthy value, name part before `@`; include in `to_public()` as a count `plugins` only — names stay internal), `agentfit/engine/codex_book.py` (`installed` = any `match` entry equals a skill name or plugin name, case-insensitive; rotation only when `content["rankings"].get("rotate", True)` is true — live data sets it false and lists are shown in order; pass through `rankings.source` and `rankings.updated_at`), `agentfit/engine/content_pool.py` validation (allow optional `rotate`, `source`, `updated_at`, and per-item optional numeric `stars`, `stars7d`).
+
+**`harvest.py` interface:**
+```python
+def fetch_skill_leaderboard(fetch=urllib_fetch) -> list[dict]
+def fetch_github_agents(run_gh=subprocess_gh, today=date.today()) -> list[dict]
+def select_skills(items, n=20) -> list[dict]
+    # keep stars >= 300, non-empty summary/tagline; sort by stars7d desc then stars desc; top n
+def select_agents(items, history: dict, n=20) -> list[dict]
+    # dedupe by full_name; drop archived/fork/no description/no license; delta7d = stars - history[7 days ago] when known
+    # sort by delta7d desc (unknown deltas after known), then stars; top n
+def to_ranking_item(repo: str, url: str, en: str, zh: str | None, stars: int, stars7d: int | None) -> dict
+    # {"name", "url", "tagline": {"en": en, "zh": zh or en}, "match": [repo.split("/")[1].lower()], "stars", "stars7d"}
+def translate_zh(texts: list[str], run_claude=subprocess_claude) -> list[str | None]
+    # one `claude -p --model haiku` call (if `claude` exists) asking for a JSON array of faithful, short Chinese
+    # translations of the given English one-liners, same order, no additions. Parse strictly; any error -> all None.
+def build_content(base: dict, skills: list, agents: list, today: date) -> dict
+    # copy base (skills cards + tips unchanged); rankings = {"skill": skills, "agent": agents, "rotate": False,
+    # "source": "The Skill Leaderboard · GitHub", "updated_at": today.isoformat()}; updated_at = today
+def main(argv=None) -> int
+    # --base agentfit/engine/content_pool.json --out <path> --history <path> [--no-translate]
+    # Abort (exit 3, write nothing) if either list has < 10 items or validate() fails.
+```
+History file (`stars-history.json`, kept on the `content` branch next to `daily.json`): `{"YYYY-MM-DD": {"owner/repo": stars}}`, keep the last 35 days.
+
+**`run_daily.sh`** (bash, `set -euo pipefail`): ensure a dedicated clone at `~/Library/Application Support/365AIMaster-harvest/repo` (first run: `git clone --single-branch --branch content` if the branch exists on origin, else create an orphan `content` branch there with only `README.md` explaining the file); `git pull --ff-only`; run `harvest.py` from the main checkout path passed as `$1` (default: the script's repo root) with `--out repo/daily.json --history repo/stars-history.json`; if `daily.json` changed: `git add daily.json stars-history.json && git commit -m "content: daily $(date +%F)" && git push origin content`. The clone must never check out or push any other branch. Log to `~/Library/Logs/365aimaster-harvest.log`.
+
+**launchd:** `com.365aimaster.harvest.plist` runs `run_daily.sh` at 07:30 local daily (`StartCalendarInterval` Hour 7 Minute 30), `StandardOutPath`/`StandardErrorPath` = the log, `EnvironmentVariables` PATH including `/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin`. `install_daily.sh` copies it to `~/Library/LaunchAgents/` with the absolute repo path substituted and runs `launchctl bootstrap gui/$(id -u) <plist>`; prints how to uninstall. **Do not run `install_daily.sh` or `run_daily.sh` yourself** — the reviewer runs them outside the sandbox.
+
+**Tests (no network):** selection/filtering/sorting rules; delta7d from history; translation fallback (fake runner returning bad JSON → zh falls back to en); `build_content` output passes `validate()` and keeps the 24 skill cards and tips unchanged; abort when a list has < 10 items; `installed` matches plugin names; `rotate: False` keeps order; ContentUpdater URL/privacy test updated.
+
+- [ ] TDD steps as usual; commit `feat(harvest): daily rankings from The Skill Leaderboard and GitHub, published to the content branch`.
