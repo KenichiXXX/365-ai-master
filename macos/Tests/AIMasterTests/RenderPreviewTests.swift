@@ -247,29 +247,35 @@ final class RenderPreviewTests: XCTestCase {
     }
 
     private func renderFullPopovers(snapshot: Snapshot, store: SnapshotStore, output: String) throws {
-        for (name, view) in phase6Sections(snapshot: snapshot, store: store).prefix(3) {
-            let hosting = NSHostingView(rootView: view.environment(\.locale, Locale(identifier: "zh"))
-                .environment(\.colorScheme, .light).bauhausTheme())
-            hosting.appearance = NSAppearance(named: .aqua)
-            hosting.frame = NSRect(x: 0, y: 0, width: 440, height: 720)
-            hosting.layoutSubtreeIfNeeded()
-            XCTAssertEqual(hosting.bounds.size, NSSize(width: 440, height: 720))
-            let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
-            hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
-            let image = try XCTUnwrap(bitmap.cgImage)
-            let request = VNRecognizeTextRequest()
-            request.usesCPUOnly = true
-            request.recognitionLanguages = ["zh-Hans", "en-US"]
-            request.recognitionLevel = .accurate
-            try VNImageRequestHandler(cgImage: image).perform([request])
-            let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
-                .joined().filter { !$0.isWhitespace }
-            for label in ["365", "PRO", "我", "大师推荐", "修炼",
-                          name == "me" ? "熟练者" : name == "picks" ? "今日推荐" : "今日修炼"] {
-                XCTAssertTrue(text.contains(label), "\(name): \(text)")
+        let sections = Array(phase6Sections(snapshot: snapshot, store: store).prefix(3))
+            + [("pro", AnyView(ProSheet(store: store, zh: true, close: {})))]
+        for scheme in [ColorScheme.light, .dark] {
+            for (name, view) in sections {
+                let hosting = NSHostingView(rootView: view.environment(\.locale, Locale(identifier: "zh"))
+                    .environment(\.colorScheme, scheme).bauhausTheme())
+                hosting.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+                let height: CGFloat = name == "pro" ? 660 : 720
+                hosting.frame = NSRect(x: 0, y: 0, width: 440, height: height)
+                hosting.layoutSubtreeIfNeeded()
+                XCTAssertEqual(hosting.bounds.size, NSSize(width: 440, height: height))
+                let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+                let image = try XCTUnwrap(bitmap.cgImage)
+                let request = VNRecognizeTextRequest()
+                request.usesCPUOnly = true
+                request.recognitionLanguages = ["zh-Hans", "en-US"]
+                request.recognitionLevel = .accurate
+                try VNImageRequestHandler(cgImage: image).perform([request])
+                let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+                    .joined().filter { !$0.isWhitespace }
+                let labels = name == "pro" ? ["PRO"] : ["365", "PRO", "我", "大师推荐", "修炼",
+                              name == "me" ? "熟练者" : name == "picks" ? "今日推荐" : "今日修炼"]
+                for label in labels {
+                    XCTAssertTrue(text.contains(label), "\(name): \(text)")
+                }
+                try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
+                    URL(fileURLWithPath: output + "-full-popover-" + name + "-real-zh-\(scheme).png"))
             }
-            try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
-                URL(fileURLWithPath: output + "-full-popover-" + name + "-real-zh.png"))
         }
     }
 

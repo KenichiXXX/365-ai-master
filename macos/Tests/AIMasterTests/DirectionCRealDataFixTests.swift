@@ -34,7 +34,7 @@ extension RenderPreviewTests {
         }, title, file: file, line: line)
         let box = label.boundingBox
         var textPixels = 0
-        let expectedText = scheme == .light ? [1.0, 1, 1] : [28.0 / 255, 25.0 / 255, 22.0 / 255]
+        let expectedText = scheme == .light ? [25.0 / 255, 21.0 / 255, 15.0 / 255] : [18.0 / 255, 22.0 / 255, 31.0 / 255]
         for y in Int((1 - box.maxY) * Double(bitmap.pixelsHigh))..<Int((1 - box.minY) * Double(bitmap.pixelsHigh)) {
             for x in Int(box.minX * Double(bitmap.pixelsWide))..<Int(box.maxX * Double(bitmap.pixelsWide)) {
                 if let pixel = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB) {
@@ -49,7 +49,7 @@ extension RenderPreviewTests {
         // Sample the fill just below the glyphs, inside the button's vertical padding.
         let y = Int((1 - box.minY) * Double(bitmap.pixelsHigh)) + 4
         let color = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
-        let expected = scheme == .light ? [193.0, 87.0, 35.0] : [240.0, 138.0, 85.0]
+        let expected = scheme == .light ? [168.0, 117.0, 24.0] : [240.0, 190.0, 90.0]
         for (actual, byte) in zip([color.redComponent, color.greenComponent, color.blueComponent], expected) {
             XCTAssertEqual(actual, byte / 255, accuracy: 0.015, title, file: file, line: line)
         }

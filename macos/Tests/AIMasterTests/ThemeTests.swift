@@ -35,7 +35,7 @@ final class ThemeTests: XCTestCase {
         for scheme in [ColorScheme.light, .dark] {
             let background = try components(Theme.background(for: scheme))
             let foreground = try components(Theme.foreground(for: scheme))
-            let expected = scheme == .light ? [244.0, 238, 230] : [28.0, 25, 22]
+            let expected = scheme == .light ? [247.0, 242, 232] : [18.0, 22, 31]
             for (actual, byte) in zip(background, expected) { XCTAssertEqual(actual, byte / 255, accuracy: 0.001) }
             XCTAssertGreaterThanOrEqual(contrast(foreground, background), 4.5)
         }

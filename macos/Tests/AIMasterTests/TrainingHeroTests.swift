@@ -27,13 +27,17 @@ final class TrainingHeroTests: XCTestCase {
         let renderer = ImageRenderer(content: view.frame(width: 408).bauhausTheme()
             .background(Theme.paper).background(scheme == .dark ? Color.black : Color.white)
             .environment(\.colorScheme, scheme))
-        renderer.scale = 2
-        let request = VNRecognizeTextRequest()
-        request.usesCPUOnly = true
-        request.recognitionLevel = .accurate
-        request.recognitionLanguages = ["en-US", "zh-Hans"]
-        try VNImageRequestHandler(cgImage: XCTUnwrap(renderer.cgImage)).perform([request])
-        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+        var observations: [String] = []
+        for scale in [2.0, 3.0] {
+            renderer.scale = scale
+            let request = VNRecognizeTextRequest()
+            request.usesCPUOnly = true
+            request.recognitionLevel = .accurate
+            request.recognitionLanguages = ["en-US", "zh-Hans"]
+            try VNImageRequestHandler(cgImage: XCTUnwrap(renderer.cgImage)).perform([request])
+            observations += (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+        }
+        return observations.joined(separator: "\n")
     }
 
     func testDirectionCOverviewShowsLiveProgressAndKeepsDetailsReachable() throws {

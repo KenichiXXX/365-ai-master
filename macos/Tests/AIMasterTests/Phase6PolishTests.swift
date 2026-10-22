@@ -25,14 +25,14 @@ final class Phase6PolishTests: XCTestCase {
     func testTrialRendersFullWidthAccentButton() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!,
             proTrial: ProTrial(read: { nil }, write: { _ in }))
-        let pixels = try coloredPixels(ProTrialSection(store: store, zh: true), rgb: [193/255.0, 87/255.0, 35/255.0])
+        let pixels = try coloredPixels(ProTrialSection(store: store, zh: true), rgb: [168/255.0, 117/255.0, 24/255.0])
         XCTAssertGreaterThan(pixels.count, pixels.width * 20, "Trial must be a full-width accent button")
     }
 
     func testJoinUsesNeutralSurfaceBeforeConsent() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         XCTAssertFalse(store.shareAnonymousScore)
-        let pixels = try coloredPixels(GlobalRankCard(store: store, locale: "zh"), rgb: [193/255.0, 87/255.0, 35/255.0])
+        let pixels = try coloredPixels(GlobalRankCard(store: store, locale: "zh"), rgb: [168/255.0, 117/255.0, 24/255.0])
         XCTAssertEqual(pixels.count, 0, "Joining uses a neutral secondary pill")
     }
     func testPickBenefitsUseOwnTaglineAndRemainDistinctAfterTruncation() {

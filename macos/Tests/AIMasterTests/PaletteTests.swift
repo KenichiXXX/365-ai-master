@@ -3,7 +3,7 @@ import SwiftUI
 @testable import AIMaster
 
 @MainActor
-final class PaletteCTests: XCTestCase {
+final class PaletteTests: XCTestCase {
     private func render<V: View>(_ view: V, scheme: ColorScheme) throws -> NSBitmapImageRep {
         let hosting = NSHostingView(rootView: view.bauhausTheme().environment(\.colorScheme, scheme))
         hosting.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
@@ -43,21 +43,20 @@ final class PaletteCTests: XCTestCase {
         return count
     }
 
-    func testWarmTokensAndContrastInBothAppearances() throws {
-        // C95A24 gives only 4.224:1 against white. The minimally darker clay is 4.511:1.
-        XCTAssertLessThan(contrast(0xFFFFFF, 0xC95A24), 4.5)
+    func testGoldTokensAndContrastInBothAppearances() throws {
+        XCTAssertLessThan(contrast(0x1E1A14, 0xA87518), 4.5)
         for scheme in [ColorScheme.light, .dark] {
             let dark = scheme == .dark
             let tokens: [(Color, Int, Double)] = [
-                (Theme.paper, dark ? 0x1C1916 : 0xF4EEE6, dark ? 0.92 : 0.88),
-                (Theme.surface, dark ? 0x2A2521 : 0xFFFFFF, 0.72),
-                (Theme.ink, dark ? 0xF2EBE2 : 0x2A211B, 1),
-                (Theme.secondary, dark ? 0xBFB3A6 : 0x6E6259, 1),
-                (Theme.hairline, dark ? 0xE8D5C2 : 0x5A4636, dark ? 0.17 : 0.15),
-                (Theme.accent, dark ? 0xF08A55 : 0xC15723, 1),
-                (Theme.accentSurface, dark ? 0xF08A55 : 0xC15723, 0.12),
-                (Theme.onAccent, dark ? 0x1C1916 : 0xFFFFFF, 1),
-                (Theme.primaryButtonText, dark ? 0x1C1916 : 0xFFFFFF, 1)
+                (Theme.paper, dark ? 0x12161F : 0xF7F2E8, dark ? 0.92 : 0.88),
+                (Theme.surface, dark ? 0x1D2330 : 0xFFFFFF, 0.72),
+                (Theme.ink, dark ? 0xEEE8DC : 0x1E1A14, 1),
+                (Theme.secondary, dark ? 0xB3AA9C : 0x6B6155, 1),
+                (Theme.hairline, dark ? 0xE0D3B8 : 0x5A4A2E, dark ? 0.17 : 0.15),
+                (Theme.accent, dark ? 0xF0BE5A : 0xA87518, 1),
+                (Theme.accentSurface, dark ? 0xF0BE5A : 0xA87518, 0.12),
+                (Theme.onAccent, dark ? 0x12161F : 0x19150F, 1),
+                (Theme.primaryButtonText, dark ? 0x12161F : 0x19150F, 1)
             ]
             for (color, hex, alpha) in tokens {
                 let bitmap = try render(Rectangle().fill(color).frame(width: 16, height: 16), scheme: scheme)
@@ -67,10 +66,11 @@ final class PaletteCTests: XCTestCase {
                 }
                 XCTAssertEqual(pixel.alphaComponent, alpha, accuracy: 0.01)
             }
-            let paper = dark ? 0x1C1916 : 0xF4EEE6
-            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xF2EBE2 : 0x2A211B, paper), 4.5)
-            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xBFB3A6 : 0x6E6259, paper), 4.5)
-            XCTAssertGreaterThanOrEqual(contrast(dark ? 0x1C1916 : 0xFFFFFF, dark ? 0xF08A55 : 0xC15723), 4.5)
+            let paper = dark ? 0x12161F : 0xF7F2E8
+            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xEEE8DC : 0x1E1A14, paper), 4.5)
+            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xB3AA9C : 0x6B6155, paper), 4.5)
+            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xF0BE5A : 0xA87518, paper), 3)
+            XCTAssertGreaterThanOrEqual(contrast(dark ? 0x12161F : 0x19150F, dark ? 0xF0BE5A : 0xA87518), 4.5)
         }
     }
 
@@ -79,8 +79,8 @@ final class PaletteCTests: XCTestCase {
         let dimensions = keys.map { Dimension(key: $0, label: $0, score: 80) }
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         for scheme in [ColorScheme.light, .dark] {
-            let colors = scheme == .dark ? [0xF08A55, 0x9DBB64, 0x78A6EE, 0xD489C6]
-                                        : [0xC95A24, 0x6E8B3D, 0x3A73C9, 0x9A4D8C]
+            let colors = scheme == .dark ? [0xF0BE5A, 0xF08A6A, 0x4FC7B2, 0x8C9BFF]
+                                        : [0xA87518, 0xC8553A, 0x2E8C7C, 0x5566D6]
             // A partial/reordered list must preserve each dimension's identity.
             for index in dimensions.indices {
                 let dimension = dimensions[index]
@@ -103,12 +103,12 @@ final class PaletteCTests: XCTestCase {
         store.dismissOnboarding()
         for scheme in [ColorScheme.light, .dark] {
             let bitmap = try render(PopoverView(store: store), scheme: scheme)
-            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF08A55 : 0xC15723, in: bitmap, topRightOnly: true), 500)
-            if let output = ProcessInfo.processInfo.environment["TASK65_RENDER_OUT"] {
+            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF0BE5A : 0xA87518, in: bitmap, topRightOnly: true), 500)
+            if let output = ProcessInfo.processInfo.environment["PALETTE_RENDER_OUT"] {
                 try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
                     .write(to: URL(fileURLWithPath: output + "-header-\(scheme).png"))
             }
-            XCTAssertGreaterThan(try count(scheme == .dark ? 0x1C1916 : 0xFFFFFF, in: bitmap, topRightOnly: true, tolerance: 0.06), 10)
+            XCTAssertGreaterThan(try count(scheme == .dark ? 0x12161F : 0x19150F, in: bitmap, topRightOnly: true, tolerance: 0.06), 5)
         }
     }
 
@@ -118,7 +118,7 @@ final class PaletteCTests: XCTestCase {
             let image = try XCTUnwrap(bitmap.cgImage)
             let center = try XCTUnwrap(image.cropping(to: CGRect(x: image.width / 4, y: image.height / 4,
                 width: image.width / 2, height: image.height / 2)))
-            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF08A55 : 0xC15723,
+            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF0BE5A : 0xA87518,
                 in: NSBitmapImageRep(cgImage: center)), 100)
         }
     }
@@ -130,7 +130,7 @@ final class PaletteCTests: XCTestCase {
         var checked = 0
         for case let url as URL in files where url.pathExtension == "swift" {
             let source = try String(contentsOf: url, encoding: .utf8)
-            XCTAssertNil(source.range(of: "(?i)(?:007F75|65DCC6|EDF2F5|242E39|3A4858|1D2933|596773)",
+            XCTAssertNil(source.range(of: "(?i)(?:007F75|65DCC6|EDF2F5|242E39|3A4858|1D2933|596773|F4EEE6|1C1916|2A2521|2A211B|F2EBE2|6E6259|BFB3A6|5A4636|E8D5C2|C95A24|C15723|F08A55|6E8B3D|9DBB64|3A73C9|78A6EE|9A4D8C|D489C6)",
                                       options: .regularExpression), url.lastPathComponent)
             checked += 1
         }

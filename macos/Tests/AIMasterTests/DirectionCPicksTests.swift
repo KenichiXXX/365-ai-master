@@ -18,7 +18,7 @@ final class DirectionCPicksTests: XCTestCase {
     }
 
     private func accentArea(_ bitmap: NSBitmapImageRep, scheme: ColorScheme) throws -> Double {
-        let expected = scheme == .light ? [193.0, 87, 35] : [240.0, 138, 85]
+        let expected = scheme == .light ? [168.0, 117, 24] : [240.0, 190, 90]
         var pixels = 0
         for y in 0..<bitmap.pixelsHigh {
             for x in 0..<bitmap.pixelsWide {

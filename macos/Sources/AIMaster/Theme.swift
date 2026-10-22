@@ -13,27 +13,26 @@ enum Theme {
     static let feedbackDuration: Double = 0.14
 
     static func background(for scheme: ColorScheme) -> Color {
-        color(scheme == .dark ? 0x1C1916 : 0xF4EEE6).opacity(scheme == .dark ? 0.92 : 0.88)
+        color(scheme == .dark ? 0x12161F : 0xF7F2E8).opacity(scheme == .dark ? 0.92 : 0.88)
     }
-    static func foreground(for scheme: ColorScheme) -> Color { color(scheme == .dark ? 0xF2EBE2 : 0x2A211B) }
-    static let paper = adaptive(light: 0xF4EEE6, dark: 0x1C1916, lightAlpha: 0.88, darkAlpha: 0.92)
-    static let surface = adaptive(light: 0xFFFFFF, dark: 0x2A2521, lightAlpha: 0.72, darkAlpha: 0.72)
-    static let ink = adaptive(light: 0x2A211B, dark: 0xF2EBE2)
-    static let secondary = adaptive(light: 0x6E6259, dark: 0xBFB3A6)
-    static let hairline = adaptive(light: 0x5A4636, dark: 0xE8D5C2, lightAlpha: 0.15, darkAlpha: 0.17)
-    // White on the requested C95A24 is 4.224:1; this slightly darker clay reaches 4.511:1.
-    static let accent = adaptive(light: 0xC15723, dark: 0xF08A55)
+    static func foreground(for scheme: ColorScheme) -> Color { color(scheme == .dark ? 0xEEE8DC : 0x1E1A14) }
+    static let paper = adaptive(light: 0xF7F2E8, dark: 0x12161F, lightAlpha: 0.88, darkAlpha: 0.92)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x1D2330, lightAlpha: 0.72, darkAlpha: 0.72)
+    static let ink = adaptive(light: 0x1E1A14, dark: 0xEEE8DC)
+    static let secondary = adaptive(light: 0x6B6155, dark: 0xB3AA9C)
+    static let hairline = adaptive(light: 0x5A4A2E, dark: 0xE0D3B8, lightAlpha: 0.15, darkAlpha: 0.17)
+    static let accent = adaptive(light: 0xA87518, dark: 0xF0BE5A)
     static let accentSurface = accent.opacity(0.12)
-    static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x1C1916)
+    static let onAccent = adaptive(light: 0x19150F, dark: 0x12161F)
     static let primaryButtonText = onAccent
 
     // Match the engine's fixed routing, timing, context, leverage order, even in partial lists.
     static func dimension(_ index: Int) -> Color {
         switch index {
-        case 0: return adaptive(light: 0xC95A24, dark: 0xF08A55)
-        case 1: return adaptive(light: 0x6E8B3D, dark: 0x9DBB64)
-        case 2: return adaptive(light: 0x3A73C9, dark: 0x78A6EE)
-        case 3: return adaptive(light: 0x9A4D8C, dark: 0xD489C6)
+        case 0: return adaptive(light: 0xA87518, dark: 0xF0BE5A)
+        case 1: return adaptive(light: 0xC8553A, dark: 0xF08A6A)
+        case 2: return adaptive(light: 0x2E8C7C, dark: 0x4FC7B2)
+        case 3: return adaptive(light: 0x5566D6, dark: 0x8C9BFF)
         default: return accent
         }
     }
