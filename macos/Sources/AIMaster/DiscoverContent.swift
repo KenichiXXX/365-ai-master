@@ -43,11 +43,18 @@ enum DiscoverContent {
 
     static func picks(_ snapshot: Snapshot) -> [Ranking] {
         guard let key = weakest(snapshot), let matches = categories[key] else { return [] }
+        let publicCategories: [String: Set<String>] = [
+            "routing": ["coding"], "context": ["memory", "research"],
+            "leverage": ["automation", "coding", "browser", "data", "design"],
+            "timing": ["automation"]]
+        let rows = ((snapshot.rankings?.skill ?? []) + (snapshot.rankings?.agent ?? []))
+            .filter { $0.installed != true && $0.installationHint != true }
+        let preferred = rows.filter {
+            publicCategories[key]?.contains($0.category ?? "") == true && (3...5).contains($0.beginner ?? 0)
+        }
+        let legacy = rows.filter { $0.category == nil && matches.contains($0.taskCategory ?? "") }
         var seen = Set<String>()
-        return Array(((snapshot.rankings?.skill ?? []) + (snapshot.rankings?.agent ?? [])).filter {
-            $0.installed != true && $0.installationHint != true
-                && matches.contains($0.taskCategory ?? "") && seen.insert($0.url.lowercased()).inserted
-        }.prefix(2))
+        return Array((preferred + legacy).filter { seen.insert($0.url.lowercased()).inserted }.prefix(2))
     }
 
     static func benefits(_ rows: [Ranking], locale: String) -> [String] {

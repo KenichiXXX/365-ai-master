@@ -298,13 +298,20 @@ struct Ranking: Decodable {
     var sourceUrl: String? = nil
     var sourceDate: String? = nil
     var sourceType: String? = nil
+    var category: String? = nil
+    var beginner: Int? = nil
     var taskCategory: String? = nil
     var compatibility: [String: PublicCompatibility]? = nil
     var caution: String? = nil
     var installationHint: Bool? = nil
 
     enum CodingKeys: String, CodingKey {
-        case name, url, tagline, installed, stars, stars7d, sourceUrl, sourceDate, sourceType, taskCategory, compatibility, caution, installationHint
+        case name, url, tagline, installed, stars, stars7d, category, beginner, sourceUrl, sourceDate, sourceType, taskCategory, compatibility, caution, installationHint
+    }
+
+    func beginnerTag(locale: String) -> String? {
+        guard let beginner, (4...5).contains(beginner) else { return nil }
+        return locale == "zh" ? "新手友好" : "Beginner friendly"
     }
 
     func compatibilityLabel(locale: String) -> String {

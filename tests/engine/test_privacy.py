@@ -117,3 +117,39 @@ def test_phase4_cli_exports_and_logs_reject_all_private_sentinels(tmp_path, caps
         saved = (state / name).read_text()
         for sentinel in (*SENTINELS, str(home)):
             assert sentinel not in saved
+
+
+def test_engine_has_no_model_clients_or_process_escape_hatches():
+    """Keep scoring unable to acquire an SDK, network client or external CLI."""
+    import ast
+    forbidden = {"urllib", "http", "requests", "httpx", "socket", "aiohttp", "openai",
+                 "anthropic", "google", "litellm", "transformers", "torch", "ollama",
+                 "jev", "subprocess", "importlib", "ctypes", "multiprocessing"}
+    for path in (ROOT / "agentfit/engine").rglob("*.py"):
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                assert not {n.name.split('.')[0] for n in node.names} & forbidden, path
+            elif isinstance(node, ast.ImportFrom):
+                assert (node.module or "").split('.')[0] not in forbidden, path
+            elif isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name):
+                    assert node.func.id not in {"__import__", "eval", "exec"}, path
+                elif isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
+                    assert not (node.func.value.id == "os" and node.func.attr in {
+                        "system", "popen", "posix_spawn", "posix_spawnp", "execv", "execve",
+                        "execl", "execlp", "execvp", "execvpe", "spawnl", "spawnv"}), path
+
+
+def test_snapshot_runs_with_network_and_external_processes_disabled(tmp_path, monkeypatch):
+    import socket
+    import subprocess
+    from datetime import datetime, timezone
+    from agentfit.engine.snapshot import build_snapshot
+    def denied(*args, **kwargs):
+        raise AssertionError("Local analysis must not use network or external models")
+    monkeypatch.setattr(socket, "socket", denied)
+    monkeypatch.setattr(subprocess, "Popen", denied)
+    result = build_snapshot(tmp_path / "empty-home", tmp_path / "state", "en",
+                            now=datetime(2026, 10, 22, tzinfo=timezone.utc))
+    assert result["schema"] == 3

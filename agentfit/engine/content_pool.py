@@ -184,6 +184,11 @@ def validate(d: object) -> bool:
                 return False
             if item.get("source_type", "curated") not in ("curated", "repository", "catalog"):
                 return False
+            if "category" in item and item["category"] not in (
+                    "coding", "automation", "memory", "browser", "data", "design", "research", "other"):
+                return False
+            if "beginner" in item and (type(item["beginner"]) is not int or not 1 <= item["beginner"] <= 5):
+                return False
             if item.get("task_category") is not None and not _text(item["task_category"]):
                 return False
             if "caution" in item and not _bilingual(item["caution"]):

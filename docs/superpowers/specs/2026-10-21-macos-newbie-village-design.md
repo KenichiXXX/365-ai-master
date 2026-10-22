@@ -204,6 +204,24 @@ v1 为不签名的内测包（首次需右键「打开」）。正式对外发�
 
 ## 12. Phase 4 decisions
 
+### Local analysis and public ranking judgments (Task 64)
+
+Analysis reads local usage logs and computes scores with local rules. It calls no AI model,
+uses none of the user's token quota, and never sends prompts or logs for scoring. The Me tab
+explains this in “怎么算的 / How it works” and shows “0 token” beneath the score ring.
+Anonymous ranking sharing and public leaderboard downloads remain separate user-controlled features.
+
+Only the public-data harvester may optionally use `jev`, sending public repository names and
+descriptions in one JSONL batch. It removes spam with P ≥ 0.8 and adds `category` and `beginner`
+(1–5, the selected score label). Missing CLI/key or a failed/invalid batch preserves the existing
+rankings with one log line. No raw model output is logged. A filtered catalogue that fails existing
+minimum-size validation is not published. Beginner-friendly category matches are preferred for
+recommendations; old catalogues keep their reviewed-category fallback.
+
+Any future semantic judgment feature for user data must be opt-in and limited to `jev` over
+aggregated numbers only. Prompts and logs must never be sent. That feature is outside Task 64.
+
+
 ### Decisions
 
 Kenichi 于 2026-10-21 最终确认以下三项。与产品调研中的建议不一致时，以本节为准；实施拆分见 plan 的 Phase 4，本文不表示已经实现或接通支付。
