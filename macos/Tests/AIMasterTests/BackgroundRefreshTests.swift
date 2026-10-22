@@ -21,7 +21,11 @@ final class BackgroundRefreshTests: XCTestCase {
         request.recognitionLevel = .accurate
         request.recognitionLanguages = ["en-US"]
         try VNImageRequestHandler(cgImage: try XCTUnwrap(bitmap.cgImage)).perform([request])
-        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+        // Compare the tab body. The refresh icon may change while scanning, and
+        // OCR can read its arrow differently in the otherwise identical header.
+        return (request.results ?? []).filter {
+            $0.boundingBox.midY < 1 - 110.0 / 720 && $0.boundingBox.midY > 84.0 / 720
+        }.compactMap { $0.topCandidates(1).first?.string }
             .joined(separator: " ").filter { !$0.isWhitespace }
     }
 

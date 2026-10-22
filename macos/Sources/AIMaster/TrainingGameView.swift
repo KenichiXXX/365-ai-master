@@ -48,19 +48,26 @@ struct TrainingGameView: View {
                 ProgressView(value: Double(game.levelXp), total: Double(max(1, game.nextLevelXp)))
                     .accessibilityLabel(zh ? "等级经验" : "Level XP")
                     .accessibilityValue("\(game.levelXp)/\(game.nextLevelXp) XP")
-                Button { store.checkIn() } label: {
-                    Text(game.today.checkin ? (zh ? "已打卡 ✓ 明天见" : "Checked in ✓ See you tomorrow")
-                         : (zh ? "打卡 +5 XP" : "Check in +5 XP"))
-                        .scaleEffect(stampScale).frame(maxWidth: .infinity)
-                }.buttonStyle(ThemeButtonStyle(primary: !game.today.checkin))
-                    .disabled(game.today.checkin || store.isRefreshing)
-                    .accessibilityIdentifier("training-checkin")
-                    .onChange(of: game.today.checkin) { checkedIn in
-                        let peak = Self.stampScale(checkedIn: checkedIn, reduceMotion: reduceMotion)
-                        guard peak != 1 else { stampScale = 1; return }
-                        stampScale = peak
-                        withAnimation(.easeOut(duration: Theme.feedbackDuration)) { stampScale = 1 }
+                HStack(spacing: Theme.grid * 2) {
+                    Button { store.checkIn() } label: {
+                        Text(game.today.checkin ? (zh ? "已打卡 ✓ 明天见" : "Checked in ✓ See you tomorrow")
+                             : (zh ? "打卡 +5 XP" : "Check in +5 XP"))
+                            .scaleEffect(stampScale).frame(maxWidth: .infinity)
+                    }.buttonStyle(ThemeButtonStyle(primary: !game.today.checkin))
+                        .disabled(game.today.checkin || store.isPerformingAction)
+                        .accessibilityIdentifier("training-checkin")
+                        .onChange(of: game.today.checkin) { checkedIn in
+                            let peak = Self.stampScale(checkedIn: checkedIn, reduceMotion: reduceMotion)
+                            guard peak != 1 else { stampScale = 1; return }
+                            stampScale = peak
+                            withAnimation(.easeOut(duration: Theme.feedbackDuration)) { stampScale = 1 }
+                        }
+                    if game.today.checkin || store.isPerformingAction {
+                        Image(systemName: "info.circle")
+                            .help(game.today.checkin ? (zh ? "今天已打卡，明天再来" : "Already checked in today; come back tomorrow")
+                                  : (zh ? "正在保存操作，请稍候" : "Saving your action; please wait"))
                     }
+                }
             }.padding(Theme.cardPadding).bauhausPanel()
         }.monospacedDigit()
     }
@@ -90,7 +97,7 @@ struct TrainingGameDetailView: View {
                                   : (zh ? "今天打卡 · +5 XP" : "Check in · +5 XP"), systemImage: "checkmark.seal.fill")
                                 .scaleEffect(stampScale)
                         }.buttonStyle(ThemeButtonStyle(primary: !game.today.checkin))
-                            .disabled(game.today.checkin || store.isRefreshing)
+                            .disabled(game.today.checkin || store.isPerformingAction)
                         Spacer()
                         Label("\(game.shields)", systemImage: "shield.fill")
                             .accessibilityLabel(zh ? "连签保护卡 \(game.shields) 张" : "\(game.shields) streak shields")

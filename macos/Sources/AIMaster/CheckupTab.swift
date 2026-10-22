@@ -3,8 +3,7 @@ import SwiftUI
 struct CheckupTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
-
-    @State private var showUsageDetails = false
+    var showUsageFooter = true
     private var zh: Bool { snapshot.locale == "zh" }
 
     @State private var selectedDimension: String?
@@ -69,23 +68,34 @@ struct CheckupTab: View {
             if store.features.weeklyReview {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
-            if let usage = snapshot.usageSummary {
-                HStack(spacing: 4) {
-                    Text(usage.caption(locale: snapshot.locale ?? store.locale))
-                        .font(Theme.label).lineLimit(1).minimumScaleFactor(0.6)
-                    Button(action: { showUsageDetails.toggle() }) {
-                        Image(systemName: "info.circle").font(Theme.label)
-                    }.buttonStyle(.plain).accessibilityLabel(zh ? "使用记录说明" : "Usage details")
-                        .popover(isPresented: $showUsageDetails) {
-                            Text(usage.details(locale: snapshot.locale ?? store.locale))
-                                .font(Theme.label).padding(Theme.cardPadding).frame(width: 340).bauhausTheme()
-                        }
-                }.foregroundStyle(Theme.secondary).padding(.top, 12)
+            if showUsageFooter, let usage = snapshot.usageSummary {
+                UsageFooter(usage: usage, locale: snapshot.locale ?? store.locale)
             }
         }
     }
 }
 
+
+struct UsageFooter: View {
+    let usage: UsageSummary
+    let locale: String
+    @State private var showUsageDetails = false
+    private var zh: Bool { locale == "zh" }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(usage.caption(locale: locale))
+                .font(Theme.label).lineLimit(1).minimumScaleFactor(0.6)
+            Button(action: { showUsageDetails.toggle() }) {
+                Image(systemName: "info.circle").font(Theme.label)
+            }.buttonStyle(.plain).accessibilityLabel(zh ? "使用记录说明" : "Usage details")
+                .popover(isPresented: $showUsageDetails) {
+                    Text(usage.details(locale: locale))
+                        .font(Theme.label).padding(Theme.cardPadding).frame(width: 340).bauhausTheme()
+                }
+        }.foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+    }
+}
 
 enum CheckupPresentation {
     static func title(score: Int?, locale: String) -> String? {

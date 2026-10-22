@@ -23,6 +23,7 @@ enum Theme {
     static let hairline = adaptive(light: 0x41566C, dark: 0xC4D7EC, lightAlpha: 0.15, darkAlpha: 0.17)
     static let accent = adaptive(light: 0x007F75, dark: 0x65DCC6)
     static let accentSurface = accent.opacity(0.12)
+    static let primaryButtonText = color(0xFFFFFF)
     static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x242E39)
 
     static let body = Font.system(size: 13)
@@ -139,7 +140,7 @@ struct ThemeButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(Theme.body)
-            .foregroundStyle(primary ? Theme.onAccent : Theme.ink)
+            .foregroundStyle(primary ? Theme.primaryButtonText : Theme.ink)
             .padding(.horizontal, 12).padding(.vertical, 8)
             .background(primary ? Theme.accent : Theme.surface,
                         in: RoundedRectangle(cornerRadius: Theme.buttonRadius))

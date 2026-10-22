@@ -333,14 +333,28 @@ final class SnapshotStore: ObservableObject {
         runActionCommand(["mark-card-read", id])
     }
 
+    @Published private(set) var isPerformingAction = false
+    private var snapshotRefreshTask: Task<Void, Never>?
+    private var actionTask: Task<Void, Never>?
+
     private func runActionCommand(_ args: [String]) -> Task<Void, Never>? {
-        guard !isRefreshing else { return nil }
-        isRefreshing = true
+        guard !isPerformingAction else { return nil }
+        let pendingRefresh = snapshotRefreshTask
+        let pendingAction = actionTask
+        let userAction = args.first != "mark-card-read"
+        if userAction { isPerformingAction = true }
         let command = actionCommand
-        return Task {
+        let task = Task {
+            var ownsAction = userAction
+            defer { if ownsAction { isPerformingAction = false } }
+            await pendingAction?.value
+            await pendingRefresh?.value
+            isRefreshing = true
             do {
                 let accepted = try await Task.detached { try command(args) }.value
                 guard accepted else { throw EngineError.badJSON }
+                if userAction { isPerformingAction = false }
+                ownsAction = false
                 isRefreshing = false
                 await refresh()?.value
             } catch {
@@ -348,6 +362,8 @@ final class SnapshotStore: ObservableObject {
                 isRefreshing = false
             }
         }
+        actionTask = task
+        return task
     }
 
     @Published private(set) var practiceFeedbackID: String?
@@ -359,15 +375,24 @@ final class SnapshotStore: ObservableObject {
 
     @discardableResult
     func practice(id: String, operation: String) -> Task<Void, Never>? {
-        guard !isRefreshing else { return nil }
+        guard !isPerformingAction else { return nil }
+        let pendingRefresh = snapshotRefreshTask
+        let pendingAction = actionTask
+        isPerformingAction = true
         practiceFeedbackID = nil
         practiceFeedback = nil
-        isRefreshing = true
         let command = actionCommand
-        return Task {
+        let task = Task {
+            var ownsAction = true
+            defer { if ownsAction { isPerformingAction = false } }
+            await pendingAction?.value
+            await pendingRefresh?.value
+            isRefreshing = true
             do {
                 let accepted = try await Task.detached { try command(["practice", id, operation]) }.value
                 guard accepted else { throw EngineError.badJSON }
+                isPerformingAction = false
+                ownsAction = false
                 isRefreshing = false
                 await refresh()?.value
                 guard lastError == nil else { return }
@@ -379,6 +404,8 @@ final class SnapshotStore: ObservableObject {
                 isRefreshing = false
             }
         }
+        actionTask = task
+        return task
     }
 
     enum TriedFeedback { case notSeen, lit }
@@ -613,7 +640,7 @@ final class SnapshotStore: ObservableObject {
             recheckCompletedAt = nil
         }
         activeScan = scan
-        return Task {
+        let task = Task {
             let scanAnimation = Task { @MainActor in
                 guard showScan else { return }
                 let count = recheckScan?.lines.count ?? 0
@@ -667,7 +694,10 @@ final class SnapshotStore: ObservableObject {
             }
             activeScan = nil
             isRefreshing = false
+            snapshotRefreshTask = nil
             if !scan.isCancelled, tools != enabledTools || (content != nil) != (publicDownloads == true) { refresh() }
         }
+        snapshotRefreshTask = task
+        return task
     }
 }

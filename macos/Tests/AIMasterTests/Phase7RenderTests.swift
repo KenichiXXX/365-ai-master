@@ -107,7 +107,13 @@ extension RenderPreviewTests {
                 let context = "\(locale) \(scheme) \(name)"
                 XCTAssertEqual(hosting.bounds.width, 440, context)
                 XCTAssertGreaterThan(hosting.bounds.height, 50, context)
-                let text = try phase7Text(image)
+                var text = try phase7Text(image)
+                // Isolate the small footer action so OCR does not merge or omit its glyphs.
+                if name == "training-detail" {
+                    let footer = try XCTUnwrap(image.cropping(to: CGRect(x: 0, y: image.height * 3 / 4,
+                        width: image.width, height: image.height - image.height * 3 / 4)))
+                    text += try phase7Text(footer)
+                }
                 for marker in try XCTUnwrap(markers[name]) {
                     XCTAssertTrue(text.contains(marker), "\(context): missing \(marker): \(text)")
                 }

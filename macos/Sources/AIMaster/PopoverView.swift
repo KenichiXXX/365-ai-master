@@ -49,7 +49,7 @@ struct PopoverView: View {
                                         if store.lastError != nil { recordedRead = nil }
                                     }
                             case 2: TrainingTab(snapshot: snapshot, store: store)
-                            default: CheckupTab(snapshot: snapshot, store: store)
+                            default: CheckupTab(snapshot: snapshot, store: store, showUsageFooter: false)
                             }
                         } else {
                             Text(store.lastError ?? NSLocalizedString("Loading", bundle: .module, comment: ""))
@@ -57,6 +57,9 @@ struct PopoverView: View {
                         }
                     }.frame(maxWidth: .infinity, alignment: .leading)
                 }.id(selectedTab)
+                if selectedTab == 0, store.onboarded, let usage = store.snapshot?.usageSummary {
+                    UsageFooter(usage: usage, locale: store.snapshot?.locale ?? store.locale)
+                }
                 ThemeRule()
                 HStack {
                     VStack(alignment: .leading) {

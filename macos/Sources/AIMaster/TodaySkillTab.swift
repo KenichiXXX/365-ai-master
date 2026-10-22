@@ -32,8 +32,10 @@ struct TodaySkillTab: View {
                                 Text(snapshot.rankings?.skill?.contains(where: { $0.url == row.url }) == true ? "Skill" : "Agent")
                                     .font(Theme.label).foregroundStyle(Theme.secondary)
                                     .frame(width: Theme.grid * 8, alignment: .leading)
-                                Text(benefits[index])
-                                    .font(Theme.body).lineLimit(1)
+                                Text(DiscoverContent.shortName(row, in: recommendationRows))
+                                    .font(Theme.body).foregroundStyle(Theme.ink).fixedSize()
+                                Text("· " + benefits[index])
+                                    .font(Theme.body).foregroundStyle(Theme.secondary).lineLimit(1)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Text("↗").foregroundStyle(Theme.secondary)
                             }.contentShape(Rectangle())
@@ -71,7 +73,11 @@ struct TodaySkillTab: View {
                 .font(Theme.label).foregroundStyle(Theme.secondary).lineLimit(1)
             CopyButton(prompt: card.prompt, title: zh ? "复制试一下 ↗" : "Copy & try ↗", locale: locale,
                        onCopied: { store.practice(id: card.id, operation: "copy") }, primary: true)
-                .disabled(store.isRefreshing)
+                .disabled(store.isPerformingAction)
+            if store.isPerformingAction {
+                Image(systemName: "info.circle")
+                    .help(zh ? "正在保存操作，请稍候" : "Saving your action; please wait")
+            }
         }.padding(Theme.cardPadding).frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.accentSurface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius))
             .accessibilityIdentifier("today-pick")
@@ -223,7 +229,7 @@ struct PracticeControls: View {
                 } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "练习说明" : "Practice details") }
                 CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy & try", locale: locale,
                            onCopied: { store.practice(id: card.id, operation: "copy") })
-                    .disabled(store.isRefreshing)
+                    .disabled(store.isPerformingAction)
             }
         }.bauhausTheme()
     }
