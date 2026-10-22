@@ -632,3 +632,37 @@ _CHECKUP_DETAILS = {
 
 def checkup_detail_copy(locale: str) -> dict:
     return deepcopy(_CHECKUP_DETAILS[locale])
+
+# Task 45: fixed, local-only game copy. No downloaded or generated rewards.
+GAME_TIPS = [
+    ("今天也向前走了一小步。", "One small step forward today."),
+    ("先试一件小事，再看结果。", "Try one small thing, then check the result."),
+    ("好问题值得多花一分钟。", "A good question deserves another minute."),
+    ("记下一个今天的新发现。", "Write down one thing you discovered today."),
+    ("让 AI 帮你开始，由你来判断。", "Let AI help you start; keep your own judgment."),
+    ("学会一招，就找机会用一次。", "Use a new skill when the opportunity fits."),
+    ("休息一下，回来会更清楚。", "Take a break and return with fresh eyes."),
+    ("小任务也能练出好习惯。", "Small tasks build good habits."),
+    ("清楚的目标，让合作更轻松。", "A clear goal makes collaboration easier."),
+    ("做完以后，花一点时间检查。", "Take a moment to check your work."),
+    ("把复杂的事拆成一小步。", "Break a complex task into one small step."),
+    ("保留判断，也保持好奇。", "Stay curious and keep your judgment."),
+    ("今天的新招，明天可以再试。", "Try today's new skill again tomorrow."),
+    ("把有用的做法留给下一次。", "Keep useful approaches for next time."),
+    ("遇到卡点，先说清楚问题。", "When stuck, start by describing the problem."),
+    ("让工具为你的目标服务。", "Let your tools serve your goals."),
+    ("不必一次学完，慢慢来。", "You do not have to learn it all at once."),
+    ("试过以后，你会更了解自己的方法。", "Trying helps you understand your approach."),
+    ("给下一次的自己留一句提示。", "Leave a helpful note for your future self."),
+    ("今天的认真，值得一个小庆祝。", "Today's effort deserves a little celebration."),
+]
+GAME_LEVELS = {
+    "zh": ["学徒", "见习", "熟练", "专家", "大师", "宗师"],
+    "en": ["Apprentice", "Novice", "Skilled", "Expert", "Master", "Grandmaster"],
+}
+GAME_WEEKLY = {
+    "cards": (2, {"zh": "点亮 2 张新卡", "en": "Light up 2 new cards"}),
+    "checkins": (5, {"zh": "打卡 5 天", "en": "Check in on 5 days"}),
+    "practices": (3, {"zh": "完成 3 次练习", "en": "Complete 3 practices"}),
+    "dimension": (5, {"zh": "让一个维度提高 5 分", "en": "Improve one dimension by 5 points"}),
+}

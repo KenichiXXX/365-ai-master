@@ -45,12 +45,24 @@ def main(argv: list[str] | None = None) -> int:
         local.add_argument("--result", choices=sorted(RESULTS), default="ok")
         local.add_argument("--state-dir", type=Path,
                            default=Path.home() / "Library/Application Support/365AIMaster")
+        checkin_parser = commands.add_parser("checkin")
+        read_parser = commands.add_parser("mark-card-read")
+        read_parser.add_argument("card_id")
+        for command in (checkin_parser, read_parser):
+            command.add_argument("--state-dir", type=Path,
+                                default=Path.home() / "Library/Application Support/365AIMaster")
         args = parser.parse_args(argv)
         args.state_dir.mkdir(parents=True, exist_ok=True)
         # Every CLI mutation, including snapshots, uses the same local command lock.
         lock = (args.state_dir / "engine.lock").open("a")
         fcntl.flock(lock, fcntl.LOCK_EX)
-        if args.command == "local-event":
+        if args.command in {"checkin", "mark-card-read"}:
+            from agentfit.engine.training_game import checkin, mark_card_read
+            now = datetime.now(timezone.utc)
+            path = args.state_dir / "progress.json"
+            result = {"ok": checkin(path, now) if args.command == "checkin" else
+                      mark_card_read(path, args.card_id, now)}
+        elif args.command == "local-event":
             now = datetime.now(timezone.utc)
             LocalMetrics(args.state_dir, now).record(args.event, now, args.result)
             result = {"ok": True}

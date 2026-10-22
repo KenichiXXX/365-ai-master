@@ -78,6 +78,12 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
         showPopover()
     }
 
+    @objc private func dailyCheckIn() {
+        UserDefaults.standard.set(2, forKey: "selectedTab")
+        store.checkIn()
+        showPopover()
+    }
+
     @objc private func openSettings() {
         store.showSettings = true
         showPopover()
@@ -90,7 +96,8 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
             popover.performClose(nil)
             let menu = NSMenu()
             let zh = (store.snapshot?.locale ?? store.locale) == "zh"
-            for (title, action) in [(zh ? "立即体检" : "Check now", #selector(checkNow)),
+            for (title, action) in [(zh ? "今日打卡" : "Daily check-in", #selector(dailyCheckIn)),
+                                    (zh ? "立即体检" : "Check now", #selector(checkNow)),
                                     (zh ? "设置…" : "Settings…", #selector(openSettings)),
                                     (zh ? "退出" : "Quit", #selector(quit))] {
                 let item = NSMenuItem(title: title, action: action, keyEquivalent: "")

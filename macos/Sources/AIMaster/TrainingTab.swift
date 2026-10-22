@@ -8,7 +8,8 @@ struct TrainingTab: View {
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
+            if let game = snapshot.trainingGame { TrainingGameView(game: game, store: store, zh: zh) }
             Button(shareCopy("Share my practice", snapshot.locale ?? "en")) { showShareCard = true }
                 .sheet(isPresented: $showShareCard) { ShareCard(snapshot: snapshot, store: store) }
             HStack(spacing: 8) {
@@ -22,52 +23,56 @@ struct TrainingTab: View {
             if let label = snapshot.streak?.label {
                 Text(label).font(.caption).foregroundStyle(.secondary)
             }
-            if let calendar = snapshot.book?.practiceCalendar { PracticeCalendar(data: calendar) }
+            if let calendar = snapshot.book?.practiceCalendar {
+                DisclosureGroup(zh ? "实践记录" : "Practice history") { PracticeCalendar(data: calendar) }
+            }
             if let village = snapshot.village {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(zh ? "新手村之路" : "Village path").font(.headline)
-                    villagePath(village)
-                    if let quest = village.quests.first(where: { $0.key == village.current }) {
-                        DisclosureGroup(quest.title) {
-                            Text(quest.evidenceLabel ?? NSLocalizedString("Historical record, not evidence of this practice", bundle: .module, comment: ""))
-                                .font(.caption)
-                            FirstPracticeView(store: store)
+                DisclosureGroup(zh ? "新手村之路" : "Village path") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        villagePath(village)
+                        if let quest = village.quests.first(where: { $0.key == village.current }) {
+                            DisclosureGroup(quest.title) {
+                                Text(quest.evidenceLabel ?? NSLocalizedString("Historical record, not evidence of this practice", bundle: .module, comment: ""))
+                                    .font(.caption)
+                                FirstPracticeView(store: store)
+                            }
                         }
-                    }
-                    if village.current == nil {
-                        Text(zh ? "出师 ✓" : "Graduated ✓")
-                            .font(.title2.bold()).frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-                    } else if let tip = snapshot.todayTip, tip.source.kind == "quest",
-                              tip.source.ref == village.current {
-                        TipCard(tip: tip, store: store)
-                            .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                        if village.current == nil {
+                            Text(zh ? "出师 ✓" : "Graduated ✓")
+                                .font(.title2.bold()).frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                        } else if let tip = snapshot.todayTip, tip.source.kind == "quest",
+                                  tip.source.ref == village.current {
+                            TipCard(tip: tip, store: store)
+                                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                        }
                     }
                 }
             }
             if let book = snapshot.book {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(zh ? "技能图鉴" : "Skill book").font(.headline)
-                    Text(zh ? "配置存在 \(book.configurationCount ?? 0) · 自报 \(book.selfReportCount ?? 0)"
-                         : "Configuration \(book.configurationCount ?? 0) · Self-reported \(book.selfReportCount ?? 0)")
-                        .font(.caption).foregroundStyle(.secondary)
-                    Text((book.groups ?? []).map { "\($0.title) \($0.lit)/\($0.total)" }.joined(separator: " · "))
-                        .font(.callout).foregroundStyle(.secondary)
-                    ForEach(book.groups ?? []) { group in
-                        DisclosureGroup {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(book.cards.filter { $0.level == group.level }) { card in
-                                    skillRow(card)
+                DisclosureGroup(zh ? "技能图鉴" : "Skill book") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(zh ? "配置存在 \(book.configurationCount ?? 0) · 自报 \(book.selfReportCount ?? 0)"
+                             : "Configuration \(book.configurationCount ?? 0) · Self-reported \(book.selfReportCount ?? 0)")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Text((book.groups ?? []).map { "\($0.title) \($0.lit)/\($0.total)" }.joined(separator: " · "))
+                            .font(.callout).foregroundStyle(.secondary)
+                        ForEach(book.groups ?? []) { group in
+                            DisclosureGroup {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    ForEach(book.cards.filter { $0.level == group.level }) { card in
+                                        skillRow(card)
+                                    }
+                                }.padding(.top, 8)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("\(group.title) \(group.lit)/\(group.total)").font(.subheadline.bold())
+                                    Text(missingSummary(group, book: book))
+                                        .font(.caption).foregroundStyle(.secondary).lineLimit(2)
                                 }
-                            }.padding(.top, 8)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("\(group.title) \(group.lit)/\(group.total)").font(.subheadline.bold())
-                                Text(missingSummary(group, book: book))
-                                    .font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                            }
-                        }.padding(10).background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                            }.padding(10).background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                        }
                     }
                 }
                 VStack(alignment: .leading, spacing: 8) {

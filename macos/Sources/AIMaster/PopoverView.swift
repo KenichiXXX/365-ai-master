@@ -3,6 +3,7 @@ import SwiftUI
 struct PopoverView: View {
     @ObservedObject var store: SnapshotStore
     @AppStorage("selectedTab") private var selectedTab = 0
+    @State private var recordedRead: String?
 
     var body: some View {
         VStack(spacing: 12) {
@@ -28,7 +29,16 @@ struct PopoverView: View {
                             Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
                         }
                         switch selectedTab {
-                        case 1: TodaySkillTab(snapshot: snapshot, store: store)
+                        case 1:
+                            TodaySkillTab(snapshot: snapshot, store: store)
+                                .task(id: "\(snapshot.book?.today?.id ?? "")-\(store.isRefreshing)") {
+                                    guard !store.isRefreshing, let id = snapshot.book?.today?.id else { return }
+                                    let key = id + String(Calendar.current.startOfDay(for: Date()).timeIntervalSince1970)
+                                    guard recordedRead != key else { return }
+                                    recordedRead = key
+                                    await store.markCardRead(id)?.value
+                                    if store.lastError != nil { recordedRead = nil }
+                                }
                         case 2: TrainingTab(snapshot: snapshot, store: store)
                         default: CheckupTab(snapshot: snapshot, store: store)
                         }

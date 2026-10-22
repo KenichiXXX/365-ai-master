@@ -320,6 +320,14 @@ final class SnapshotStore: ObservableObject {
         runActionCommand(["reset-action-preferences"])
     }
 
+    @discardableResult
+    func checkIn() -> Task<Void, Never>? { runActionCommand(["checkin"]) }
+
+    @discardableResult
+    func markCardRead(_ id: String) -> Task<Void, Never>? {
+        runActionCommand(["mark-card-read", id])
+    }
+
     private func runActionCommand(_ args: [String]) -> Task<Void, Never>? {
         guard !isRefreshing else { return nil }
         isRefreshing = true
