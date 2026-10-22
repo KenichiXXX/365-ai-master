@@ -1726,3 +1726,9 @@ Dimension detail, village/skill-book/badges/calendar details, Settings, Pro shee
 
 ### Task 61: Render check (after merge)
 Real-data renders (light and dark) of the full popover for all three tabs, a dimension detail, Training detail, Settings, Pro sheet. Assert no Bauhaus hex values remain in Sources. Commit `test: phase 7 renders`.
+
+### Task 62: Direction C real-data fixes (2026-10-22)
+1. Primary teal buttons (`复制试一下 ↗`, `打卡 +5 XP`) render washed out, like disabled. Primary = solid accent at full opacity with white text whenever actionable; only show the disabled look when the action truly can't run (and then say why in the ⓘ). Check whether `isRefreshing` wrongly disables them; buttons must stay enabled during background refreshes.
+2. ● 我: the one-line usage footer is clipped/overlapping the bottom hairline (text cut in half). It must sit fully visible above the footer separator at 440×720 (scroll if needed).
+3. ■ 大师推荐 「为你推荐」 rows lost the tool name — show `Skill  dspy · 把提示词写成可优化的程序 ↗` (name in text color, line in secondary), truncate the line, never the name.
+Real-data render (zh light + dark) via RenderPreviewTests; assert the primary buttons' rendered color equals the accent. Commit `fix(macos): solid primary buttons, visible usage line, named picks`.
