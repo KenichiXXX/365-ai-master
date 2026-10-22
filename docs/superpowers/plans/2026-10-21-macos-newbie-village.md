@@ -1543,3 +1543,65 @@ Real-home render after Task 39 (score is back: 69, dims 35/70/95/75) still shows
 2. The usage line says 「价格未知」 for Claude/Codex models that have tier prices (opus/sonnet/haiku, gpt-6-* via `agentfit.pricing.classify_model`). Show the API-equivalent cost when the model tier is known; 「价格未知」 only for models whose tier is genuinely unknown, and then show the known part plus "部分模型价格未知" in the ⓘ.
 3. The usage line shows 「（时间异常）」 next to the Codex quota. Show that marker only when the quota record is older than its window or in the future; for a current weekly record (window 10080 min, resets in the future) show just 「Codex 周额度 29%（10月27日重置）」.
 Add regression tests for all three (engine fixture with passed quests 1–2 and opus/gpt usage; Swift caption test for the quota marker). Commit `fix: real-data main action, known-tier costs, quota freshness marker`.
+
+---
+
+# Phase 5 — Kenichi's trial feedback (2026-10-22)
+
+Kenichi's words (summarised): menu-bar icon should show my last score (69), not the quest number; I need a way to re-run the check-up; the four dimensions should be tappable with details — why I got this score and how to improve; remove 「今天先改这一处」 from the check-up page and put "你是全球 AI 什么大师，打败了多少用户" there instead; the 「今日新技能」 page is too technical/engineering — users want 推荐 and 排行榜 (Skill 榜、Agent 榜、技能榜、产品榜), 为您推荐、全球排行、大师推荐; Settings is too long — shorten it; the Training page is fun — turn it into daily check-in with more interaction and participation.
+
+Copy tone for all of Phase 5: plain, friendly, consumer-grade Chinese/English. No engineering words in the main UI (no "adapter", "schema", "signals", "coverage", "兼容性未知", "API-equivalent" outside ⓘ). Global Constraints and honesty rules still apply (no invented numbers; ranking wording rules as decided).
+
+### Task 41: Menu-bar score + re-check with a scan moment
+
+- Menu-bar title: the latest overall score as digits (`69`); `—` when unavailable; append ` •` when today's new skill is unlit. No quest numbers.
+- Re-check: a `↻ 重新体检 / Re-check` button in the popover header (top-right) and a right-click menu on the status item with `立即体检 / Check now`, `设置… / Settings…`, `退出 / Quit`. Re-check runs a full refresh immediately (bypass the 5-minute timer) and shows a short scan state in place of the score ring: rotating ring + three lines ticking one by one 「读取 Claude Code 记录… / 读取 Codex 记录… / 计算四维分…」 (only lines for detected tools), then the score counts up from 0 to the new value (≤0.8 s; respect Reduce Motion by skipping animation). If the score changed, show 「比上次 +3 / −2」 for 5 s under the ring.
+- Tests: title formatting (69, —, dot), re-check bypasses the throttle, scan lines only for detected tools.
+- Commit `feat(macos): score in the menu bar and a re-check scan`.
+
+### Task 42: Check-up page = score + global rank + tappable dimensions
+
+- Remove the 「今天先改这一处」 card from Check-up entirely (the action lives in each dimension's detail now).
+- Header block, top to bottom: big ring with score; a title by score — ≥90 `AI 宗师 / AI Grandmaster`, ≥75 `AI 大师 / AI Master`, ≥60 `AI 熟练者 / AI Practitioner`, else `AI 探索者 / AI Explorer`; then a "全球排名" card:
+  - opted in, total ≥ 20: 「打败了全球 X% 的 AI 用户」 + 「N 人参与 · 第 K 名」
+  - opted in, total < 20: 「早期排名：N 人中第 K 名」
+  - not opted in: 「看看你打败了全球多少 AI 用户」 + 「加入匿名排名」 button (existing consent flow, inline).
+- Four dimension rings become buttons. Tapping opens an in-popover detail page (back arrow) with:
+  1. the dimension ring + one-sentence verdict in plain words (e.g. 「贵模型用得多，便宜模型几乎没用」);
+  2. 「为什么是这个分」: 2–4 evidence rows with real numbers from the snapshot (e.g. 轻量模型占比 0%（建议 >5%）, 旗舰模型占折算成本 37%, 最近 14 天上下文压缩 48 次 / 提问 905 次); each deduction shows the points it cost (`−20`);
+  3. 「怎么提升」: the fix steps (from the engine's checkup issues for this dimension; if none, one "保持住" line) + `复制给 Claude / Copy prompt` + `做完了，重新体检 / Done, re-check`;
+  4. Pro: this dimension's 30-day trend; Free: one line 「Pro 可看 30 天趋势」.
+- Engine: snapshot `dimensions[]` gains `verdict`, `evidence: [{label, value, target?}]`, `deductions: [{title, points}]`, `steps: [..]`, `prompt` — built from `compute_checkup` issues + profile numbers; zh/en copy in content.py. Tests that real-shaped fixtures yield non-empty evidence for all four and that deductions sum to `base − score` per dimension.
+- Commit `feat: check-up with global rank card and tappable dimension details`.
+
+### Task 43: 「发现 / Discover」 replaces 「今日新技能」
+
+- Rename the tab to 「发现 / Discover」. Layout:
+  1. **为你推荐 / For you** — 3 cards max: (a) today's new skill card (friendly title, one-line benefit, `复制试一下`, `学会了`); (b) up to 2 picks from the Skill/Agent rankings that are not installed and match the user's weakest dimension's category map (routing→model/agent tools, context→memory/context tools, leverage→skills/automation, timing→productivity/automation); each with one sentence 「推荐理由」.
+  2. **全球排行 / Rankings** — a segmented control: `Skill 榜 | Agent 榜 | 技能榜 | 产品榜`. Rows: rank number, name, one-line Chinese description, `★ 29.8万 · 本周 +9,302`, `已装` pill if installed; Top 10 for free, Top 20 Pro. 技能榜 = our 24 learnable skills in the curated "新手必学" order with lit/unlit state (label 「大师精选」). 产品榜 = AI coding products (see harvester change below) ranked by GitHub stars with weekly growth (label 「按 GitHub 星数」).
+  3. **大师推荐 / Master's pick** — today's tip as a quote card.
+- Harvester (`scripts/harvest/harvest.py`) + content schema: add `rankings.product` from GitHub repos of AI coding tools — fixed list `openai/codex, google-gemini/gemini-cli, sst/opencode, QwenLM/qwen-code, cline/cline, Aider-AI/aider, continuedev/continue, block/goose, anthropics/claude-code, All-Hands-AI/OpenHands, MoonshotAI/kimi-cli` (skip any that 404), fetched via `gh api repos/<repo>`; zh tagline via the existing translate path; validate ≥5 items. Bundled `content_pool.json`/`content/daily.json` get a curated `product` list with the same repos (no star numbers in the bundled fallback). Tests with fixtures, no network.
+- Remove engineering text from this tab's main UI; any provenance goes to one footnote per list.
+- Commit `feat: Discover tab — for you, four rankings, master's pick`.
+
+### Task 44: Shorter Settings
+
+- One screen, ≤ 600 pt tall at 440 wide, four groups: 「通用」(开机启动 · 刷新频率) / 「隐私」(匿名排名 · 每日榜单更新 · 查看我的数据) / 「Pro」(status line + 输入激活码 / 购买 or 管理) / 「关于」(版本 · 反馈 · 退出). Tool toggles, diagnostics, trial details, cost notes, terms text move under one collapsed 「高级 / Advanced」 disclosure or the Pro detail sheet. Test the height bound with a render.
+- Commit `feat(macos): compact settings`.
+
+### Task 45: Training = daily check-in game
+
+All local, nothing uploaded.
+- **今日打卡 / Daily check-in** button at the top of Training (also reachable from the menu-bar right-click). One tap → stamp animation, +5 XP. Once per local day.
+- **今日三件事 / Today's 3**: ① 打卡 ② 看一张新技能卡（opened in Discover）③ 完成一次练习（a log-verified practice or a verified quest step）. Progress `2/3`; finishing all three gives a 「今日宝箱 / Daily chest」: +20 XP and a random friendly line from a fixed list of 20 tips (zh/en).
+- **经验与等级 / XP and level**: XP sources — check-in +5, skill card read +5, verified practice +20, village quest passed +50, badge earned +30, daily chest +20. Level n requires `50 × n` XP for the next level; show `Lv.7 · 120/350` bar. Level titles every 5 levels: 学徒 / 见习 / 熟练 / 专家 / 大师 / 宗师 (en: Apprentice / Novice / Skilled / Expert / Master / Grandmaster).
+- **打卡日历 / Check-in calendar**: current month grid with stamps; current check-in streak; best streak. Keep the existing log-based 「修炼天数」 as a separate, smaller stat.
+- **连签保护卡 / Streak shield**: earn 1 for each 7-day check-in streak (hold max 2); automatically used for one missed day; shown as a shield icon with count.
+- **每周挑战 / Weekly challenge**: one per ISO week, rotating from a fixed list (e.g. 点亮 2 张新卡 / 打卡 5 天 / 完成 3 次练习 / 让一个维度 +5 分); progress bar; reward +50 XP and a weekly badge.
+- Existing village path, skill book groups and badges stay below these, more compact.
+- Persist in the engine's progress (check-ins, xp ledger with reasons, shields, weekly challenge state); CLI subcommands `checkin` and `mark-card-read <id>` so the app can record actions; every XP event is idempotent per (kind, id, date). Tests for idempotency, level math, shield use, chest once per day, weekly rotation.
+- Commit `feat: Training as a daily check-in game — check-in, today's 3, XP, calendar, shields, weekly challenge`.
+
+### Task 46: Integrated render check
+
+Render all tabs + a dimension detail + settings + Discover's four rankings with real data (`RenderPreviewTests/testRenderPopoverSections`, no preview home) and with the synthetic matrix; assert: menu-bar title shows the score; no `今天先改这一处` on Check-up; settings ≤ 600 pt; Discover main UI contains none of the engineering words listed above. Commit `test: phase 5 integrated render checks`.
