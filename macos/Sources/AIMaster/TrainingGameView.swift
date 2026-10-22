@@ -13,49 +13,56 @@ struct TrainingGameView: View {
     }
 
     var body: some View {
-        VStack(spacing: Theme.grid * 2) {
-            HStack(spacing: Theme.grid * 2) {
-                Button(action: openToday) {
-                    ZStack {
-                        Circle().stroke(Theme.hairline, lineWidth: Theme.grid)
-                        Circle().trim(from: 0, to: CGFloat(min(3, max(0, game.today.completed))) / 3)
-                            .stroke(Theme.accent, style: StrokeStyle(lineWidth: Theme.grid, lineCap: .butt))
-                            .rotationEffect(.degrees(-90))
-                        Text("\(game.today.completed)/3").font(Theme.title).monospacedDigit()
-                            .foregroundStyle(Theme.accent)
-                    }.frame(width: Theme.grid * 9, height: Theme.grid * 9).padding(Theme.grid)
-                }.buttonStyle(.plain).accessibilityIdentifier("training-today")
-                    .accessibilityLabel(zh ? "今日三件事" : "Today's 3")
-                    .accessibilityValue("\(game.today.completed)/3")
-                VStack(alignment: .leading, spacing: Theme.grid) {
-                    Text("TODAY").font(Theme.label).tracking(2)
-                    Text(zh ? "今日修炼" : "Today's training").font(Theme.title)
-                    Text(zh ? "连签 \(game.streak) 天 · Lv.\(game.level)"
-                         : "\(game.streak)-day streak · Lv.\(game.level)").font(Theme.body)
-                }.foregroundStyle(Theme.ink)
-                Spacer(minLength: 0)
-            }.padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.surface)
-            Button { store.checkIn() } label: {
-                Text(game.today.checkin ? (zh ? "已打卡 ✓ 明天见" : "Checked in ✓ See you tomorrow")
-                     : (zh ? "打卡 +5 XP" : "Check in +5 XP"))
-                    .font(Theme.title).scaleEffect(stampScale)
-                    .frame(maxWidth: .infinity).padding(Theme.grid * 2)
-                    .foregroundStyle(game.today.checkin ? Theme.ink : Theme.onAccent)
-                    .background(game.today.checkin ? Theme.paper : Theme.accent)
-                    .overlay(Rectangle().strokeBorder(game.today.checkin ? Theme.ink : Theme.accent, lineWidth: Theme.ruleWidth))
-            }.buttonStyle(.plain).disabled(game.today.checkin || store.isRefreshing)
-                .accessibilityIdentifier("training-checkin")
-                .onChange(of: game.today.checkin) { checkedIn in
-                    let peak = Self.stampScale(checkedIn: checkedIn, reduceMotion: reduceMotion)
-                    guard peak != 1 else { stampScale = 1; return }
-                    withAnimation(.easeOut(duration: 0.12)) { stampScale = peak }
-                    Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 120_000_000)
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { stampScale = 1 }
+        VStack(spacing: Theme.sectionGap) {
+            Button(action: openToday) {
+                VStack(spacing: Theme.cardPadding) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: Theme.grid * 2) {
+                            Text(zh ? "今日修炼" : "Today's training").font(Theme.title)
+                            Text(zh ? "连签 \(game.streak) 天" : "\(game.streak)-day streak")
+                                .font(Theme.label).foregroundStyle(Theme.secondary)
+                        }
+                        Spacer()
+                        HStack(alignment: .firstTextBaseline, spacing: Theme.grid) {
+                            Text("\(game.today.completed)").font(Theme.stat).foregroundStyle(Theme.accent)
+                            Text("/ 3").font(Theme.label).foregroundStyle(Theme.secondary)
+                        }
                     }
+                    HStack(spacing: Theme.grid * 2) {
+                        ForEach(0..<3) { index in
+                            Capsule().fill(index < game.today.completed ? Theme.accent : Theme.hairline)
+                                .frame(height: Theme.grid)
+                        }
+                    }.accessibilityHidden(true)
+                }.padding(Theme.cardPadding).bauhausPanel()
+            }.buttonStyle(.plain).accessibilityIdentifier("training-today")
+                .accessibilityLabel(zh ? "今日修炼" : "Today's training")
+                .accessibilityValue("\(game.today.completed)/3")
+            VStack(spacing: Theme.cardPadding) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Lv.\(game.level)").font(Theme.stat)
+                    Spacer()
+                    Text("\(game.levelXp) / \(game.nextLevelXp) XP")
+                        .font(Theme.label).foregroundStyle(Theme.secondary)
                 }
-        }
+                ProgressView(value: Double(game.levelXp), total: Double(max(1, game.nextLevelXp)))
+                    .accessibilityLabel(zh ? "等级经验" : "Level XP")
+                    .accessibilityValue("\(game.levelXp)/\(game.nextLevelXp) XP")
+                Button { store.checkIn() } label: {
+                    Text(game.today.checkin ? (zh ? "已打卡 ✓ 明天见" : "Checked in ✓ See you tomorrow")
+                         : (zh ? "打卡 +5 XP" : "Check in +5 XP"))
+                        .scaleEffect(stampScale).frame(maxWidth: .infinity)
+                }.buttonStyle(ThemeButtonStyle(primary: !game.today.checkin))
+                    .disabled(game.today.checkin || store.isRefreshing)
+                    .accessibilityIdentifier("training-checkin")
+                    .onChange(of: game.today.checkin) { checkedIn in
+                        let peak = Self.stampScale(checkedIn: checkedIn, reduceMotion: reduceMotion)
+                        guard peak != 1 else { stampScale = 1; return }
+                        stampScale = peak
+                        withAnimation(.easeOut(duration: Theme.feedbackDuration)) { stampScale = 1 }
+                    }
+            }.padding(Theme.cardPadding).bauhausPanel()
+        }.monospacedDigit()
     }
 }
 
@@ -72,9 +79,9 @@ struct TrainingGameDetailView: View {
 
     var body: some View {
         Group {
-            VStack(alignment: .leading, spacing: Theme.grid) {
+            VStack(alignment: .leading, spacing: Theme.sectionGap) {
                 if destination == .today {
-                    ThemeLabel("TODAY")
+                    ThemeLabel(zh ? "今日修炼" : "Today's training")
                     HStack {
                         Button {
                             store.checkIn()
@@ -82,7 +89,8 @@ struct TrainingGameDetailView: View {
                             Label(game.today.checkin ? (zh ? "今日已打卡 ✓" : "Checked in today ✓")
                                   : (zh ? "今天打卡 · +5 XP" : "Check in · +5 XP"), systemImage: "checkmark.seal.fill")
                                 .scaleEffect(stampScale)
-                        }.disabled(game.today.checkin || store.isRefreshing)
+                        }.buttonStyle(ThemeButtonStyle(primary: !game.today.checkin))
+                            .disabled(game.today.checkin || store.isRefreshing)
                         Spacer()
                         Label("\(game.shields)", systemImage: "shield.fill")
                             .accessibilityLabel(zh ? "连签保护卡 \(game.shields) 张" : "\(game.shields) streak shields")
@@ -101,15 +109,17 @@ struct TrainingGameDetailView: View {
                             dailyRow(zh ? "练一次" : "Practise once", done: game.today.practice)
                         }.buttonStyle(.plain)
                         if let tip = game.today.chestTip {
-                            Label(zh ? "今日宝箱 · +20 XP" : "Daily chest · +20 XP", systemImage: "gift.fill")
-                                .foregroundStyle(Theme.ink)
-                            Text(tip).font(Theme.body)
+                            VStack(alignment: .leading, spacing: Theme.grid * 2) {
+                                Label(zh ? "今日宝箱 · +20 XP" : "Daily chest · +20 XP", systemImage: "gift.fill")
+                                    .foregroundStyle(Theme.accent)
+                                Text(tip).font(Theme.body)
+                            }.frame(maxWidth: .infinity, alignment: .leading)
                         }
                         DisclosureGroup {
                             Text(zh ? "完成三件事，开启今日宝箱 · +20 XP" : "Finish all three to open your daily chest · +20 XP")
                                 .font(Theme.body)
                         } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "宝箱说明" : "Chest details") }
-                    }.padding(Theme.grid).bauhausPanel()
+                    }.padding(Theme.cardPadding).bauhausPanel()
                     HStack {
                         Text("Lv.\(game.level) · \(game.levelTitle)").font(Theme.title)
                         Spacer()
@@ -144,19 +154,21 @@ struct TrainingGameDetailView: View {
                                 }
                             }
                         }
-                    }
+                    }.padding(Theme.cardPadding).bauhausPanel()
                 }
             }
             .onChange(of: game.today.checkin) { stamped in
                 guard stamped, !reduceMotion else { return }
-                stampScale = 1.2
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) { stampScale = 1 }
+                stampScale = TrainingGameView.stampScale(checkedIn: stamped, reduceMotion: reduceMotion)
+                withAnimation(.easeOut(duration: Theme.feedbackDuration)) { stampScale = 1 }
             }
         }.bauhausTheme()
     }
 
     private func dailyRow(_ title: String, done: Bool) -> some View {
-        Label(title, systemImage: done ? "checkmark.circle.fill" : "circle").font(Theme.body)
+        Label(title, systemImage: done ? "checkmark.circle.fill" : "circle")
+            .font(Theme.body).foregroundStyle(done ? Theme.accent : Theme.secondary)
+            .padding(.vertical, Theme.grid * 2)
     }
 
     private var calendar: some View {
@@ -177,9 +189,9 @@ struct TrainingGameDetailView: View {
                         if day.state == "stamp" { Image(systemName: "checkmark.seal.fill") }
                         if day.state == "shield" { Image(systemName: "shield.fill") }
                     }.font(Theme.body).frame(maxWidth: .infinity, minHeight: 24)
-                        .foregroundStyle(Theme.ink)
-                        .background(day.state == "empty" ? Theme.paper : Theme.accentSurface)
-                        .overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
+                        .foregroundStyle(day.state == "empty" ? Theme.secondary : Theme.accent)
+                        .background(day.state == "empty" ? Theme.hairline : Theme.accentSurface,
+                                    in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
                         .accessibilityLabel(day.date + ", " + (day.state == "stamp" ? (zh ? "已打卡" : "Checked in")
                             : day.state == "shield" ? (zh ? "保护卡" : "Shield") : (zh ? "未打卡" : "No check-in")))
                 }
