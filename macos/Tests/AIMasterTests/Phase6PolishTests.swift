@@ -5,7 +5,8 @@ import SwiftUI
 @MainActor
 final class Phase6PolishTests: XCTestCase {
     private func coloredPixels<V: View>(_ view: V, rgb: [Double]) throws -> (count: Int, width: Int) {
-        let hosting = NSHostingView(rootView: view.frame(width: 408).bauhausTheme())
+        let hosting = NSHostingView(rootView: view.frame(width: 408).bauhausTheme().environment(\.colorScheme, .light))
+        hosting.appearance = NSAppearance(named: .aqua)
         hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
         hosting.layoutSubtreeIfNeeded()
         let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
@@ -21,18 +22,18 @@ final class Phase6PolishTests: XCTestCase {
         return (count, bitmap.pixelsWide)
     }
 
-    func testTrialRendersFullWidthSolidRedButton() throws {
+    func testTrialRendersFullWidthAccentButton() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!,
             proTrial: ProTrial(read: { nil }, write: { _ in }))
-        let pixels = try coloredPixels(ProTrialSection(store: store, zh: true), rgb: [215/255.0, 40/255.0, 47/255.0])
-        XCTAssertGreaterThan(pixels.count, pixels.width * 20, "Trial must be a full-width red block")
+        let pixels = try coloredPixels(ProTrialSection(store: store, zh: true), rgb: [0, 127/255.0, 117/255.0])
+        XCTAssertGreaterThan(pixels.count, pixels.width * 20, "Trial must be a full-width accent button")
     }
 
-    func testJoinRendersSolidYellowButtonBeforeConsent() throws {
+    func testJoinUsesNeutralSurfaceBeforeConsent() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         XCTAssertFalse(store.shareAnonymousScore)
-        let pixels = try coloredPixels(GlobalRankCard(store: store, locale: "zh"), rgb: [242/255.0, 194/255.0, 48/255.0])
-        XCTAssertGreaterThan(pixels.count, 500, "Join must be a yellow block inside GLOBAL")
+        let pixels = try coloredPixels(GlobalRankCard(store: store, locale: "zh"), rgb: [0, 127/255.0, 117/255.0])
+        XCTAssertEqual(pixels.count, 0, "Joining uses a neutral secondary pill")
     }
     func testPickBenefitsUseOwnTaglineAndRemainDistinctAfterTruncation() {
         let rows = [

@@ -18,14 +18,14 @@ struct TodaySkillTab: View {
         VStack(alignment: .leading, spacing: Theme.grid * 2) {
             if let card = snapshot.book?.today {
                 VStack(alignment: .leading, spacing: Theme.grid) {
-                    Text("TODAY'S PICK").font(Theme.label).tracking(2).foregroundStyle(Theme.fixedInk)
+                    Text("TODAY'S PICK").font(Theme.label).tracking(2).foregroundStyle(Theme.ink)
                     Text(ActionCopy.line(card.title, locale: locale, hanLimit: 14, englishLimit: 32))
                         .font(Theme.title).lineLimit(1)
                     CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy & try", locale: locale,
                                onCopied: { store.practice(id: card.id, operation: "copy") })
                         .disabled(store.isRefreshing)
                 }.padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundStyle(Theme.fixedInk).background(Theme.yellow)
+                    .foregroundStyle(Theme.ink).background(Theme.accentSurface)
                     .accessibilityIdentifier("today-pick")
             }
             let picks = DiscoverContent.picks(snapshot)
@@ -131,8 +131,8 @@ private struct PicksRankingRow: View {
 
     private var rankColor: Color {
         switch position {
-        case 1: return Theme.red
-        case 2: return Theme.blue
+        case 1: return Theme.accent
+        case 2: return Theme.accent
         default: return Theme.ink
         }
     }
@@ -140,7 +140,7 @@ private struct PicksRankingRow: View {
     var body: some View {
         HStack(spacing: Theme.grid) {
             Text("\(position)").font(Theme.label).monospacedDigit()
-                .foregroundStyle(position <= 2 ? Theme.fixedPaper : position == 3 ? Theme.paper : Theme.ink)
+                .foregroundStyle(position <= 2 ? Theme.surface : position == 3 ? Theme.paper : Theme.ink)
                 .frame(width: 20, height: 20)
                 .background(position <= 3 ? rankColor : Color.clear)
                 .overlay(Rectangle().strokeBorder(rankColor, lineWidth: Theme.ruleWidth))
@@ -156,7 +156,7 @@ private struct PicksRankingRow: View {
             }.frame(maxWidth: .infinity, alignment: .leading)
             if !metric.isEmpty {
                 Text(metric).font(Theme.label).monospacedDigit().lineLimit(1).fixedSize()
-                    .foregroundStyle((weekly ?? 0) > 0 ? Theme.red : Theme.secondary)
+                    .foregroundStyle((weekly ?? 0) > 0 ? Theme.accent : Theme.secondary)
                     .accessibilityLabel(weekly != nil ? metric + (locale == "zh" ? " 本周增长" : " weekly growth") : metric)
             }
         }.padding(.vertical, Theme.grid).contentShape(Rectangle())

@@ -23,11 +23,10 @@ struct CheckupTab: View {
     }
 
     private var overview: some View {
-        VStack(alignment: .leading, spacing: Theme.grid) {
-            HStack(alignment: .center, spacing: Theme.grid * 2) {
+        VStack(alignment: .leading, spacing: Theme.sectionGap) {
+            HStack(alignment: .center, spacing: 16) {
                 RecheckScoreView(snapshot: snapshot, store: store)
-                VStack(alignment: .leading, spacing: Theme.grid) {
-                    ThemeLabel("LEVEL")
+                VStack(alignment: .leading, spacing: 8) {
                     if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
                         Text(title).font(Theme.title)
                             .help(snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) ?? "")
@@ -35,38 +34,53 @@ struct CheckupTab: View {
                         Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
                             .font(Theme.body).foregroundStyle(Theme.secondary)
                     }
+                    Text(zh ? "你的 AI 掌握度" : "Your AI mastery").font(Theme.label).foregroundStyle(Theme.secondary)
                     if let trend = MePresentation.yesterday(snapshot.progressMe?.vsYesterday, locale: snapshot.locale ?? store.locale) {
-                        HStack(spacing: Theme.grid) {
-                            TrendMarker(delta: Double(snapshot.progressMe?.vsYesterday ?? 0))
-                            Text(String(trend.dropFirst(2))).font(Theme.body)
-                                .foregroundStyle((snapshot.progressMe?.vsYesterday ?? 0) < 0 ? Theme.secondary : Theme.ink)
-                        }.accessibilityElement(children: .ignore).accessibilityLabel(trend)
+                        Text(trend).font(Theme.label)
+                            .foregroundStyle((snapshot.progressMe?.vsYesterday ?? 0) > 0 ? Theme.accent : Theme.secondary)
                     }
                 }
-            }.frame(maxWidth: .infinity, alignment: .leading).padding(.top, Theme.grid)
+            }.frame(maxWidth: .infinity, alignment: .leading)
+                .padding(Theme.cardPadding).bauhausPanel()
             GlobalRankCard(store: store, locale: snapshot.locale ?? store.locale)
-            DimensionBars(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
-                          features: store.features, locale: snapshot.locale ?? store.locale,
-                          onSelect: { selectedDimension = $0.key })
-            if let personalBest = snapshot.progressMe?.caption(locale: snapshot.locale ?? store.locale) {
-                Text(personalBest).font(Theme.body)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(zh ? "能力维度" : "Dimensions").font(Theme.sectionTitle)
+                    Spacer()
+                    Text(zh ? "满分 100" : "Out of 100").font(Theme.label).foregroundStyle(Theme.secondary)
+                }
+                DimensionBars(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
+                              features: store.features, locale: snapshot.locale ?? store.locale,
+                              onSelect: { selectedDimension = $0.key })
+                    .padding(Theme.cardPadding).bauhausPanel()
+            }
+            if let best = snapshot.progressMe?.personalBest {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(zh ? "个人最佳" : "Personal best").font(Theme.body).foregroundStyle(Theme.secondary)
+                    Spacer()
+                    if let delta = snapshot.progressMe?.weekDelta {
+                        Text(zh ? "本周 \(MePresentation.signed(delta))" : "This week \(MePresentation.signed(delta))")
+                            .font(Theme.label).foregroundStyle(Theme.secondary)
+                    }
+                    Text(String(best)).font(Theme.title).monospacedDigit()
+                    Text(zh ? "分" : "pts").font(Theme.label).foregroundStyle(Theme.secondary)
+                }
             }
             if store.features.weeklyReview {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
             if let usage = snapshot.usageSummary {
-                HStack(alignment: .top, spacing: Theme.grid) {
-                    Text(usage.caption(locale: snapshot.locale ?? store.locale)
-                        .replacingOccurrences(of: " API-equivalent", with: " estimated"))
+                HStack(spacing: 4) {
+                    Text(usage.caption(locale: snapshot.locale ?? store.locale))
                         .font(Theme.label).lineLimit(1).minimumScaleFactor(0.6)
                     Button(action: { showUsageDetails.toggle() }) {
-                        Image(systemName: "info.circle")
+                        Image(systemName: "info.circle").font(Theme.label)
                     }.buttonStyle(.plain).accessibilityLabel(zh ? "使用记录说明" : "Usage details")
                         .popover(isPresented: $showUsageDetails) {
                             Text(usage.details(locale: snapshot.locale ?? store.locale))
-                                .font(Theme.label).padding(Theme.grid * 2).frame(width: 340).bauhausTheme()
+                                .font(Theme.label).padding(Theme.cardPadding).frame(width: 340).bauhausTheme()
                         }
-                }.foregroundStyle(Theme.secondary)
+                }.foregroundStyle(Theme.secondary).padding(.top, 12)
             }
         }
     }
@@ -107,35 +121,40 @@ struct GlobalRankCard: View {
     private var zh: Bool { locale == "zh" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.grid) {
-            Text("GLOBAL").font(Theme.label).tracking(2)
-            if store.shareAnonymousScore {
-                if let ranking = store.ranking {
-                    Text(CheckupPresentation.rankCaption(ranking, locale: locale)).font(Theme.title)
-                    if ranking.total >= 20, let change = MePresentation.rankChange(store.rankChange7d, locale: locale) {
-                        Text(change).font(Theme.body).foregroundStyle(Theme.yellow)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(zh ? "全球排名" : "Global ranking").font(Theme.sectionTitle).foregroundStyle(Theme.ink)
+                    if store.shareAnonymousScore {
+                        if let ranking = store.ranking {
+                            Text(CheckupPresentation.rankCaption(ranking, locale: locale)).font(Theme.label)
+                            if ranking.total >= 20, let change = MePresentation.rankChange(store.rankChange7d, locale: locale) {
+                                Text(change).font(Theme.label)
+                                    .foregroundStyle((store.rankChange7d ?? 0) > 0 ? Theme.accent : Theme.secondary)
+                            }
+                            DisclosureGroup {
+                                Text(CheckupPresentation.participants(ranking, locale: locale)).font(Theme.label)
+                                Text(AppScoreOut.sampleLimitation(locale: locale)).font(Theme.label)
+                            } label: {
+                                Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
+                            }
+                        } else {
+                            Text(store.rankingCaption(locale: locale)).font(Theme.label)
+                        }
+                    } else {
+                        Text(zh ? "尚未加入 · 与全球使用者一起进步" : "Not joined · Grow with AI users worldwide")
+                            .font(Theme.label)
                     }
-                    DisclosureGroup {
-                        Text(CheckupPresentation.participants(ranking, locale: locale)).font(Theme.body)
-                        Text(AppScoreOut.sampleLimitation(locale: locale)).font(Theme.label)
-                    } label: {
-                        Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
-                    }.tint(Theme.fixedPaper)
-                } else {
-                    Text(store.rankingCaption(locale: locale)).font(Theme.body)
+                }.foregroundStyle(Theme.secondary)
+                Spacer(minLength: 0)
+                if !store.shareAnonymousScore {
+                    Button(zh ? "加入 ↗" : "Join ↗") { showConsent = true }
+                        .buttonStyle(ThemeButtonStyle())
                 }
-            } else {
-                Text(zh ? "看看你超过了多少 AI 用户" : "See how many AI users you surpass").font(Theme.title)
-                Button { showConsent = true } label: {
-                    Text(zh ? "加入" : "Join").font(Theme.body)
-                        .foregroundStyle(Theme.fixedInk).padding(Theme.grid)
-                        .background(Theme.yellow)
-                }.buttonStyle(.plain)
-                if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
             }
-        }.foregroundStyle(Theme.fixedPaper)
-            .frame(maxWidth: .infinity, alignment: .leading).padding(Theme.grid * 2)
-            .background(Theme.fixedInk)
+            if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
+        }.frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Theme.cardPadding).bauhausPanel()
     }
 }
 
@@ -225,22 +244,22 @@ struct DimensionBars: View {
     let onSelect: (Dimension) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.grid * 2) {
+        VStack(alignment: .leading, spacing: 12) {
             ForEach(dimensions) { dimension in
                 Button { onSelect(dimension) } label: {
                     VStack(alignment: .leading, spacing: Theme.grid) {
                         HStack(spacing: Theme.grid) {
                             Text(dimension.label).font(Theme.body)
-                            Text(dimension.score.map(String.init) ?? "—").font(Theme.title).monospacedDigit()
                             Spacer(minLength: 0)
+                            Text(dimension.score.map(String.init) ?? "—").font(Theme.body).monospacedDigit()
                             if let caption = features.dimensionCaption(ranking, key: dimension.key, locale: locale), dimension.score != nil {
                                 Text(caption).font(Theme.label).foregroundStyle(Theme.secondary)
                             }
                         }
                         GeometryReader { proxy in
-                            Rectangle().fill(Theme.ink.opacity(0.1))
+                            Capsule().fill(Theme.hairline)
                                 .overlay(alignment: .leading) {
-                                    Rectangle().fill(color(dimension))
+                                    Capsule().fill(Theme.accent)
                                         .frame(width: proxy.size.width * Double(min(100, max(0, dimension.score ?? 0))) / 100)
                                 }
                         }.frame(height: Theme.grid)
@@ -252,11 +271,4 @@ struct DimensionBars: View {
         }
     }
 
-    private func color(_ dimension: Dimension) -> Color {
-        switch MePresentation.barAccent(dimension, in: dimensions) {
-        case .lowest: return Theme.red
-        case .highest: return Theme.blue
-        case .neutral: return Theme.ink
-        }
-    }
 }

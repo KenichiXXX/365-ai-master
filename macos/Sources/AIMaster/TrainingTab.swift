@@ -28,7 +28,7 @@ struct TrainingTab: View {
                 Button { moments.removeFirst() } label: {
                     Text("▲ " + moment.title(zh: zh)).font(Theme.title).lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading).padding(Theme.grid * 2)
-                        .foregroundStyle(Theme.fixedInk).background(Theme.yellow)
+                        .foregroundStyle(Theme.ink).background(Theme.accentSurface)
                 }.buttonStyle(.plain).accessibilityIdentifier("training-achievement")
                     .task(id: moment.id) {
                         do { try await Task.sleep(nanoseconds: 4_000_000_000) } catch { return }
@@ -44,7 +44,7 @@ struct TrainingTab: View {
                         Text(zh ? "今日修炼" : "Today's training").font(Theme.title)
                         Text(zh ? "暂无修炼记录" : "No training records yet").font(Theme.body)
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(Theme.grid * 2)
-                        .foregroundStyle(Theme.fixedPaper).background(Theme.fixedInk)
+                        .foregroundStyle(Theme.ink).background(Theme.surface)
                 }.buttonStyle(.plain)
             }
             HStack(spacing: Theme.grid) {

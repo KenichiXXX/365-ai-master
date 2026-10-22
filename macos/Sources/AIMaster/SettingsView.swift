@@ -165,9 +165,9 @@ struct ProSettingsSection: View {
             VStack(alignment: .leading, spacing: Theme.grid) {
                 Text("365 AI MASTER PRO").font(Theme.title)
                 Text(zh ? "$12 / 年 · 创始价" : "$12 / year · Founding price")
-                    .font(Theme.title).foregroundStyle(Theme.fixedInk)
+                    .font(Theme.title).foregroundStyle(Theme.ink)
                     .padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Theme.yellow)
+                    .background(Theme.accentSurface)
                 VStack(alignment: .leading, spacing: Theme.grid) {
                     benefit(zh ? "成长曲线" : "Growth curve")
                     benefit(zh ? "每周复盘" : "Weekly review")
@@ -306,9 +306,9 @@ struct ProTrialSection: View {
                          : "No card required and no automatic charge. After the trial, return to Free and keep your history.")
                     Button { store.startProTrial() } label: {
                         Text(zh ? "开始 14 天免费试用" : "Start 14-day free trial")
-                            .font(Theme.title).foregroundStyle(Color.white)
+                            .font(Theme.title).foregroundStyle(Theme.onAccent)
                             .padding(Theme.grid * 2).frame(maxWidth: .infinity)
-                            .background(Theme.red)
+                            .background(Theme.accent)
                     }.buttonStyle(.plain).accessibilityIdentifier("pro-start-trial")
                 case .active(let end):
                     Text(verbatim: (zh ? "体验至 " : "Trial until ") + formatted(end))

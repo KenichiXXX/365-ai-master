@@ -16,7 +16,7 @@ struct VillageGrid: View {
                         .frame(maxWidth: .infinity, minHeight: 62)
                         .padding(Theme.grid)
                         .foregroundStyle(quest.status == "locked" ? Theme.secondary : Theme.ink)
-                        .background(quest.status == "passed" ? Theme.yellow : Theme.paper)
+                        .background(quest.status == "passed" ? Theme.accentSurface : Theme.paper)
                         .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius).stroke(quest.status == "current" ? Theme.ink : .clear, lineWidth: 2))
                         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
 

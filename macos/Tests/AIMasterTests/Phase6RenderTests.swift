@@ -83,7 +83,7 @@ extension RenderPreviewTests {
                 XCTAssertFalse(text.contains("体检"), "\(name): \(text)")
                 if ["me", "picks", "training"].contains(name) {
                     XCTAssertEqual(hosting.bounds.height, 720, name)
-                    let marker = name == "me" ? "LEVEL" : name == "picks" ? "PICK" : "TODAY"
+                    let marker = name == "me" ? (locale == "zh" ? "掌握度" : "mastery") : name == "picks" ? "PICK" : "TODAY"
                     XCTAssertTrue(text.contains(marker), "Tab content must render, not just its header: \(name): \(text)")
                     XCTAssertTrue(text.contains("PRO"), "Header: \(name): \(text)")
                     for title in locale == "zh" ? ["我", "大师推荐", "修炼"] : ["Me", "Master", "Training"] {

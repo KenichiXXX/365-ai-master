@@ -7,17 +7,23 @@ struct PopoverView: View {
 
     var body: some View {
         Group {
-            VStack(spacing: Theme.grid) {
+            VStack(spacing: Theme.sectionGap) {
                 HStack {
-                    Text("365 AI Master").font(Theme.title)
+                    HStack(spacing: 8) {
+                        Circle().fill(Theme.accent).frame(width: 9, height: 9)
+                        Text("365 AI Master").font(Theme.sectionTitle)
+                    }
                     Spacer()
                     Button("↻") { store.recheck() }
                         .accessibilityLabel((store.snapshot?.locale ?? store.locale) == "zh" ? "重新扫描" : "Refresh")
+                        .buttonStyle(.plain)
+                        .font(Theme.title).foregroundStyle(Theme.secondary)
                         .disabled(store.isRefreshing)
                     Button(Theme.proTitle(isPro: store.isPro)) { store.showProSettings = true }
-                        .font(Theme.label).tracking(2)
-                        .padding(Theme.grid)
-                        .foregroundStyle(Theme.fixedInk).background(Theme.yellow)
+                        .font(Theme.label)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .foregroundStyle(Theme.ink)
+                        .overlay(RoundedRectangle(cornerRadius: Theme.buttonRadius).strokeBorder(Theme.hairline, lineWidth: 1))
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("header-pro")
                 }
@@ -67,8 +73,10 @@ struct PopoverView: View {
                 }
             }
             .onAppear { store.resumeEntitlement() }
-            .padding(16)
+            .padding(Theme.pagePadding)
             .frame(width: 440, height: 720)
+            .background(MasterWindowBackground())
+            .clipShape(RoundedRectangle(cornerRadius: Theme.outerRadius))
             .sheet(isPresented: $store.showWeeklyReview) {
                 if let snapshot = store.snapshot, store.features.weeklyReview {
                     WeeklyReviewSheet(snapshot: snapshot)

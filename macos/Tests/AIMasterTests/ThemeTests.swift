@@ -18,21 +18,27 @@ final class ThemeTests: XCTestCase {
         return (max(a, b) + 0.05) / (min(a, b) + 0.05)
     }
 
+    func testWindowUsesNativePopoverMaterial() throws {
+        let hosting = NSHostingView(rootView: MasterWindowBackground().frame(width: 440, height: 720))
+        hosting.layoutSubtreeIfNeeded()
+        func findMaterial(_ view: NSView) -> NSVisualEffectView? {
+            if let effect = view as? NSVisualEffectView { return effect }
+            return view.subviews.lazy.compactMap { findMaterial($0) }.first
+        }
+        let material = try XCTUnwrap(findMaterial(hosting))
+        XCTAssertEqual(material.material, .popover)
+        XCTAssertEqual(material.blendingMode, .behindWindow)
+        XCTAssertEqual(material.state, .active)
+    }
+
     func testPaletteAndTextContrastInBothAppearances() throws {
         for scheme in [ColorScheme.light, .dark] {
             let background = try components(Theme.background(for: scheme))
             let foreground = try components(Theme.foreground(for: scheme))
-            let expected = scheme == .light ? [244.0, 240, 230] : [17.0, 17, 17]
+            let expected = scheme == .light ? [237.0, 242, 245] : [36.0, 46, 57]
             for (actual, byte) in zip(background, expected) { XCTAssertEqual(actual, byte / 255, accuracy: 0.001) }
             XCTAssertGreaterThanOrEqual(contrast(foreground, background), 4.5)
-            let secondary = zip(foreground, background).map { $0 * 0.6 + $1 * 0.4 }
-            XCTAssertGreaterThanOrEqual(contrast(secondary, background), 4.5)
         }
-        for (color, hex) in [(Theme.red, [215.0, 40, 47]), (Theme.blue, [31.0, 78, 158]),
-                             (Theme.yellow, [242.0, 194, 48])] {
-            for (actual, byte) in zip(try components(color), hex) { XCTAssertEqual(actual, byte / 255, accuracy: 0.001) }
-        }
-        XCTAssertGreaterThanOrEqual(contrast(try components(Theme.fixedInk), try components(Theme.yellow)), 4.5)
     }
 
     func testAdaptiveSecondaryActuallyRendersWithAccessibleContrast() throws {
@@ -53,7 +59,7 @@ final class ThemeTests: XCTestCase {
             }
             func rgb(_ x: Int, _ y: Int) -> [Double] {
                 let offset = (y * image.width + x) * 4
-                return pixels[offset..<(offset + 3)].map { Double($0) / 255 }
+                return pixels[offset..<(offset + 3)].map { Double($0) / max(1, Double(pixels[offset + 3])) }
             }
             let background = rgb(1, 1)
             for (actual, expected) in zip(background, try components(Theme.background(for: scheme))) {
@@ -83,7 +89,7 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(MasterTab.allCases.map { $0.title(locale: "zh") }, ["● 我", "■ 大师推荐", "▲ 修炼"])
         XCTAssertEqual(MasterTab.allCases.map { $0.title(locale: "en") }, ["● Me", "■ Master's picks", "▲ Training"])
         XCTAssertEqual(MasterTab.allCases.map(\.rawValue), [0, 1, 2])
-        XCTAssertEqual(Theme.proTitle(isPro: false), "PRO")
+        XCTAssertEqual(Theme.proTitle(isPro: false), "PRO ↗")
         XCTAssertEqual(Theme.proTitle(isPro: true), "PRO ✓")
     }
 
@@ -120,18 +126,22 @@ final class ThemeTests: XCTestCase {
         }
     }
 
-    func testThemePaintsOpaquePaperAndInkSurfaces() throws {
+    func testThemePreservesTranslucentWindowTint() throws {
         for scheme in [ColorScheme.light, .dark] {
-            let renderer = ImageRenderer(content: Text("LEVEL").font(Theme.label)
-                .padding(32).frame(width: 160, height: 80).bauhausTheme()
-                .environment(\.colorScheme, scheme))
+            let renderer = ImageRenderer(content: Rectangle().fill(Theme.background(for: scheme)).frame(width: 16, height: 16))
             renderer.scale = 1
-            let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
-            let pixel = try XCTUnwrap(bitmap.colorAt(x: 1, y: 1)?.usingColorSpace(.sRGB))
-            let expected = try components(Theme.background(for: scheme))
-            XCTAssertEqual(pixel.alphaComponent, 1, accuracy: 0.01)
-            for (actual, value) in zip([pixel.redComponent, pixel.greenComponent, pixel.blueComponent], expected) {
-                XCTAssertEqual(actual, value, accuracy: 0.02)
+            let image = try XCTUnwrap(renderer.cgImage)
+            var pixels = [UInt8](repeating: 0, count: 16 * 16 * 4)
+            try pixels.withUnsafeMutableBytes { bytes in
+                let context = try XCTUnwrap(CGContext(data: bytes.baseAddress, width: 16, height: 16,
+                    bitsPerComponent: 8, bytesPerRow: 64, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue))
+                context.draw(image, in: CGRect(x: 0, y: 0, width: 16, height: 16))
+            }
+            let alpha = Double(pixels[3]) / 255
+            XCTAssertEqual(alpha, scheme == .light ? 0.86 : 0.91, accuracy: 0.01)
+            for (actual, expected) in zip(pixels.prefix(3), try components(Theme.background(for: scheme))) {
+                XCTAssertEqual(Double(actual) / 255 / alpha, expected, accuracy: 0.01)
             }
         }
     }

@@ -1,37 +1,65 @@
 import SwiftUI
 
-/// The three-size, eight-point Bauhaus vocabulary shared by every app surface.
 enum Theme {
-    static let grid: CGFloat = 8
-    static let cornerRadius: CGFloat = 0
+    static let grid: CGFloat = 4
+    static let cornerRadius: CGFloat = 16
+    static let outerRadius: CGFloat = 22
+    static let listRadius: CGFloat = 12
+    static let buttonRadius: CGFloat = 9
+    static let pagePadding: CGFloat = 20
+    static let cardPadding: CGFloat = 16
+    static let sectionGap: CGFloat = 16
     static let ruleWidth: CGFloat = 1
-    static let fixedPaper = color(0xF4F0E6)
-    static let fixedInk = color(0x111111)
-    static let red = color(0xD7282F)
-    static let blue = color(0x1F4E9E)
-    static let yellow = color(0xF2C230)
+    static let feedbackDuration: Double = 0.14
 
-    static func background(for scheme: ColorScheme) -> Color { scheme == .dark ? fixedInk : fixedPaper }
-    static func foreground(for scheme: ColorScheme) -> Color { scheme == .dark ? fixedPaper : fixedInk }
-    static let paper = adaptive(light: 0xF4F0E6, dark: 0x111111)
-    static let ink = adaptive(light: 0x111111, dark: 0xF4F0E6)
-    static let secondary = ink.opacity(0.6)
+    static func background(for scheme: ColorScheme) -> Color {
+        color(scheme == .dark ? 0x242E39 : 0xEDF2F5).opacity(scheme == .dark ? 0.91 : 0.86)
+    }
+    static func foreground(for scheme: ColorScheme) -> Color { color(scheme == .dark ? 0xF0F4F8 : 0x1D2933) }
+    static let paper = adaptive(light: 0xEDF2F5, dark: 0x242E39, lightAlpha: 0.86, darkAlpha: 0.91)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x3A4858, lightAlpha: 0.67, darkAlpha: 0.69)
+    static let ink = adaptive(light: 0x1D2933, dark: 0xF0F4F8)
+    static let secondary = adaptive(light: 0x596773, dark: 0xB4C0CC)
+    static let hairline = adaptive(light: 0x41566C, dark: 0xC4D7EC, lightAlpha: 0.15, darkAlpha: 0.17)
+    static let accent = adaptive(light: 0x007F75, dark: 0x65DCC6)
+    static let accentSurface = accent.opacity(0.12)
+    static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x242E39)
 
-    static let body = Font.custom("PingFangSC-Regular", size: 16)
-    static let title = Font.custom("PingFangSC-Semibold", size: 16)
-    static let label = Font.system(size: 10, weight: .semibold)
-    static let score = Font.system(size: 48, weight: .heavy, design: .rounded)
-    static func proTitle(isPro: Bool) -> String { isPro ? "PRO ✓" : "PRO" }
+    static let body = Font.system(size: 13)
+    static let title = Font.system(size: 20, weight: .semibold)
+    static let sectionTitle = Font.system(size: 13, weight: .semibold)
+    static let label = Font.system(size: 11)
+    static let stat = Font.system(size: 40, weight: .medium)
+    static let score = Font.system(size: 64, weight: .medium)
+    static func proTitle(isPro: Bool) -> String { isPro ? "PRO ✓" : "PRO ↗" }
 
     private static func color(_ hex: Int) -> Color { Color(nsColor: nsColor(hex)) }
-    private static func nsColor(_ hex: Int) -> NSColor {
+    private static func nsColor(_ hex: Int, alpha: Double = 1) -> NSColor {
         NSColor(srgbRed: Double((hex >> 16) & 255) / 255,
-                green: Double((hex >> 8) & 255) / 255, blue: Double(hex & 255) / 255, alpha: 1)
+                green: Double((hex >> 8) & 255) / 255, blue: Double(hex & 255) / 255, alpha: alpha)
     }
-    private static func adaptive(light: Int, dark: Int) -> Color {
+    private static func adaptive(light: Int, dark: Int, lightAlpha: Double = 1, darkAlpha: Double = 1) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
-            nsColor(appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light)
+            let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            return nsColor(isDark ? dark : light, alpha: isDark ? darkAlpha : lightAlpha)
         })
+    }
+}
+
+struct WindowMaterial: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = .popover
+        view.blendingMode = .behindWindow
+        view.state = .active
+        return view
+    }
+    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
+}
+
+struct MasterWindowBackground: View {
+    var body: some View {
+        WindowMaterial().overlay(Theme.paper).allowsHitTesting(false)
     }
 }
 
@@ -49,103 +77,74 @@ enum MasterTab: Int, CaseIterable {
 struct MasterTabBar: View {
     @Binding var selection: Int
     let locale: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: Theme.grid * 3) {
+        HStack(spacing: 3) {
             ForEach(MasterTab.allCases, id: \.rawValue) { tab in
                 Button { selection = tab.rawValue } label: {
-                    Text(tab.title(locale: locale)).font(Theme.title)
+                    Text(tab.title(locale: locale)).font(Theme.body)
+                        .fontWeight(selection == tab.rawValue ? .semibold : .regular)
                         .foregroundStyle(selection == tab.rawValue ? Theme.ink : Theme.secondary)
-                        .padding(.vertical, Theme.grid)
-                        .overlay(alignment: .bottom) {
-                            Rectangle().fill(selection == tab.rawValue ? Theme.ink : .clear).frame(height: 2)
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity).frame(height: 32)
+                        .background {
+                            if selection == tab.rawValue {
+                                RoundedRectangle(cornerRadius: Theme.buttonRadius)
+                                    .fill(Theme.surface)
+                                    .shadow(color: Theme.ink.opacity(0.08), radius: 2, y: 1)
+                            }
                         }
                 }.buttonStyle(.plain)
                     .accessibilityAddTraits(selection == tab.rawValue ? .isSelected : [])
                     .accessibilityIdentifier("tab-\(tab.rawValue)")
             }
-            Spacer(minLength: 0)
-        }
+        }.padding(3).background(Theme.hairline, in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
+            .animation(reduceMotion ? nil : .easeInOut(duration: Theme.feedbackDuration), value: selection)
     }
 }
 
 struct ThemeLabel: View {
     let title: String
     init(_ title: String) { self.title = title }
-    var body: some View {
-        Text(title.uppercased()).font(Theme.label).tracking(2).foregroundStyle(Theme.ink)
-    }
+    var body: some View { Text(title).font(Theme.label).foregroundStyle(Theme.secondary) }
 }
 
-/// Direction is encoded by geometry; accompanying text keeps the high-contrast ink.
 struct TrendMarker: View {
     let delta: Double
     var body: some View {
-        if delta == 0 {
-            Text("=").font(Theme.label).foregroundStyle(Theme.secondary)
-        } else {
-            Triangle().fill(delta > 0 ? Theme.red : Theme.secondary)
-                .rotationEffect(.degrees(delta > 0 ? 0 : 180))
-                .frame(width: Theme.grid, height: Theme.grid)
-                .accessibilityLabel(delta > 0 ? "▲" : "▼")
-        }
-    }
-
-    private struct Triangle: Shape {
-        func path(in rect: CGRect) -> Path {
-            Path { path in
-                path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-                path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-                path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-                path.closeSubpath()
-            }
-        }
+        Text(delta == 0 ? "=" : delta > 0 ? "▲" : "▼")
+            .font(Theme.label).foregroundStyle(delta > 0 ? Theme.accent : Theme.secondary)
     }
 }
 
 struct ThemeRule: View {
-    var body: some View { Rectangle().fill(Theme.ink).frame(height: Theme.ruleWidth) }
+    var body: some View { Rectangle().fill(Theme.hairline).frame(height: Theme.ruleWidth) }
 }
 
-private struct BauhausSurface: ViewModifier {
-    @Environment(\.colorScheme) private var scheme
+private struct NativeSurface: ViewModifier {
     func body(content: Content) -> some View {
-        content.font(Theme.body).foregroundStyle(Theme.foreground(for: scheme))
-            .tint(Theme.foreground(for: scheme))
-            .buttonStyle(BauhausButtonStyle())
-            .progressViewStyle(BauhausProgressStyle())
-            .toggleStyle(BauhausToggleStyle())
+        content.font(Theme.body).foregroundStyle(Theme.ink).tint(Theme.accent)
+            .monospacedDigit()
+            .buttonStyle(ThemeButtonStyle())
+            .progressViewStyle(NativeProgressStyle())
+            .toggleStyle(.switch)
             .menuStyle(.borderlessButton)
-            .background(Theme.background(for: scheme))
     }
 }
 
-private struct BauhausButtonStyle: ButtonStyle {
+struct ThemeButtonStyle: ButtonStyle {
+    var primary = false
     @Environment(\.isEnabled) private var enabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(Theme.body).foregroundStyle(enabled ? Theme.ink : Theme.secondary)
-            .padding(Theme.grid)
-            .background(configuration.isPressed ? Theme.ink.opacity(0.1) : Theme.paper)
-            .overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
-    }
-}
-
-private struct BauhausToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Button { configuration.isOn.toggle() } label: {
-            HStack(spacing: Theme.grid) {
-                Rectangle().fill(configuration.isOn ? Theme.ink : Theme.paper)
-                    .frame(width: Theme.grid * 2, height: Theme.grid * 2)
-                    .overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
-                    .overlay {
-                        if configuration.isOn { Image(systemName: "checkmark").font(Theme.label).foregroundStyle(Theme.paper) }
-                    }
-                configuration.label
-            }.foregroundStyle(Theme.ink)
-        }.buttonStyle(.plain)
-            .accessibilityRepresentation {
-                Toggle(isOn: configuration.$isOn) { configuration.label }.toggleStyle(.checkbox)
-            }
+        configuration.label.font(Theme.body)
+            .foregroundStyle(primary ? Theme.onAccent : Theme.ink)
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(primary ? Theme.accent : Theme.surface,
+                        in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
+            .opacity(!enabled ? 0.5 : configuration.isPressed ? 0.8 : 1)
+            .animation(reduceMotion ? nil : .easeInOut(duration: Theme.feedbackDuration), value: configuration.isPressed)
     }
 }
 
@@ -175,17 +174,16 @@ struct ThemeMenu<Selection: Hashable>: View {
     }
 }
 
-private struct BauhausProgressStyle: ProgressViewStyle {
+private struct NativeProgressStyle: ProgressViewStyle {
     func makeBody(configuration: Configuration) -> some View {
         VStack(alignment: .leading, spacing: Theme.grid) {
             configuration.label
             if let fraction = configuration.fractionCompleted {
                 GeometryReader { proxy in
-                    Rectangle().fill(Theme.paper)
+                    Capsule().fill(Theme.hairline)
                         .overlay(alignment: .leading) {
-                            Rectangle().fill(Theme.blue).frame(width: proxy.size.width * min(1, max(0, fraction)))
+                            Capsule().fill(Theme.accent).frame(width: proxy.size.width * min(1, max(0, fraction)))
                         }
-                        .overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
                 }.frame(height: Theme.grid)
             } else {
                 Text("↻").accessibilityHidden(true)
@@ -195,8 +193,6 @@ private struct BauhausProgressStyle: ProgressViewStyle {
 }
 
 extension View {
-    func bauhausTheme() -> some View { modifier(BauhausSurface()) }
-    func bauhausPanel() -> some View {
-        background(Theme.paper).overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
-    }
+    func bauhausTheme() -> some View { modifier(NativeSurface()) }
+    func bauhausPanel() -> some View { background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius)) }
 }

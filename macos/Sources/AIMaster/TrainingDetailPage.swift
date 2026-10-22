@@ -78,7 +78,7 @@ struct TrainingDetailPage: View {
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
                                 Rectangle().fill(Theme.paper)
-                                Rectangle().fill(Theme.blue)
+                                Rectangle().fill(Theme.accent)
                                     .frame(width: geometry.size.width * min(1, max(0, Double(badge.have) / Double(max(1, badge.need)))))
                             }
                         }.frame(height: Theme.grid).overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))

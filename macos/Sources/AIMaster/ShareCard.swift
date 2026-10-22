@@ -134,8 +134,8 @@ struct ShareCardGraphic: View {
                 Text(shareCopy("Local practice record, not a certification of ability", locale))
                     .font(Theme.label).fixedSize(horizontal: false, vertical: true)
             }
-            .foregroundStyle(Theme.fixedInk)
-            .padding(Theme.grid * 2).frame(width: 560, alignment: .leading).background(Theme.fixedPaper)
+            .foregroundStyle(Theme.ink)
+            .padding(Theme.grid * 2).frame(width: 560, alignment: .leading).background(Theme.surface)
             .environment(\.colorScheme, .light)
             .environment(\.locale, Locale(identifier: locale))
         }.bauhausTheme()

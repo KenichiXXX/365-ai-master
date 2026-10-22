@@ -17,12 +17,12 @@ struct TrainingGameView: View {
             HStack(spacing: Theme.grid * 2) {
                 Button(action: openToday) {
                     ZStack {
-                        Circle().stroke(Theme.fixedPaper.opacity(0.3), lineWidth: Theme.grid)
+                        Circle().stroke(Theme.hairline, lineWidth: Theme.grid)
                         Circle().trim(from: 0, to: CGFloat(min(3, max(0, game.today.completed))) / 3)
-                            .stroke(Theme.yellow, style: StrokeStyle(lineWidth: Theme.grid, lineCap: .butt))
+                            .stroke(Theme.accent, style: StrokeStyle(lineWidth: Theme.grid, lineCap: .butt))
                             .rotationEffect(.degrees(-90))
                         Text("\(game.today.completed)/3").font(Theme.title).monospacedDigit()
-                            .foregroundStyle(Theme.yellow)
+                            .foregroundStyle(Theme.accent)
                     }.frame(width: Theme.grid * 9, height: Theme.grid * 9).padding(Theme.grid)
                 }.buttonStyle(.plain).accessibilityIdentifier("training-today")
                     .accessibilityLabel(zh ? "今日三件事" : "Today's 3")
@@ -32,18 +32,18 @@ struct TrainingGameView: View {
                     Text(zh ? "今日修炼" : "Today's training").font(Theme.title)
                     Text(zh ? "连签 \(game.streak) 天 · Lv.\(game.level)"
                          : "\(game.streak)-day streak · Lv.\(game.level)").font(Theme.body)
-                }.foregroundStyle(Theme.fixedPaper)
+                }.foregroundStyle(Theme.ink)
                 Spacer(minLength: 0)
             }.padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.fixedInk)
+                .background(Theme.surface)
             Button { store.checkIn() } label: {
                 Text(game.today.checkin ? (zh ? "已打卡 ✓ 明天见" : "Checked in ✓ See you tomorrow")
                      : (zh ? "打卡 +5 XP" : "Check in +5 XP"))
                     .font(Theme.title).scaleEffect(stampScale)
                     .frame(maxWidth: .infinity).padding(Theme.grid * 2)
-                    .foregroundStyle(game.today.checkin ? Theme.ink : Color.white)
-                    .background(game.today.checkin ? Theme.paper : Theme.red)
-                    .overlay(Rectangle().strokeBorder(game.today.checkin ? Theme.ink : Theme.red, lineWidth: Theme.ruleWidth))
+                    .foregroundStyle(game.today.checkin ? Theme.ink : Theme.onAccent)
+                    .background(game.today.checkin ? Theme.paper : Theme.accent)
+                    .overlay(Rectangle().strokeBorder(game.today.checkin ? Theme.ink : Theme.accent, lineWidth: Theme.ruleWidth))
             }.buttonStyle(.plain).disabled(game.today.checkin || store.isRefreshing)
                 .accessibilityIdentifier("training-checkin")
                 .onChange(of: game.today.checkin) { checkedIn in
@@ -178,7 +178,7 @@ struct TrainingGameDetailView: View {
                         if day.state == "shield" { Image(systemName: "shield.fill") }
                     }.font(Theme.body).frame(maxWidth: .infinity, minHeight: 24)
                         .foregroundStyle(Theme.ink)
-                        .background(day.state == "empty" ? Theme.paper : Theme.yellow)
+                        .background(day.state == "empty" ? Theme.paper : Theme.accentSurface)
                         .overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
                         .accessibilityLabel(day.date + ", " + (day.state == "stamp" ? (zh ? "已打卡" : "Checked in")
                             : day.state == "shield" ? (zh ? "保护卡" : "Shield") : (zh ? "未打卡" : "No check-in")))

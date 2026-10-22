@@ -61,9 +61,9 @@ struct RecheckScoreView: View {
                 VStack(spacing: Theme.grid) {
                     if let scan = store.recheckScan {
                         Circle().trim(from: 0, to: 0.7)
-                            .stroke(Theme.blue, style: StrokeStyle(lineWidth: 12, lineCap: .butt))
+                            .stroke(Theme.accent, style: StrokeStyle(lineWidth: 12, lineCap: .butt))
                             .frame(width: 125, height: 125)
-                            .rotationEffect(.degrees(reduceMotion ? -90 : context.date.timeIntervalSinceReferenceDate * 240))
+                            .rotationEffect(.degrees(-90))
                             .accessibilityLabel(snapshot.locale == "zh" ? "正在体检…" : "Checking…")
                         Text("Checking…", bundle: .module).font(Theme.label)
                         VStack(alignment: .leading, spacing: Theme.grid) {
@@ -75,14 +75,8 @@ struct RecheckScoreView: View {
                         }.font(Theme.body)
                         Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
                     } else {
-                        Circle().fill(Theme.blue).frame(width: 128, height: 128)
-                            .overlay {
-                                Text(ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
-                                    .value(at: context.date, reduceMotion: reduceMotion).map(String.init) ?? "—")
-                                    .font(Theme.score).foregroundStyle(.white).monospacedDigit()
-                            }
-                            .accessibilityLabel(snapshot.locale == "zh" ? "总分" : "Score")
-                            .accessibilityValue(snapshot.overall?.score.map(String.init) ?? "—")
+                        RingView(score: ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
+                            .value(at: context.date, reduceMotion: reduceMotion), size: 128)
                         if !settled, let change = store.scoreChange, change.isVisible(at: context.date) {
                             Text(change.caption(locale: snapshot.locale ?? store.locale))
                                 .font(Theme.body).foregroundStyle(Theme.secondary)
@@ -102,7 +96,7 @@ struct RecheckScoreView: View {
     }
 
     private var needsFrames: Bool {
-        if store.recheckScan != nil { return !reduceMotion }
+        if store.recheckScan != nil { return false }
         return store.recheckCompletedAt != nil && !settled
     }
 }
