@@ -42,7 +42,7 @@ final class BackgroundRefreshTests: XCTestCase {
         let (store, result) = try await makeStore()
         let before = try [1, 2].map { try render(store, tab: $0) }
         XCTAssertTrue(before[0].contains("PICK"), before[0])
-        XCTAssertTrue(before[1].contains("TODAY"), before[1])
+        XCTAssertTrue(before[1].contains("Today'straining"), before[1])
         let started = expectation(description: "timer started background refresh")
         let finished = expectation(description: "background loader finished")
         let gate = DispatchSemaphore(value: 0)

@@ -40,6 +40,7 @@ extension RenderPreviewTests {
         let request = VNRecognizeTextRequest()
         request.usesCPUOnly = true
         request.recognitionLevel = .accurate
+        request.minimumTextHeight = 0.005
         request.recognitionLanguages = ["zh-Hans", "en-US"]
         try VNImageRequestHandler(cgImage: image).perform([request])
         return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
@@ -83,7 +84,7 @@ extension RenderPreviewTests {
                 XCTAssertFalse(text.contains("体检"), "\(name): \(text)")
                 if ["me", "picks", "training"].contains(name) {
                     XCTAssertEqual(hosting.bounds.height, 720, name)
-                    let marker = name == "me" ? (locale == "zh" ? "掌握度" : "mastery") : name == "picks" ? "PICK" : "TODAY"
+                    let marker = name == "me" ? (locale == "zh" ? "掌握度" : "mastery") : name == "picks" ? (locale == "zh" ? "今日推荐" : "PICK") : (locale == "zh" ? "今日修炼" : "Today'straining")
                     XCTAssertTrue(text.contains(marker), "Tab content must render, not just its header: \(name): \(text)")
                     XCTAssertTrue(text.contains("PRO"), "Header: \(name): \(text)")
                     for title in locale == "zh" ? ["我", "大师推荐", "修炼"] : ["Me", "Master", "Training"] {

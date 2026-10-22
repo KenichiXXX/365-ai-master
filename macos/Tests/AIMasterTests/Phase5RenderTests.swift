@@ -28,6 +28,7 @@ extension RenderPreviewTests {
         let request = VNRecognizeTextRequest()
         request.usesCPUOnly = true
         request.recognitionLevel = .accurate
+        request.minimumTextHeight = 0.005 // Full-height lists still include caption-sized copy.
         request.recognitionLanguages = ["zh-Hans", "en-US"]
         try VNImageRequestHandler(cgImage: image).perform([request])
         return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
@@ -76,7 +77,7 @@ extension RenderPreviewTests {
                 } else if name == "checkup" {
                     XCTAssertFalse(normalized.contains("今天先改这一处"), text)
                 } else {
-                    XCTAssertTrue(normalized.contains("today'spick"), text)
+                    XCTAssertTrue(normalized.contains(locale == "zh" ? "今日推荐" : "today'spick"), text)
                     for word in ["adapter", "schema", "signals", "coverage", "兼容性未知", "API-equivalent"] {
                         XCTAssertFalse(normalized.contains(word.lowercased()), "\(name): \(word)\n\(text)")
                     }
