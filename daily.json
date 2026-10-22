@@ -1,7 +1,7 @@
 {
   "version": 1,
   "course_sources": [],
-  "updated_at": "2026-10-22",
+  "updated_at": "2026-10-23",
   "skills": [
     {
       "id": "rules_file",
@@ -12,8 +12,8 @@
         "en": "Write a CLAUDE.md"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "每次开工读懂项目",
+        "en": "Start with project context"
       },
       "prompt": {
         "zh": "请读一下这个项目，帮我写一份 60 行以内的 CLAUDE.md，写完给我看",
@@ -36,12 +36,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -63,8 +65,8 @@
         "en": "Let the AI search the web"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "找到资料和出处",
+        "en": "Find sources for an answer"
       },
       "prompt": {
         "zh": "请先联网搜索这个问题的最新资料，再给我结论和出处：[你的问题]",
@@ -81,12 +83,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -108,8 +112,8 @@
         "en": "Have the AI read a page"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "读懂网页要点",
+        "en": "Read key points from a page"
       },
       "prompt": {
         "zh": "请读这个网页并用 5 条要点总结：[链接]",
@@ -126,12 +130,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -149,12 +155,12 @@
       "level": 2,
       "detect": "tool:ExitPlanMode",
       "title": {
-        "zh": "Plan 模式：先出方案再动手",
-        "en": "Plan mode: plan before acting"
+        "zh": "先开 Plan 模式",
+        "en": "Plan before acting"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "先看方案再决定",
+        "en": "Review a plan before acting"
       },
       "prompt": {
         "zh": "进入 Plan 模式（Shift+Tab 切换），先给我方案，不要改文件：[你的任务]",
@@ -171,12 +177,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -198,8 +206,8 @@
         "en": "Let the AI keep a to-do list"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "按清单推进任务",
+        "en": "Keep track of task progress"
       },
       "prompt": {
         "zh": "请先把这个任务拆成一个待办清单，再一项项完成：[你的任务]",
@@ -216,12 +224,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -243,8 +253,8 @@
         "en": "Let the AI ask first"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "先问清楚再动手",
+        "en": "Clarify before acting"
       },
       "prompt": {
         "zh": "开始之前，如果有任何不确定的地方，先用选择题问我",
@@ -261,12 +271,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -284,12 +296,12 @@
       "level": 3,
       "detect": "sidechain",
       "title": {
-        "zh": "子代理：同时开几条线",
-        "en": "Sub-agents: work in parallel"
+        "zh": "让子代理并行干活",
+        "en": "Run sub-agents in parallel"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "独立任务同时推进",
+        "en": "Run independent tasks together"
       },
       "prompt": {
         "zh": "请用子代理并行完成：A 梳理目录结构，B 找出所有 TODO，最后汇总给我",
@@ -312,12 +324,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -339,8 +353,8 @@
         "en": "Give chores to a light model"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "简单活少用额度",
+        "en": "Use less quota on simple tasks"
       },
       "prompt": {
         "zh": "这个任务是机械性的，请用最轻量的模型完成；如果当前不是，告诉我怎么用 /model 切换",
@@ -363,12 +377,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -386,12 +402,12 @@
       "level": 2,
       "detect": "effort:high|xhigh|max",
       "title": {
-        "zh": "难题调高推理强度",
-        "en": "Raise reasoning effort for hard problems"
+        "zh": "调高推理强度",
+        "en": "Raise reasoning effort"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "给难题多些思考",
+        "en": "Think harder on difficult tasks"
       },
       "prompt": {
         "zh": "这个问题比较难，请用更高的推理强度仔细想清楚再回答：[你的问题]",
@@ -414,12 +430,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -441,8 +459,8 @@
         "en": "Use your first skill"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "常干的活一句话调用",
+        "en": "Reuse a routine with one command"
       },
       "prompt": {
         "zh": "请列出我装了哪些 skill，挑一个最适合这个项目的，用它完成一个小任务",
@@ -459,12 +477,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -486,8 +506,8 @@
         "en": "Connect tools with MCP"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "连接所需工具",
+        "en": "Connect a tool you need"
       },
       "prompt": {
         "zh": "请告诉我我已经连了哪些 MCP 工具，并用其中一个帮我完成一件小事",
@@ -504,12 +524,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -527,12 +549,12 @@
       "level": 3,
       "detect": "hook",
       "title": {
-        "zh": "Hook：让固定动作自动发生",
-        "en": "Hooks: automate the routine"
+        "zh": "配置自动检查",
+        "en": "Automate a routine check"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "自动完成固定动作",
+        "en": "Automate a repeated step"
       },
       "prompt": {
         "zh": "请帮我配置一个 hook：每次改完文件自动运行测试。先告诉我要改什么，我确认后再写",
@@ -549,12 +571,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -576,8 +600,8 @@
         "en": "Compact long chats"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "保留要点再继续",
+        "en": "Keep key points before continuing"
       },
       "prompt": {
         "zh": "请用 /compact 压缩当前对话，只保留结论和待办",
@@ -600,12 +624,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -627,8 +653,8 @@
         "en": "Parallel work with worktrees"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "多条任务互不干扰",
+        "en": "Keep parallel edits separate"
       },
       "prompt": {
         "zh": "请在一个新的 git worktree 里完成这个改动，别动我当前的工作区：[你的任务]",
@@ -645,12 +671,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -672,8 +700,8 @@
         "en": "Write an AGENTS.md for Codex"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "让 Codex 读懂规则",
+        "en": "Give Codex project rules"
       },
       "prompt": {
         "zh": "请读一下这个项目，帮我写一份 AGENTS.md，控制在 60 行以内",
@@ -696,12 +724,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -723,8 +753,8 @@
         "en": "Generate a brief with /init"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "快速生成项目说明",
+        "en": "Draft a project brief"
       },
       "prompt": {
         "zh": "在这个项目里运行 /init，然后把生成的 CLAUDE.md 给我看",
@@ -747,12 +777,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -770,12 +802,12 @@
       "level": 1,
       "detect": "self",
       "title": {
-        "zh": "一个任务一个会话",
-        "en": "One task per session"
+        "zh": "开启新会话",
+        "en": "Start a fresh chat"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "新任务不带旧包袱",
+        "en": "Start each task with fresh context"
       },
       "prompt": {
         "zh": "（换新任务前输入 /clear）",
@@ -798,12 +830,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -825,8 +859,8 @@
         "en": "Pick up where you left off"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "接着已有进度做",
+        "en": "Continue an earlier session"
       },
       "prompt": {
         "zh": "（在终端输入 claude --resume，选择要继续的会话）",
@@ -849,12 +883,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -876,8 +912,8 @@
         "en": "Reference files with @"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "只提供相关文件",
+        "en": "Point AI to relevant files"
       },
       "prompt": {
         "zh": "请看一下 @README.md，告诉我这个项目缺什么",
@@ -900,12 +936,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -927,8 +965,8 @@
         "en": "Paste a screenshot"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "让 AI 看懂截图",
+        "en": "Show AI a screenshot"
       },
       "prompt": {
         "zh": "（把截图粘贴进对话）请看这张图，告诉我问题出在哪",
@@ -951,12 +989,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -974,12 +1014,12 @@
       "level": 3,
       "detect": "self",
       "title": {
-        "zh": "非交互模式跑批量活",
-        "en": "Headless mode for batch jobs"
+        "zh": "批量执行任务",
+        "en": "Run a batch task"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "批量处理重复任务",
+        "en": "Batch repeated tasks"
       },
       "prompt": {
         "zh": "（在终端试：claude -p \"用三句话总结这个项目\"）",
@@ -1002,12 +1042,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -1025,12 +1067,12 @@
       "level": 3,
       "detect": "self",
       "title": {
-        "zh": "自定义斜杠命令",
-        "en": "Custom slash commands"
+        "zh": "添加常用斜杠命令",
+        "en": "Add a custom slash command"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "一句话调用常用操作",
+        "en": "Reuse a common command"
       },
       "prompt": {
         "zh": "请帮我把\"检查代码风格并修复\"做成一个自定义斜杠命令",
@@ -1053,12 +1095,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -1080,8 +1124,8 @@
         "en": "Have the AI review its own diff"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "发现改动里的问题",
+        "en": "Review changes for mistakes"
       },
       "prompt": {
         "zh": "请检查你刚才的改动：列出可能的问题和遗漏，先别继续改",
@@ -1104,12 +1148,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -1131,8 +1177,8 @@
         "en": "Set up permissions"
       },
       "why": {
-        "zh": "在适合的任务中尝试这项能力，再检查是否出现对应的新记录。",
-        "en": "Try this capability in a suitable task, then check for a corresponding new record."
+        "zh": "按需开放工具权限",
+        "en": "Choose which actions to allow"
       },
       "prompt": {
         "zh": "请帮我看看哪些常用命令可以安全地加入免确认列表，先列出来不要改",
@@ -1155,12 +1201,14 @@
       },
       "steps": {
         "zh": [
-          "在适合的任务中阅读并使用下面的指令。",
-          "完成后检查新记录；没有记录时只能自报尝试。"
+          "复制指令",
+          "在合适任务中试用",
+          "检查新记录"
         ],
         "en": [
-          "Read and use the prompt in a suitable task.",
-          "Check new records afterwards; without coverage, report only a personal attempt."
+          "Copy the prompt",
+          "Try it on a suitable task",
+          "Check for new records"
         ]
       },
       "expected_signal": {
@@ -1177,18 +1225,18 @@
   "rankings": {
     "skill": [
       {
-        "name": "wheresryan22/anatomy",
-        "url": "https://github.com/wheresryan22/anatomy",
+        "name": "DietrichGebert/ponytail",
+        "url": "https://github.com/DietrichGebert/ponytail",
         "tagline": {
-          "en": "Transforms technical concepts into detailed, interactive isometric SVG illustrations.",
-          "zh": "将技术概念转化为细致、可交互的等距 SVG 插图。"
+          "en": "A quality audit framework for identifying technical debt and repository vulnerabilities",
+          "zh": "A quality audit framework for identifying technical debt and repository vulnerabilities"
         },
         "match": [
-          "anatomy"
+          "ponytail"
         ],
-        "stars": 18031,
-        "stars7d": 8990,
-        "source_url": "https://github.com/wheresryan22/anatomy",
+        "stars": 172547,
+        "stars7d": 8548,
+        "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1203,36 +1251,14 @@
         "url": "https://github.com/mattpocock/skills",
         "tagline": {
           "en": "A library of structured engineering flows for codebase design and technical diagnosis",
-          "zh": "用于代码库设计与技术诊断的结构化工程流程库"
+          "zh": "A library of structured engineering flows for codebase design and technical diagnosis"
         },
         "match": [
           "skills"
         ],
-        "stars": 299261,
-        "stars7d": 8787,
+        "stars": 300384,
+        "stars7d": 8320,
         "source_url": "https://github.com/mattpocock/skills",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "DietrichGebert/ponytail",
-        "url": "https://github.com/DietrichGebert/ponytail",
-        "tagline": {
-          "en": "A quality audit framework for identifying technical debt and repository vulnerabilities",
-          "zh": "用于识别技术债务和代码仓库漏洞的质量审计框架"
-        },
-        "match": [
-          "ponytail"
-        ],
-        "stars": 170650,
-        "stars7d": 7505,
-        "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1247,13 +1273,13 @@
         "url": "https://github.com/cloudflare/security-audit-skill",
         "tagline": {
           "en": "Automated vulnerability research and security reviews for codebases, APIs, and system services",
-          "zh": "面向代码库、API 和系统服务的自动化漏洞研究与安全审查"
+          "zh": "Automated vulnerability research and security reviews for codebases, APIs, and system services"
         },
         "match": [
           "security-audit-skill"
         ],
-        "stars": 35036,
-        "stars7d": 5600,
+        "stars": 38028,
+        "stars7d": 8297,
         "source_url": "https://github.com/cloudflare/security-audit-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1265,18 +1291,18 @@
         }
       },
       {
-        "name": "K-Dense-AI/scientific-agent-skills",
-        "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "name": "wheresryan22/anatomy",
+        "url": "https://github.com/wheresryan22/anatomy",
         "tagline": {
-          "en": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs",
-          "zh": "通过云实验室 API 自动设计并监控蛋白质表征实验"
+          "en": "Transforms technical concepts into detailed, interactive isometric SVG illustrations.",
+          "zh": "Transforms technical concepts into detailed, interactive isometric SVG illustrations."
         },
         "match": [
-          "scientific-agent-skills"
+          "anatomy"
         ],
-        "stars": 53446,
-        "stars7d": 4600,
-        "source_url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "stars": 18851,
+        "stars7d": 6907,
+        "source_url": "https://github.com/wheresryan22/anatomy",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1291,36 +1317,14 @@
         "url": "https://github.com/Graphify-Labs/graphify",
         "tagline": {
           "en": "Transforms codebases and documentation into a persistent, queryable knowledge graph.",
-          "zh": "将代码库和文档转化为可持久保存、可查询的知识图谱。"
+          "zh": "Transforms codebases and documentation into a persistent, queryable knowledge graph."
         },
         "match": [
           "graphify"
         ],
-        "stars": 130880,
-        "stars7d": 4562,
+        "stars": 132263,
+        "stars7d": 5559,
         "source_url": "https://github.com/Graphify-Labs/graphify",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "Leonxlnx/taste-skill",
-        "url": "https://github.com/Leonxlnx/taste-skill",
-        "tagline": {
-          "en": "A system for generating high-end brand guidelines and visual identity decks.",
-          "zh": "用于生成高端品牌规范与视觉识别提案的系统。"
-        },
-        "match": [
-          "taste-skill"
-        ],
-        "stars": 100185,
-        "stars7d": 4312,
-        "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1335,13 +1339,13 @@
         "url": "https://github.com/cathrynlavery/diagram-design",
         "tagline": {
           "en": "A comprehensive system for generating branded technical architecture and data flow diagrams.",
-          "zh": "用于生成带品牌风格的技术架构图与数据流图的综合系统。"
+          "zh": "A comprehensive system for generating branded technical architecture and data flow diagrams."
         },
         "match": [
           "diagram-design"
         ],
-        "stars": 59277,
-        "stars7d": 4298,
+        "stars": 59814,
+        "stars7d": 4169,
         "source_url": "https://github.com/cathrynlavery/diagram-design",
         "source_date": null,
         "source_type": "catalog",
@@ -1356,15 +1360,59 @@
         "name": "obra/superpowers",
         "url": "https://github.com/obra/superpowers",
         "tagline": {
-          "en": "An agentic skills framework for structuring the software development lifecycle",
-          "zh": "用于组织软件开发生命周期的智能体技能框架。"
+          "en": "A framework for orchestrating parallel agents and structured planning in software development",
+          "zh": "A framework for orchestrating parallel agents and structured planning in software development"
         },
         "match": [
           "superpowers"
         ],
-        "stars": 302859,
-        "stars7d": 3955,
+        "stars": 303398,
+        "stars7d": 3960,
         "source_url": "https://github.com/obra/superpowers",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "A system for generating high-end brand guidelines and visual identity decks.",
+          "zh": "A system for generating high-end brand guidelines and visual identity decks."
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 100839,
+        "stars7d": 3917,
+        "source_url": "https://github.com/Leonxlnx/taste-skill",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "K-Dense-AI/scientific-agent-skills",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "tagline": {
+          "en": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs",
+          "zh": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs"
+        },
+        "match": [
+          "scientific-agent-skills"
+        ],
+        "stars": 53765,
+        "stars7d": 3837,
+        "source_url": "https://github.com/K-Dense-AI/scientific-agent-skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1379,58 +1427,14 @@
         "url": "https://github.com/pbakaus/impeccable",
         "tagline": {
           "en": "Turns standard frontend interfaces into high-fidelity, production-grade design craft.",
-          "zh": "将标准前端界面打磨为高保真、可用于生产的设计品质。"
+          "zh": "Turns standard frontend interfaces into high-fidelity, production-grade design craft."
         },
         "match": [
           "impeccable"
         ],
-        "stars": 84141,
-        "stars7d": 3154,
+        "stars": 84715,
+        "stars7d": 3296,
         "source_url": "https://github.com/pbakaus/impeccable",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "addyosmani/agent-skills",
-        "url": "https://github.com/addyosmani/agent-skills",
-        "tagline": {
-          "en": "A library of production-grade engineering capabilities for AI coding agents",
-          "zh": "面向 AI 编程智能体的生产级工程能力库。"
-        },
-        "match": [
-          "agent-skills"
-        ],
-        "stars": 109139,
-        "stars7d": 2691,
-        "source_url": "https://github.com/addyosmani/agent-skills",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "nextlevelbuilder/ui-ux-pro-max-skill",
-        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-        "tagline": {
-          "en": "A systematic approach to creating multi-platform creative assets and digital banners.",
-          "zh": "一套系统化的方法，用于制作多平台创意素材与数字横幅。"
-        },
-        "match": [
-          "ui-ux-pro-max-skill"
-        ],
-        "stars": 138228,
-        "stars7d": 2541,
-        "source_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1445,13 +1449,13 @@
         "url": "https://github.com/lemomo-ai/lemo-opuscar",
         "tagline": {
           "en": "Directs and produces short films generated entirely through code-based animation.",
-          "zh": "导演并制作完全由代码动画生成的短片。"
+          "zh": "Directs and produces short films generated entirely through code-based animation."
         },
         "match": [
           "lemo-opuscar"
         ],
-        "stars": 4661,
-        "stars7d": 2391,
+        "stars": 5194,
+        "stars7d": 2782,
         "source_url": "https://github.com/lemomo-ai/lemo-opuscar",
         "source_date": null,
         "source_type": "catalog",
@@ -1463,18 +1467,40 @@
         }
       },
       {
-        "name": "JuliusBrussee/caveman",
-        "url": "https://github.com/JuliusBrussee/caveman",
+        "name": "nextlevelbuilder/ui-ux-pro-max-skill",
+        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "tagline": {
-          "en": "Reduces token consumption for coding agents through compressed communication and specialized roles.",
-          "zh": "通过压缩通信与专业角色分工，降低编程智能体的 token 消耗。"
+          "en": "A systematic approach to creating multi-platform creative assets and digital banners.",
+          "zh": "A systematic approach to creating multi-platform creative assets and digital banners."
         },
         "match": [
-          "caveman"
+          "ui-ux-pro-max-skill"
         ],
-        "stars": 113991,
-        "stars7d": 2339,
-        "source_url": "https://github.com/JuliusBrussee/caveman",
+        "stars": 138746,
+        "stars7d": 2700,
+        "source_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "addyosmani/agent-skills",
+        "url": "https://github.com/addyosmani/agent-skills",
+        "tagline": {
+          "en": "A library of production-grade engineering capabilities for AI coding agents",
+          "zh": "A library of production-grade engineering capabilities for AI coding agents"
+        },
+        "match": [
+          "agent-skills"
+        ],
+        "stars": 109473,
+        "stars7d": 2626,
+        "source_url": "https://github.com/addyosmani/agent-skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1489,36 +1515,14 @@
         "url": "https://github.com/blader/humanizer",
         "tagline": {
           "en": "Removes the structural patterns and predictable phrasing of AI-generated prose.",
-          "zh": "去除 AI 生成文本的结构性模式与可预测的措辞。"
+          "zh": "Removes the structural patterns and predictable phrasing of AI-generated prose."
         },
         "match": [
           "humanizer"
         ],
-        "stars": 59100,
-        "stars7d": 2329,
+        "stars": 59482,
+        "stars7d": 2355,
         "source_url": "https://github.com/blader/humanizer",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "emilkowalski/skills",
-        "url": "https://github.com/emilkowalski/skills",
-        "tagline": {
-          "en": "A framework for building fluid mobile animations and gestures in React Native and Expo",
-          "zh": "用于在 React Native 和 Expo 中构建流畅移动端动画与手势的框架。"
-        },
-        "match": [
-          "skills"
-        ],
-        "stars": 48196,
-        "stars7d": 2085,
-        "source_url": "https://github.com/emilkowalski/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1533,14 +1537,58 @@
         "url": "https://github.com/multica-ai/andrej-karpathy-skills",
         "tagline": {
           "en": "Practical coding guardrails for simpler, surgical AI-assisted changes",
-          "zh": "为更简洁、精准的 AI 辅助代码修改提供实用的编码护栏。"
+          "zh": "Practical coding guardrails for simpler, surgical AI-assisted changes"
         },
         "match": [
           "andrej-karpathy-skills"
         ],
-        "stars": 221693,
-        "stars7d": 2054,
+        "stars": 222209,
+        "stars7d": 2259,
         "source_url": "https://github.com/multica-ai/andrej-karpathy-skills",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "JuliusBrussee/caveman",
+        "url": "https://github.com/JuliusBrussee/caveman",
+        "tagline": {
+          "en": "Reduces token consumption for coding agents through compressed communication and specialized roles.",
+          "zh": "Reduces token consumption for coding agents through compressed communication and specialized roles."
+        },
+        "match": [
+          "caveman"
+        ],
+        "stars": 114270,
+        "stars7d": 2205,
+        "source_url": "https://github.com/JuliusBrussee/caveman",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "emilkowalski/skills",
+        "url": "https://github.com/emilkowalski/skills",
+        "tagline": {
+          "en": "A framework for building fluid mobile animations and gestures in React Native and Expo",
+          "zh": "A framework for building fluid mobile animations and gestures in React Native and Expo"
+        },
+        "match": [
+          "skills"
+        ],
+        "stars": 48567,
+        "stars7d": 2194,
+        "source_url": "https://github.com/emilkowalski/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1555,14 +1603,36 @@
         "url": "https://github.com/earthtojake/text-to-cad",
         "tagline": {
           "en": "Translates natural language into parametric CAD models and 3D printing workflows",
-          "zh": "将自然语言转化为参数化 CAD 模型与 3D 打印流程。"
+          "zh": "Translates natural language into parametric CAD models and 3D printing workflows"
         },
         "match": [
           "text-to-cad"
         ],
-        "stars": 22137,
-        "stars7d": 1964,
+        "stars": 22444,
+        "stars7d": 1888,
         "source_url": "https://github.com/earthtojake/text-to-cad",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Jakeschincariol/replica-skill",
+        "url": "https://github.com/Jakeschincariol/replica-skill",
+        "tagline": {
+          "en": "A systematic pipeline for reverse-engineering and launching software clones",
+          "zh": "A systematic pipeline for reverse-engineering and launching software clones"
+        },
+        "match": [
+          "replica-skill"
+        ],
+        "stars": 4333,
+        "stars7d": 1655,
+        "source_url": "https://github.com/Jakeschincariol/replica-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1577,39 +1647,17 @@
         "url": "https://github.com/anthropics/skills",
         "tagline": {
           "en": "A collection of specialized capabilities for extending the functionality of LLM agents.",
-          "zh": "一组用于扩展大语言模型智能体功能的专用能力。"
+          "zh": "A collection of specialized capabilities for extending the functionality of LLM agents."
         },
         "match": [
           "skills"
         ],
-        "stars": 182626,
-        "stars7d": 1585,
+        "stars": 182888,
+        "stars7d": 1616,
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": "skills",
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "latent-spaces/brag",
-        "url": "https://github.com/latent-spaces/brag",
-        "tagline": {
-          "en": "Transforms project directories and website URLs into shareable launch videos.",
-          "zh": "将项目目录和网站 URL 转化为可分享的发布视频。"
-        },
-        "match": [
-          "brag"
-        ],
-        "stars": 17252,
-        "stars7d": 1424,
-        "source_url": "https://github.com/latent-spaces/brag",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1623,12 +1671,12 @@
         "url": "https://github.com/morluto/rea",
         "tagline": {
           "en": "Reverse engineer anything with agents, from app behavior down to native binaries.",
-          "zh": "借助智能体对任何对象进行逆向工程，从应用行为一直到原生二进制文件。"
+          "zh": "Reverse engineer anything with agents, from app behavior down to native binaries."
         },
         "match": [
           "rea"
         ],
-        "stars": 361588,
+        "stars": 365790,
         "stars7d": null,
         "source_url": "https://github.com/morluto/rea",
         "source_date": null,
@@ -1645,12 +1693,12 @@
         "url": "https://github.com/affaan-m/ECC",
         "tagline": {
           "en": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
-          "zh": "智能体运行框架的性能优化系统，为 Claude Code、Codex、Opencode、Cursor 等提供技能、本能机制、记忆、安全及调研优先的开发能力。"
+          "zh": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond."
         },
         "match": [
           "ecc"
         ],
-        "stars": 286025,
+        "stars": 286473,
         "stars7d": null,
         "source_url": "https://github.com/affaan-m/ECC",
         "source_date": null,
@@ -1667,12 +1715,12 @@
         "url": "https://github.com/deepseek-ai/deepseek-harness",
         "tagline": {
           "en": "DeepSeek Harness: Everything is a Plugin.",
-          "zh": "DeepSeek Harness：一切皆插件。"
+          "zh": "DeepSeek Harness: Everything is a Plugin."
         },
         "match": [
           "deepseek-harness"
         ],
-        "stars": 257654,
+        "stars": 258133,
         "stars7d": null,
         "source_url": "https://github.com/deepseek-ai/deepseek-harness",
         "source_date": null,
@@ -1689,12 +1737,12 @@
         "url": "https://github.com/NousResearch/hermes-agent",
         "tagline": {
           "en": "The agent that grows with you",
-          "zh": "与你共同成长的智能体。"
+          "zh": "The agent that grows with you"
         },
         "match": [
           "hermes-agent"
         ],
-        "stars": 256096,
+        "stars": 256226,
         "stars7d": null,
         "source_url": "https://github.com/NousResearch/hermes-agent",
         "source_date": null,
@@ -1711,12 +1759,12 @@
         "url": "https://github.com/firecrawl/firecrawl",
         "tagline": {
           "en": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥",
-          "zh": "用来自网络及更广范围的数据为你的 AI 智能体赋能。正在构建超级智能的数据库。🔥"
+          "zh": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥"
         },
         "match": [
           "firecrawl"
         ],
-        "stars": 194060,
+        "stars": 194277,
         "stars7d": null,
         "source_url": "https://github.com/firecrawl/firecrawl",
         "source_date": null,
@@ -1733,12 +1781,12 @@
         "url": "https://github.com/DietrichGebert/ponytail",
         "tagline": {
           "en": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
-          "zh": "让你的 AI 智能体像房间里最懒的资深开发者那样思考。最好的代码，是你从未写过的代码。"
+          "zh": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote."
         },
         "match": [
           "ponytail"
         ],
-        "stars": 172449,
+        "stars": 173348,
         "stars7d": null,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
@@ -1755,12 +1803,12 @@
         "url": "https://github.com/langchain-ai/langchain",
         "tagline": {
           "en": "The agent engineering platform.",
-          "zh": "智能体工程平台。"
+          "zh": "The agent engineering platform."
         },
         "match": [
           "langchain"
         ],
-        "stars": 148256,
+        "stars": 148290,
         "stars7d": null,
         "source_url": "https://github.com/langchain-ai/langchain",
         "source_date": null,
@@ -1777,12 +1825,12 @@
         "url": "https://github.com/Graphify-Labs/graphify",
         "tagline": {
           "en": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store.",
-          "zh": "将任意代码库（包括其文档、SQL schema、配置与 PDF）转化为可查询的知识图谱。这是面向 Claude Code、Cursor、Codex 和 Gemini CLI 的 /graphify 技能：本地确定性 AST 解析，每条边都有说明，无需向量存储。"
+          "zh": "Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store."
         },
         "match": [
           "graphify"
         ],
-        "stars": 132184,
+        "stars": 132870,
         "stars7d": null,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
@@ -1799,12 +1847,12 @@
         "url": "https://github.com/browser-use/browser-use",
         "tagline": {
           "en": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API.",
-          "zh": "面向 AI 浏览器智能体的开源 Python 库，另提供 Browser Use Cloud：隐身浏览器与托管式智能体 API。"
+          "zh": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API."
         },
         "match": [
           "browser-use"
         ],
-        "stars": 118835,
+        "stars": 118886,
         "stars7d": null,
         "source_url": "https://github.com/browser-use/browser-use",
         "source_date": null,
@@ -1821,12 +1869,12 @@
         "url": "https://github.com/google-gemini/gemini-cli",
         "tagline": {
           "en": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
-          "zh": "一个开源 AI 智能体，将 Gemini 的能力直接带入你的终端。"
+          "zh": "An open-source AI agent that brings the power of Gemini directly into your terminal."
         },
         "match": [
           "gemini-cli"
         ],
-        "stars": 107502,
+        "stars": 107523,
         "stars7d": null,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
@@ -1843,36 +1891,14 @@
         "url": "https://github.com/paperclipai/paperclip",
         "tagline": {
           "en": "The open-source app everyone uses to manage agents at work",
-          "zh": "人人都在用、用于在工作中管理智能体的开源应用。"
+          "zh": "The open-source app everyone uses to manage agents at work"
         },
         "match": [
           "paperclip"
         ],
-        "stars": 105898,
+        "stars": 106134,
         "stars7d": null,
         "source_url": "https://github.com/paperclipai/paperclip",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "thedotmack/claude-mem",
-        "url": "https://github.com/thedotmack/claude-mem",
-        "tagline": {
-          "en": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
-          "zh": "为每个智能体提供跨会话的持久上下文：记录智能体在会话中的全部操作，用 AI 压缩后，把相关上下文注入后续会话。兼容 Claude Code、OpenClaw、Codex、Gemini、Hermes、Copilot、OpenCode 等。"
-        },
-        "match": [
-          "claude-mem"
-        ],
-        "stars": 102226,
-        "stars7d": null,
-        "source_url": "https://github.com/thedotmack/claude-mem",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1887,12 +1913,12 @@
         "url": "https://github.com/stablyai/orca",
         "tagline": {
           "en": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
-          "zh": "Orca 是管理一批智能体（如 Grok Bot、Claude Code）的平台。可用你自己的订阅运行任意编程智能体。支持桌面端、移动端及远程运行时。"
+          "zh": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime."
         },
         "match": [
           "orca"
         ],
-        "stars": 102030,
+        "stars": 102695,
         "stars7d": null,
         "source_url": "https://github.com/stablyai/orca",
         "source_date": null,
@@ -1905,18 +1931,18 @@
         }
       },
       {
-        "name": "Panniantong/Agent-Reach",
-        "url": "https://github.com/Panniantong/Agent-Reach",
+        "name": "thedotmack/claude-mem",
+        "url": "https://github.com/thedotmack/claude-mem",
         "tagline": {
-          "en": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
-          "zh": "让你的 AI 智能体看见整个互联网。一个 CLI 即可读取与搜索 Twitter、Reddit、YouTube、GitHub、哔哩哔哩、小红书，无需支付 API 费用。"
+          "en": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
+          "zh": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More"
         },
         "match": [
-          "agent-reach"
+          "claude-mem"
         ],
-        "stars": 100810,
+        "stars": 102329,
         "stars7d": null,
-        "source_url": "https://github.com/Panniantong/Agent-Reach",
+        "source_url": "https://github.com/thedotmack/claude-mem",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1931,14 +1957,36 @@
         "url": "https://github.com/Leonxlnx/taste-skill",
         "tagline": {
           "en": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages",
-          "zh": "让编程智能体具备审美的技能包：通过艺术指导、参考图和浏览器检查，替代千篇一律的 AI 页面。"
+          "zh": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages"
         },
         "match": [
           "taste-skill"
         ],
-        "stars": 100809,
+        "stars": 101102,
         "stars7d": null,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Panniantong/Agent-Reach",
+        "url": "https://github.com/Panniantong/Agent-Reach",
+        "tagline": {
+          "en": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
+          "zh": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees."
+        },
+        "match": [
+          "agent-reach"
+        ],
+        "stars": 101008,
+        "stars7d": null,
+        "source_url": "https://github.com/Panniantong/Agent-Reach",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1953,12 +2001,12 @@
         "url": "https://github.com/infiniflow/ragflow",
         "tagline": {
           "en": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs",
-          "zh": "RAGFlow 是领先的开源检索增强生成（RAG）引擎，将前沿 RAG 与智能体能力融合，为大语言模型打造更优的上下文层。"
+          "zh": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs"
         },
         "match": [
           "ragflow"
         ],
-        "stars": 92646,
+        "stars": 92670,
         "stars7d": null,
         "source_url": "https://github.com/infiniflow/ragflow",
         "source_date": null,
@@ -1975,12 +2023,12 @@
         "url": "https://github.com/tt-a1i/archify",
         "tagline": {
           "en": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
-          "zh": "将任何想法、计划或代码库转化为精美的交互式图表。适用于 Claude Code、Codex 等的智能体技能。"
+          "zh": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more."
         },
         "match": [
           "archify"
         ],
-        "stars": 87341,
+        "stars": 87581,
         "stars7d": null,
         "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
@@ -1997,12 +2045,12 @@
         "url": "https://github.com/unclecode/crawl4ai",
         "tagline": {
           "en": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf",
-          "zh": "面向大语言模型和 AI 智能体的开源网页爬虫与抓取工具：可将任意网站转化为干净、适合 LLM 使用的 Markdown。可自行部署，也可通过一个密钥使用 Crawl4AI Cloud。加入我们的 Discord：https://discord.gg/VuxzM8mtf"
+          "zh": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf"
         },
         "match": [
           "crawl4ai"
         ],
-        "stars": 86014,
+        "stars": 86051,
         "stars7d": null,
         "source_url": "https://github.com/unclecode/crawl4ai",
         "source_date": null,
@@ -2019,12 +2067,12 @@
         "url": "https://github.com/bytedance/deer-flow",
         "tagline": {
           "en": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours.",
-          "zh": "一个开源的长周期超级智能体框架，可进行研究、编码与创作。借助沙箱、记忆、工具、技能、子智能体和消息网关，可处理耗时数分钟到数小时的不同层级任务。"
+          "zh": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours."
         },
         "match": [
           "deer-flow"
         ],
-        "stars": 84276,
+        "stars": 84290,
         "stars7d": null,
         "source_url": "https://github.com/bytedance/deer-flow",
         "source_date": null,
@@ -2041,12 +2089,12 @@
         "url": "https://github.com/cheaper-inference/OmniRoute",
         "tagline": {
           "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
-          "zh": "编码永不停歇。免费的 MIT 许可 AI 网关：一个端点接入 375 个服务商（其中 150+ 免费）、1400+ 模型，包括 Kimi、Claude、GPT、Gemini、GLM、DeepSeek、MiniMax。兼容 Claude Code、Codex、Cursor、OpenCode、Cline 和 Copilot。支持配额感知的自动回退，RTK+Caveman 压缩可节省 15%–95% 的 token，并支持 MCP/A2A、桌面端和 PWA。由 900 多名贡献者共同构建。"
+          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
         },
         "match": [
           "omniroute"
         ],
-        "stars": 79608,
+        "stars": 79861,
         "stars7d": null,
         "source_url": "https://github.com/cheaper-inference/OmniRoute",
         "source_date": null,
@@ -2061,7 +2109,7 @@
     ],
     "rotate": false,
     "source": "The Skill Leaderboard · GitHub",
-    "updated_at": "2026-10-22",
+    "updated_at": "2026-10-23",
     "origin": "public",
     "product": [
       {
@@ -2069,12 +2117,12 @@
         "url": "https://github.com/anomalyco/opencode",
         "tagline": {
           "en": "The open source coding agent.",
-          "zh": "开源编程智能体。"
+          "zh": "The open source coding agent."
         },
         "match": [
           "opencode"
         ],
-        "stars": 219931,
+        "stars": 220179,
         "stars7d": null,
         "source_url": "https://github.com/anomalyco/opencode",
         "source_date": null,
@@ -2091,12 +2139,12 @@
         "url": "https://github.com/anthropics/claude-code",
         "tagline": {
           "en": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
-          "zh": "Claude Code 是一款驻留在终端中的智能编程工具，能够理解你的代码库，通过自然语言指令执行日常任务、解释复杂代码并处理 git 工作流，帮助你更快地编写代码。"
+          "zh": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands."
         },
         "match": [
           "claude-code"
         ],
-        "stars": 152828,
+        "stars": 152910,
         "stars7d": null,
         "source_url": "https://github.com/anthropics/claude-code",
         "source_date": null,
@@ -2113,12 +2161,12 @@
         "url": "https://github.com/openai/codex",
         "tagline": {
           "en": "Lightweight coding agent that runs in your terminal",
-          "zh": "在终端中运行的轻量级编程智能体。"
+          "zh": "Lightweight coding agent that runs in your terminal"
         },
         "match": [
           "codex"
         ],
-        "stars": 130406,
+        "stars": 130473,
         "stars7d": null,
         "source_url": "https://github.com/openai/codex",
         "source_date": null,
@@ -2135,12 +2183,12 @@
         "url": "https://github.com/google-gemini/gemini-cli",
         "tagline": {
           "en": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
-          "zh": "一个开源 AI 智能体，将 Gemini 的能力直接带入你的终端。"
+          "zh": "An open-source AI agent that brings the power of Gemini directly into your terminal."
         },
         "match": [
           "gemini-cli"
         ],
-        "stars": 107502,
+        "stars": 107523,
         "stars7d": null,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
@@ -2157,12 +2205,12 @@
         "url": "https://github.com/OpenHands/OpenHands",
         "tagline": {
           "en": "🙌 OpenHands: AI-Driven Development",
-          "zh": "🙌 OpenHands：AI 驱动的开发"
+          "zh": "🙌 OpenHands: AI-Driven Development"
         },
         "match": [
           "openhands"
         ],
-        "stars": 91545,
+        "stars": 91590,
         "stars7d": null,
         "source_url": "https://github.com/OpenHands/OpenHands",
         "source_date": null,
@@ -2179,12 +2227,12 @@
         "url": "https://github.com/cline/cline",
         "tagline": {
           "en": "Autonomous coding agent as an SDK, IDE extension, or CLI assistant.",
-          "zh": "以 SDK、IDE 扩展或 CLI 助手形式提供的自主编程智能体。"
+          "zh": "Autonomous coding agent as an SDK, IDE extension, or CLI assistant."
         },
         "match": [
           "cline"
         ],
-        "stars": 70709,
+        "stars": 70743,
         "stars7d": null,
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
@@ -2201,12 +2249,12 @@
         "url": "https://github.com/aaif-goose/goose",
         "tagline": {
           "en": "an open source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM",
-          "zh": "一个开源、可扩展的 AI 智能体，不止于代码建议：可搭配任意大语言模型完成安装、执行、编辑与测试。"
+          "zh": "an open source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM"
         },
         "match": [
           "goose"
         ],
-        "stars": 55523,
+        "stars": 55546,
         "stars7d": null,
         "source_url": "https://github.com/aaif-goose/goose",
         "source_date": null,
@@ -2223,12 +2271,12 @@
         "url": "https://github.com/Aider-AI/aider",
         "tagline": {
           "en": "aider is AI pair programming in your terminal",
-          "zh": "aider 是在终端中进行的 AI 结对编程。"
+          "zh": "aider is AI pair programming in your terminal"
         },
         "match": [
           "aider"
         ],
-        "stars": 49692,
+        "stars": 49697,
         "stars7d": null,
         "source_url": "https://github.com/Aider-AI/aider",
         "source_date": null,
@@ -2245,7 +2293,7 @@
         "url": "https://github.com/continuedev/continue",
         "tagline": {
           "en": "open-source coding agent",
-          "zh": "开源编程智能体。"
+          "zh": "open-source coding agent"
         },
         "match": [
           "continue"
@@ -2267,12 +2315,12 @@
         "url": "https://github.com/QwenLM/qwen-code",
         "tagline": {
           "en": "An open-source AI coding agent that lives in your terminal.",
-          "zh": "一个驻留在终端中的开源 AI 编程智能体。"
+          "zh": "An open-source AI coding agent that lives in your terminal."
         },
         "match": [
           "qwen-code"
         ],
-        "stars": 28641,
+        "stars": 28656,
         "stars7d": null,
         "source_url": "https://github.com/QwenLM/qwen-code",
         "source_date": null,
@@ -2289,7 +2337,7 @@
         "url": "https://github.com/MoonshotAI/kimi-cli",
         "tagline": {
           "en": "[Archived] Legacy Python Kimi CLI, no longer maintained. Please use Kimi Code CLI: https://github.com/MoonshotAI/kimi-code",
-          "zh": "[已归档] 旧版 Python Kimi CLI，已不再维护。请改用 Kimi Code CLI：https://github.com/MoonshotAI/kimi-code"
+          "zh": "[Archived] Legacy Python Kimi CLI, no longer maintained. Please use Kimi Code CLI: https://github.com/MoonshotAI/kimi-code"
         },
         "match": [
           "kimi-cli"
@@ -2316,10 +2364,14 @@
         "en": "Write project instructions"
       },
       "detail": {
+        "zh": "整理结构、命令和约定",
+        "en": "Save structure, commands and conventions"
+      },
+      "source": "官方文档 docs.anthropic.com",
+      "limitations": {
         "zh": "记录项目结构、常用命令和约定；检查生成的文件，再决定是否采用。配置存在不证明后续遵守。",
         "en": "Record project structure, commands and conventions. Inspect the file before adopting it; its presence does not prove later compliance."
-      },
-      "source": "官方文档 docs.anthropic.com"
+      }
     },
     {
       "id": "fresh_session",
@@ -2328,10 +2380,14 @@
         "en": "Review context before a new task"
       },
       "detail": {
+        "zh": "只保留当前需要的背景",
+        "en": "Keep only the context you need"
+      },
+      "source": "官方计费文档 + 社区共识",
+      "limitations": {
         "zh": "确认哪些历史信息仍相关，再决定继续会话或开启新会话。这里不估算节省费用或质量变化。",
         "en": "Check which history is still relevant before continuing or opening a new session. No cost or quality improvement is measured here."
-      },
-      "source": "官方计费文档 + 社区共识"
+      }
     },
     {
       "id": "plan_first",
@@ -2340,10 +2396,14 @@
         "en": "Review the plan first"
       },
       "detail": {
+        "zh": "看清步骤，再决定执行",
+        "en": "Review steps before proceeding"
+      },
+      "source": "官方文档 + 社区实践",
+      "limitations": {
         "zh": "让 AI 先列步骤和待确认项，审阅后再决定执行。检查改动，不保证减少返工。",
         "en": "Ask for steps and open questions, then decide whether to proceed. Inspect changes; reduced rework is not guaranteed."
-      },
-      "source": "官方文档 + 社区实践"
+      }
     },
     {
       "id": "prompt_caching",
@@ -2352,34 +2412,46 @@
         "en": "Inspect cache records"
       },
       "detail": {
+        "zh": "查看工具记录的缓存读取",
+        "en": "Check recorded cache reads"
+      },
+      "source": "官方定价文档",
+      "limitations": {
         "zh": "检查工具日志是否提供缓存读取量。缓存条件和计费依模型及供应商而异，不推定折扣。",
         "en": "Check whether tool logs include cache reads. Cache conditions and billing vary by model and provider; no discount is assumed."
-      },
-      "source": "官方定价文档"
+      }
     },
     {
       "id": "summarize_progress",
       "title": {
         "zh": "压缩前保存必要结论",
-        "en": "Save key conclusions before compaction"
+        "en": "Save conclusions before clearing"
       },
       "detail": {
+        "zh": "先存要点，再开新会话",
+        "en": "Save key points before starting fresh"
+      },
+      "source": "官方文档 + 社区共识",
+      "limitations": {
         "zh": "先整理结论和待办，检查摘要是否完整，再压缩或开新会话。",
         "en": "Summarize conclusions and next steps, check the summary, then compact or open a new session."
-      },
-      "source": "官方文档 + 社区共识"
+      }
     },
     {
       "id": "stop_retrying",
       "title": {
         "zh": "重复失败后重新检查条件",
-        "en": "Recheck conditions after repeated failure"
+        "en": "Pause and review failures"
       },
       "detail": {
+        "zh": "缩小任务，再试一次",
+        "en": "Narrow the task before retrying"
+      },
+      "source": "社区共识",
+      "limitations": {
         "zh": "检查失败原因，缩小任务或补充相关信息，再决定下一次尝试。",
         "en": "Inspect the failure, narrow the task or add relevant information, then decide on another attempt."
-      },
-      "source": "社区共识"
+      }
     }
   ],
   "review_exercises": [
