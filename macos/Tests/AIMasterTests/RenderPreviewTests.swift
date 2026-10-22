@@ -225,7 +225,7 @@ final class RenderPreviewTests: XCTestCase {
             let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
                 .joined().filter { !$0.isWhitespace }
             for label in ["365", "PRO", "我", "大师推荐", "修炼",
-                          name == "me" ? "LEVEL" : name == "picks" ? "PICK" : "TODAY"] {
+                          name == "me" ? "熟练者" : name == "picks" ? "今日推荐" : "今日修炼"] {
                 XCTAssertTrue(text.contains(label), "\(name): \(text)")
             }
             try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
@@ -403,7 +403,7 @@ final class RenderPreviewTests: XCTestCase {
                 .background(Color(nsColor: .windowBackgroundColor)))
             renderer.scale = 2
             let image = try XCTUnwrap(renderer.nsImage)
-            XCTAssertLessThan(image.size.height, 360)
+            XCTAssertLessThan(image.size.height, 480)  // direction C spacing (Phase 7)
             let rep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(image.tiffRepresentation)))
             try XCTUnwrap(rep.representation(using: .png, properties: [:]))
                 .write(to: URL(fileURLWithPath: out + "-calendar-" + locale + ".png"))
