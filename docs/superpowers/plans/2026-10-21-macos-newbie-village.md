@@ -1535,3 +1535,11 @@ Hard UI rules (Swift; add tests that enforce them where practical):
 6. Today tab order: today's skill card → Skill 榜 Top 5 → Agent 榜 Top 5 → 大师一句话. "与你的工具有关的更新" shows only when there is at least one update (no empty-state section).
 - Render the three tabs with real data via `RenderPreviewTests/testRenderPopoverSections` (no `AIMASTER_PREVIEW_HOME`) and with the synthetic matrix; the Today tab must render ≤ 1500 pt tall at 440 wide with Top 5 lists.
 - Commit `feat(macos): declutter — two buttons per card, three-line ranking rows, one-line usage`.
+
+### Task 40: Real-data polish after Phase 4.1 (reviewer, 2026-10-22)
+
+Real-home render after Task 39 (score is back: 69, dims 35/70/95/75) still shows three defects:
+1. "今天先改这一处" shows the generic first-practice card 「练习：查看工具的隐私说明」 although the user has passed quests 1–2 and is on quest 3 (light_model) with real Claude/Codex data. When deep-tool data exists and the score is available, the main action must be the current village quest's tip (or the lowest-dimension tip when the quest is met), exactly as before Phase 4; the first-practice card is only for users with no supported data.
+2. The usage line says 「价格未知」 for Claude/Codex models that have tier prices (opus/sonnet/haiku, gpt-6-* via `agentfit.pricing.classify_model`). Show the API-equivalent cost when the model tier is known; 「价格未知」 only for models whose tier is genuinely unknown, and then show the known part plus "部分模型价格未知" in the ⓘ.
+3. The usage line shows 「（时间异常）」 next to the Codex quota. Show that marker only when the quota record is older than its window or in the future; for a current weekly record (window 10080 min, resets in the future) show just 「Codex 周额度 29%（10月27日重置）」.
+Add regression tests for all three (engine fixture with passed quests 1–2 and opus/gpt usage; Swift caption test for the quota marker). Commit `fix: real-data main action, known-tier costs, quota freshness marker`.
