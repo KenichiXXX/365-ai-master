@@ -4,76 +4,144 @@ struct TrainingGameView: View {
     let game: TrainingGame
     @ObservedObject var store: SnapshotStore
     let zh: Bool
+    var openToday: () -> Void = {}
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var stampScale: CGFloat = 1
+
+    static func stampScale(checkedIn: Bool, reduceMotion: Bool) -> CGFloat {
+        checkedIn && !reduceMotion ? 1.12 : 1
+    }
+
+    var body: some View {
+        VStack(spacing: Theme.grid * 2) {
+            HStack(spacing: Theme.grid * 2) {
+                Button(action: openToday) {
+                    ZStack {
+                        Circle().stroke(Theme.fixedPaper.opacity(0.3), lineWidth: Theme.grid)
+                        Circle().trim(from: 0, to: CGFloat(min(3, max(0, game.today.completed))) / 3)
+                            .stroke(Theme.yellow, style: StrokeStyle(lineWidth: Theme.grid, lineCap: .butt))
+                            .rotationEffect(.degrees(-90))
+                        Text("\(game.today.completed)/3").font(Theme.title).monospacedDigit()
+                            .foregroundStyle(Theme.yellow)
+                    }.frame(width: Theme.grid * 9, height: Theme.grid * 9).padding(Theme.grid)
+                }.buttonStyle(.plain).accessibilityIdentifier("training-today")
+                    .accessibilityLabel(zh ? "今日三件事" : "Today's 3")
+                    .accessibilityValue("\(game.today.completed)/3")
+                VStack(alignment: .leading, spacing: Theme.grid) {
+                    Text("TODAY").font(Theme.label).tracking(2)
+                    Text(zh ? "今日修炼" : "Today's training").font(Theme.title)
+                    Text(zh ? "连签 \(game.streak) 天 · Lv.\(game.level)"
+                         : "\(game.streak)-day streak · Lv.\(game.level)").font(Theme.body)
+                }.foregroundStyle(Theme.fixedPaper)
+                Spacer(minLength: 0)
+            }.padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.fixedInk)
+            Button { store.checkIn() } label: {
+                Text(game.today.checkin ? (zh ? "已打卡 ✓ 明天见" : "Checked in ✓ See you tomorrow")
+                     : (zh ? "打卡 +5 XP" : "Check in +5 XP"))
+                    .font(Theme.title).scaleEffect(stampScale)
+                    .frame(maxWidth: .infinity).padding(Theme.grid * 2)
+                    .foregroundStyle(game.today.checkin ? Theme.ink : Color.white)
+                    .background(game.today.checkin ? Theme.paper : Theme.red)
+                    .overlay(Rectangle().strokeBorder(game.today.checkin ? Theme.ink : Theme.red, lineWidth: Theme.ruleWidth))
+            }.buttonStyle(.plain).disabled(game.today.checkin || store.isRefreshing)
+                .accessibilityIdentifier("training-checkin")
+                .onChange(of: game.today.checkin) { checkedIn in
+                    let peak = Self.stampScale(checkedIn: checkedIn, reduceMotion: reduceMotion)
+                    guard peak != 1 else { stampScale = 1; return }
+                    withAnimation(.easeOut(duration: 0.12)) { stampScale = peak }
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 120_000_000)
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { stampScale = 1 }
+                    }
+                }
+        }
+    }
+}
+
+
+struct TrainingGameDetailView: View {
+    let game: TrainingGame
+    @ObservedObject var store: SnapshotStore
+    let zh: Bool
+    let destination: TrainingDestination
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dismiss) private var dismiss
     @AppStorage("selectedTab") private var selectedTab = 0
     @State private var stampScale: CGFloat = 1
 
     var body: some View {
         Group {
             VStack(alignment: .leading, spacing: Theme.grid) {
-                ThemeLabel("TODAY")
-                HStack {
-                    Button {
-                        store.checkIn()
-                    } label: {
-                        Label(game.today.checkin ? (zh ? "今日已打卡 ✓" : "Checked in today ✓")
-                              : (zh ? "今天打卡 · +5 XP" : "Check in · +5 XP"), systemImage: "checkmark.seal.fill")
-                            .scaleEffect(stampScale)
-                    }.disabled(game.today.checkin || store.isRefreshing)
-                    Spacer()
-                    Label("\(game.shields)", systemImage: "shield.fill")
-                        .accessibilityLabel(zh ? "连签保护卡 \(game.shields) 张" : "\(game.shields) streak shields")
-                }
-                VStack(alignment: .leading, spacing: Theme.grid) {
+                if destination == .today {
+                    ThemeLabel("TODAY")
                     HStack {
-                        Text(zh ? "今日三件事" : "Today's 3").font(Theme.title)
+                        Button {
+                            store.checkIn()
+                        } label: {
+                            Label(game.today.checkin ? (zh ? "今日已打卡 ✓" : "Checked in today ✓")
+                                  : (zh ? "今天打卡 · +5 XP" : "Check in · +5 XP"), systemImage: "checkmark.seal.fill")
+                                .scaleEffect(stampScale)
+                        }.disabled(game.today.checkin || store.isRefreshing)
                         Spacer()
-                        Text("\(game.today.completed)/3").monospacedDigit()
+                        Label("\(game.shields)", systemImage: "shield.fill")
+                            .accessibilityLabel(zh ? "连签保护卡 \(game.shields) 张" : "\(game.shields) streak shields")
                     }
-                    dailyRow(zh ? "打卡" : "Check in", done: game.today.checkin)
-                    Button { selectedTab = 1 } label: {
-                        dailyRow(zh ? "看一张卡" : "Read a card", done: game.today.cardRead)
-                    }.buttonStyle(.plain).foregroundStyle(Theme.ink)
-                    dailyRow(zh ? "练一次" : "Practise once", done: game.today.practice)
-                    if let tip = game.today.chestTip {
-                        Label(zh ? "今日宝箱 · +20 XP" : "Daily chest · +20 XP", systemImage: "gift.fill")
-                            .foregroundStyle(Theme.ink)
-                        Text(tip).font(Theme.body)
-                    }
-                    DisclosureGroup {
-                        Text(zh ? "完成三件事，开启今日宝箱 · +20 XP" : "Finish all three to open your daily chest · +20 XP")
-                            .font(Theme.body)
-                    } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "宝箱说明" : "Chest details") }
-                }.padding(Theme.grid).bauhausPanel()
-                HStack {
-                    Text("Lv.\(game.level) · \(game.levelTitle)").font(Theme.title)
-                    Spacer()
-                    Text("\(game.levelXp)/\(game.nextLevelXp)").monospacedDigit()
-                }.accessibilityLabel(zh ? "经验与等级，等级 \(game.level)，\(game.levelTitle)" : "XP and level, level \(game.level), \(game.levelTitle)")
-                ProgressView(value: Double(game.levelXp), total: Double(max(1, game.nextLevelXp)))
-                DisclosureGroup(zh ? "经验来源 · 共 \(game.xp) XP" : "XP rewards · \(game.xp) XP total") {
-                    Text(zh ? "打卡 +5 · 读卡 +5 · 练习 +20 · 关卡 +50 · 徽章 +30 · 宝箱 +20 · 每周挑战 +50"
-                         : "Check-in +5 · Read +5 · Practice +20 · Quest +50 · Badge +30 · Chest +20 · Weekly challenge +50")
-                        .font(Theme.body)
-                }
-                calendar
-                VStack(alignment: .leading, spacing: Theme.grid) {
+                    VStack(alignment: .leading, spacing: Theme.grid) {
+                        HStack {
+                            Text(zh ? "今日三件事" : "Today's 3").font(Theme.title)
+                            Spacer()
+                            Text("\(game.today.completed)/3").monospacedDigit()
+                        }
+                        dailyRow(zh ? "打卡" : "Check in", done: game.today.checkin)
+                        Button { selectedTab = 1; dismiss() } label: {
+                            dailyRow(zh ? "看一张卡" : "Read a card", done: game.today.cardRead)
+                        }.buttonStyle(.plain).foregroundStyle(Theme.ink)
+                        Button { selectedTab = 1; dismiss() } label: {
+                            dailyRow(zh ? "练一次" : "Practise once", done: game.today.practice)
+                        }.buttonStyle(.plain)
+                        if let tip = game.today.chestTip {
+                            Label(zh ? "今日宝箱 · +20 XP" : "Daily chest · +20 XP", systemImage: "gift.fill")
+                                .foregroundStyle(Theme.ink)
+                            Text(tip).font(Theme.body)
+                        }
+                        DisclosureGroup {
+                            Text(zh ? "完成三件事，开启今日宝箱 · +20 XP" : "Finish all three to open your daily chest · +20 XP")
+                                .font(Theme.body)
+                        } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "宝箱说明" : "Chest details") }
+                    }.padding(Theme.grid).bauhausPanel()
                     HStack {
-                        Text(zh ? "每周挑战" : "Weekly challenge").font(Theme.title)
+                        Text("Lv.\(game.level) · \(game.levelTitle)").font(Theme.title)
                         Spacer()
-                        Text("\(game.weekly.have)/\(game.weekly.need)").monospacedDigit()
-                    }
-                    Text(game.weekly.title)
-                    ProgressView(value: Double(game.weekly.have), total: Double(max(1, game.weekly.need)))
-                    if game.weekly.earned { Label("+50 XP ✓", systemImage: "rosette").font(Theme.body) }
-                    DisclosureGroup {
-                        Text(zh ? "完成可获 +50 XP 和每周徽章" : "Earn +50 XP and a weekly badge")
+                        Text("\(game.levelXp)/\(game.nextLevelXp)").monospacedDigit()
+                    }.accessibilityLabel(zh ? "经验与等级，等级 \(game.level)，\(game.levelTitle)" : "XP and level, level \(game.level), \(game.levelTitle)")
+                    ProgressView(value: Double(game.levelXp), total: Double(max(1, game.nextLevelXp)))
+                    DisclosureGroup(zh ? "经验来源 · 共 \(game.xp) XP" : "XP rewards · \(game.xp) XP total") {
+                        Text(zh ? "打卡 +5 · 读卡 +5 · 练习 +20 · 关卡 +50 · 徽章 +30 · 宝箱 +20 · 每周挑战 +50"
+                             : "Check-in +5 · Read +5 · Practice +20 · Quest +50 · Badge +30 · Chest +20 · Weekly challenge +50")
                             .font(Theme.body)
-                    } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "挑战奖励" : "Challenge reward") }
-                    if !game.weeklyBadges.isEmpty {
-                        DisclosureGroup(zh ? "每周徽章 · \(game.weeklyBadges.count)" : "Weekly badges · \(game.weeklyBadges.count)") {
-                            ForEach(game.weeklyBadges, id: \.self) { badge in
-                                Label(badge.replacingOccurrences(of: "weekly:", with: ""), systemImage: "rosette")
+                    }
+                    calendar
+                }
+                if destination == .challenge {
+                    VStack(alignment: .leading, spacing: Theme.grid) {
+                        HStack {
+                            Text(zh ? "每周挑战" : "Weekly challenge").font(Theme.title)
+                            Spacer()
+                            Text("\(game.weekly.have)/\(game.weekly.need)").monospacedDigit()
+                        }
+                        Text(game.weekly.title)
+                        ProgressView(value: Double(game.weekly.have), total: Double(max(1, game.weekly.need)))
+                        if game.weekly.earned { Label("+50 XP ✓", systemImage: "rosette").font(Theme.body) }
+                        DisclosureGroup {
+                            Text(zh ? "完成可获 +50 XP 和每周徽章" : "Earn +50 XP and a weekly badge")
+                                .font(Theme.body)
+                        } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "挑战奖励" : "Challenge reward") }
+                        if !game.weeklyBadges.isEmpty {
+                            DisclosureGroup(zh ? "每周徽章 · \(game.weeklyBadges.count)" : "Weekly badges · \(game.weeklyBadges.count)") {
+                                ForEach(game.weeklyBadges, id: \.self) { badge in
+                                    Label(badge.replacingOccurrences(of: "weekly:", with: ""), systemImage: "rosette")
+                                }
                             }
                         }
                     }
