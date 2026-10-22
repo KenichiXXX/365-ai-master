@@ -57,4 +57,21 @@ final class SnapshotDecodingTests: XCTestCase {
         XCTAssertFalse(result.snapshot.hasEvaluableScores)
     }
 
+    func testDecodesObservedAndSupportedSignalsAlongsideLegacyAvailable() throws {
+        let data = Data(#"{"schema":3,"coverage":{"codex":{"adapter_version":"1","format":"codex-response-usage-v1","status":"partial","valid_usage_count":1,"malformed_count":0,"skipped_count":1,"signals":{"usage":"observed","compacted":"supported","tool_calls":"available","skill_calls":"unsupported","hook_success":"unknown"}}}}"#.utf8)
+        let snapshot = try EngineRunner.decode(data, status: 0).snapshot
+        XCTAssertEqual(snapshot.coverage?["codex"]?.signals["usage"], .observed)
+        XCTAssertEqual(snapshot.coverage?["codex"]?.signals["compacted"], .supported)
+        XCTAssertEqual(snapshot.coverage?["codex"]?.signals["tool_calls"], .available)
+    }
+
+    func testPartialScoreHasLocalisedBasisCaptionAndCannotEnterFullScoreRanking() throws {
+        let data = Data(#"{"schema":3,"overall":{"score":73,"tier":"steady","availability":"partial","score_version":"1"},"dimensions":[{"key":"routing","label":"Routing","score":35},{"key":"timing","label":"Timing","score":90},{"key":"context","label":"Context","score":null},{"key":"leverage","label":"Leverage","score":95}]}"#.utf8)
+        let snapshot = try EngineRunner.decode(data, status: 0).snapshot
+        XCTAssertEqual(snapshot.scoreBasisCaption(locale: "zh"), "基于 3/4 项")
+        XCTAssertEqual(snapshot.scoreBasisCaption(locale: "en"), "Based on 3 of 4")
+        XCTAssertFalse(snapshot.hasEvaluableScores)
+        let empty = try EngineRunner.decode(Data(#"{"schema":3}"#.utf8), status: 0).snapshot
+        XCTAssertNil(empty.scoreBasisCaption(locale: "en"))
+    }
 }

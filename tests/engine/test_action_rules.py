@@ -57,14 +57,14 @@ def test_rules_explain_actual_denominators_and_preserve_legacy_arithmetic():
     assert rules["late_night"]["denominator"] == 1
 
 
-def test_partial_does_not_reweight_or_infer_absence():
+def test_partial_reweights_known_dimensions_without_inventing_unknown_inputs():
     from agentfit.engine.action_rules import evaluate_dimensions, overall
     cov = covered()
     cov["codex"]["signals"]["aborted"] = "unsupported"
     dims = evaluate_dimensions(profile(), cov, "zh")
     assert next(d for d in dims if d.key == "context").score is None
-    assert overall(dims)["score"] is None
-    assert overall(dims)["tier"] is None
+    assert overall(dims)["score"] == 85
+    assert overall(dims)["tier"] is not None
     assert overall(dims)["availability"] == "partial"
     cov["codex"]["signals"] = dict.fromkeys(cov["codex"]["signals"], "unknown")
     assert all(d.score is None for d in evaluate_dimensions(profile(), cov, "en"))
@@ -161,7 +161,7 @@ def test_snapshot_score_states_history_and_privacy(tmp_path, kind):
     snapshot = build_snapshot(home, state, "en", now=NOW)
     assert snapshot["overall"]["availability"] == {"empty": "unavailable", "partial": "partial", "evaluable": "available"}[kind]
     assert len(snapshot["growth"]["days"]) == 30
-    assert sum(d["score"] is not None for d in snapshot["growth"]["days"]) == (1 if kind == "evaluable" else 0)
+    assert sum(d["score"] is not None for d in snapshot["growth"]["days"]) == (0 if kind == "empty" else 1)
     raw = json.dumps(snapshot)
     for sentinel in ("private sentinel", "/private/sentinel", str(tmp_path)):
         assert sentinel not in raw
@@ -209,7 +209,7 @@ def test_known_weakest_dimension_is_offered_even_above_85(tmp_path):
     assert action["source"] == {"kind": "dimension", "ref": "timing"}
 
 
-def test_marker_only_source_cannot_supply_missing_abort_coverage():
+def test_one_unsupported_source_does_not_veto_observed_source_inputs():
     from agentfit.engine.action_rules import evaluate_dimensions
     marker = CompactEvent(tool="claude_code", key="turn", ts=NOW.isoformat(), model="", turn_start=1)
     usage = CompactEvent(tool="codex", key="usage", ts=NOW.isoformat(), model="gpt-6.1-sol",
@@ -219,7 +219,7 @@ def test_marker_only_source_cannot_supply_missing_abort_coverage():
     coverage["claude_code"] = {"status": "ok", "signals": {
         "usage": "available", "turn_start": "available", "compacted": "available", "aborted": "unsupported"}}
     dims = evaluate_dimensions(p, coverage, "en")
-    assert next(d for d in dims if d.key == "context").score is None
+    assert next(d for d in dims if d.key == "context").score == 95
     assert next(d for d in dims if d.key == "routing").score is not None
 
 

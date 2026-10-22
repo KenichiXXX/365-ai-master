@@ -36,6 +36,12 @@ struct Snapshot: Decodable {
         }
     }
 
+    func scoreBasisCaption(locale: String) -> String? {
+        guard overall?.score != nil, let dimensions else { return nil }
+        let count = dimensions.filter { $0.score != nil }.count
+        return locale == "zh" ? "基于 \(count)/4 项" : "Based on \(count) of 4"
+    }
+
     var hasEvaluableScores: Bool {
         guard let score = overall?.score, (0...100).contains(score),
               let dimensions, dimensions.count == 4,
@@ -480,7 +486,7 @@ struct SourceCoverage: Decodable {
         case permissionDenied = "permission_denied"
         case unsupported, partial, ok
     }
-    enum Availability: String, Decodable { case available, unknown, unsupported }
+    enum Availability: String, Decodable { case observed, supported, available, unknown, unsupported }
     let adapterVersion: String
     let format: String
     let status: Status

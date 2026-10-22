@@ -54,7 +54,7 @@ def build_snapshot(
         except Exception as exc:
             row["error"] = "unavailable"
             coverage_error = "permission_denied" if isinstance(exc, PermissionError) else "partial"
-        coverage[collector.tool] = source_coverage(collector.tool, row["detected"], collected, state, coverage_error)
+        coverage[collector.tool] = source_coverage(collector.tool, row["detected"], collected, state, coverage_error, now=now)
         collectors.append((collector, row))
     cutoff = now - timedelta(days=30)
     state.prune_before(cutoff)

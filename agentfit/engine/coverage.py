@@ -1,5 +1,5 @@
 """Content-free source coverage; absence is meaningful only for covered signals."""
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 
 FORMATS = {
     "claude_code": "claude-jsonl-v1",
@@ -15,7 +15,12 @@ SUPPORTED = {
 }
 
 
-def source_coverage(tool, detected, events, state, error=None):
+ASSESSABLE_SIGNALS = {"observed", "supported", "available"}
+
+
+def source_coverage(tool, detected, events, state, error=None, now=None):
+    now = now or datetime.now(timezone.utc)
+    events = [e for e in events if now - timedelta(days=30) <= e.dt() <= now]
     cursors = list(state.state["tools"].get(tool, {}).values()) if detected else []
     malformed = sum(c.get("malformed", 0) for c in cursors)
     skipped = sum(c.get("skipped", 0) for c in cursors)
@@ -35,11 +40,14 @@ def source_coverage(tool, detected, events, state, error=None):
     else:
         status = "ok"
     supported = SUPPORTED.get(tool, {"usage"})
+    observed = {signal for signal in SIGNALS if any(
+        e.model if signal == "usage" else getattr(e, signal) for e in events)}
+    readable = detected and status != "permission_denied" and (bool(events) or status in {"ok", "no_logs"})
     return {
         "adapter_version": "1", "format": FORMATS.get(tool, "unknown"), "status": status,
         "start_utc": min(bounds).isoformat() if bounds else None,
         "end_utc": max(bounds).isoformat() if bounds else None,
         "valid_usage_count": len(usage), "malformed_count": malformed, "skipped_count": skipped,
-        "signals": {s: ("unsupported" if s not in supported else
-                          "available" if status == "ok" else "unknown") for s in SIGNALS},
+        "signals": {s: ("observed" if s in observed else "unsupported" if s not in supported else
+                          "supported" if readable else "unknown") for s in SIGNALS},
     }

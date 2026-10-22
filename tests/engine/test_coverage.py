@@ -47,12 +47,12 @@ def test_six_statuses_and_persisted_counts(tmp_path, monkeypatch):
     assert partial["status"] == "partial"
     assert partial["valid_usage_count"] == 1
     assert partial["malformed_count"] == 1 and partial["skipped_count"] == 1
-    assert partial["signals"]["tool_calls"] == "unknown"
+    assert partial["signals"]["tool_calls"] == "supported"
     assert partial == coverage(home, state)
     write_rows(log, [claude()])
     good = coverage(home, state)
     assert good["status"] == "ok"
-    assert good["signals"]["tool_calls"] == "available"
+    assert good["signals"]["tool_calls"] == "supported"
     assert good["signals"]["aborted"] == "unsupported"
     assert good["adapter_version"] and good["format"]
     assert good["start_utc"] == good["end_utc"] == NOW.isoformat()

@@ -4,10 +4,10 @@ from datetime import date, timedelta, timezone
 from pathlib import Path
 
 from agentfit.checkup import (DIMENSION_WEIGHTS, analyze_time_habits, compute_checkup,
-                             diagnose_model_mix, overall_from_dimensions, tier_for_score)
+                             diagnose_model_mix, tier_for_score)
 from agentfit.engine.codex_book import _read_progress, _save_progress
 from agentfit.engine.content import action_copy, dimension_tip, label, pool_tip, quest_text
-from agentfit.engine.coverage import SUPPORTED
+from agentfit.engine.coverage import ASSESSABLE_SIGNALS, SUPPORTED
 from agentfit.pricing import classify_model
 
 
@@ -43,7 +43,7 @@ class EvaluableDimension:
 
 def evaluate_dimensions(p, coverage: dict | None, locale: str) -> list[EvaluableDimension]:
     if coverage is None:
-        coverage = {tool: {"signals": dict.fromkeys(SUPPORTED.get(tool, {"usage"}), "available")}
+        coverage = {tool: {"signals": dict.fromkeys(SUPPORTED.get(tool, {"usage"}), "supported")}
                     for tool in p.usage_tools_14d | p.behavior_tools_14d}
     _, saving, mix = diagnose_model_mix(p.scoring_usage_7d, p.scoring_weight_7d)
     _, _, time = analyze_time_habits(p.hourly_histogram_7d)
@@ -68,12 +68,9 @@ def evaluate_dimensions(p, coverage: dict | None, locale: str) -> list[Evaluable
     for rule in RULES:
         sources = p.usage_tools_7d if rule.days == 7 else p.usage_tools_14d | p.behavior_tools_14d
         numerator, denominator = values[rule.id]
-        available = bool(sources and denominator > 0) and all(
-            coverage.get(tool, {}).get("signals", {}).get(signal) == "available"
-            for tool in sources for signal in rule.signals)
-        # A failed detected source may hide records, including all of its usage.
-        available = available and not any(c.get("status") in {"partial", "permission_denied", "unsupported"}
-                                          for c in coverage.values())
+        available = bool(sources) and all(any(
+            coverage.get(tool, {}).get("signals", {}).get(signal) in ASSESSABLE_SIGNALS
+            for tool in sources) for signal in rule.signals)
         evidence.append({
             "rule_id": rule.id, "version": "1", "required_signals": list(rule.signals),
             "window_days": rule.days,
@@ -95,10 +92,11 @@ def evaluate_dimensions(p, coverage: dict | None, locale: str) -> list[Evaluable
 
 
 def overall(dims) -> dict:
-    known = len(dims) == 4 and {d.key for d in dims} == set(DIMENSION_WEIGHTS) and all(d.score is not None for d in dims)
-    score = overall_from_dimensions(dims) if known else None
-    return {"score": score, "tier": tier_for_score(score) if known else None,
-            "availability": "available" if known else "partial" if any(d.score is not None for d in dims) else "unavailable",
+    available = [d for d in dims if d.score is not None]
+    weight = sum(DIMENSION_WEIGHTS[d.key] for d in available)
+    score = int(sum(DIMENSION_WEIGHTS[d.key] * d.score for d in available) / weight + 0.5) if weight else None
+    return {"score": score, "tier": tier_for_score(score) if score is not None else None,
+            "availability": "available" if len(available) == 4 else "partial" if available else "unavailable",
             "score_version": "1"}
 
 
@@ -111,7 +109,7 @@ QUEST_SIGNALS = {"first_edit": "tool_calls", "light_model": "usage", "first_skil
 
 def supported_quests(coverage: dict, inventories: dict) -> set[str]:
     result = {quest for quest, signal in QUEST_SIGNALS.items() if any(
-        row.get("signals", {}).get(signal) == "available" for row in coverage.values())}
+        row.get("signals", {}).get(signal) in ASSESSABLE_SIGNALS for row in coverage.values())}
     if inventories:
         result.add("rules_file")
     return result

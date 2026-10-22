@@ -11,6 +11,9 @@ struct CheckupTab: View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(spacing: 10) {
                 RingView(score: snapshot.overall?.score, size: 150)
+                if let caption = snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) {
+                    Text(caption).font(.callout).foregroundStyle(.secondary)
+                }
                 if snapshot.overall?.score == nil {
                     Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
                         .font(.callout).foregroundStyle(.secondary)

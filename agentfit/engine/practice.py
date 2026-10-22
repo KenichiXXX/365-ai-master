@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 import os
 
-from agentfit.engine.coverage import FORMATS
+from agentfit.engine.coverage import ASSESSABLE_SIGNALS, FORMATS
 from agentfit.pricing import classify_model
 
 
@@ -25,7 +25,7 @@ def validation_available(card, coverage):
               {"sidechain": "sidechain", "hook": "hook_success", "compaction": "compacted",
                "light_model": "usage", "effort": "usage"}.get(rule.split(":")[0]))
     return any(compatible(card, {tool: row}) and row.get("status") == "ok"
-               and row.get("signals", {}).get(signal) == "available"
+               and row.get("signals", {}).get(signal) in ASSESSABLE_SIGNALS
                for tool, row in coverage.items())
 
 
@@ -38,7 +38,7 @@ def qualifying(card, event, coverage):
               "skill_calls" if rule == "skill_any" else
               {"sidechain": "sidechain", "hook": "hook_success", "compaction": "compacted",
                "light_model": "usage"}.get(rule))
-    if signal and row.get("signals", {}).get(signal) != "available":
+    if signal and row.get("signals", {}).get(signal) not in ASSESSABLE_SIGNALS:
         return False
     if rule == "edit":
         return any(event.tool_calls.get(name, 0) > 0 for name in ("Edit", "Write", "apply_patch"))
