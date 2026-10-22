@@ -6,7 +6,7 @@ import Vision
 @MainActor
 final class TrainingHeroTests: XCTestCase {
     func snapshot(locale: String = "en", level: Int = 3, score: Int = 70,
-                  earned: Bool = false, passed: Bool = false) throws -> Snapshot {
+                  earned: Bool = false, passed: Bool = false, checkedIn: Bool = true) throws -> Snapshot {
         let data = Data("""
         {"schema":3,"locale":"\(locale)","overall":{"score":\(score)},
          "growth":{"days":[{"date":"2026-10-21","score":68,"score_version":"v1"}]},
@@ -14,7 +14,7 @@ final class TrainingHeroTests: XCTestCase {
          "book":{"lit":12,"total":24,"cards":[]},
          "badges":[{"id":"b1","title":"First badge","earned":\(earned)}],
          "training_game":{"xp":120,"level":\(level),"level_xp":20,"next_level_xp":100,"level_title":"Novice",
-          "today":{"checkin":true,"card_read":true,"practice":false,"completed":2},
+          "today":{"checkin":\(checkedIn),"card_read":true,"practice":false,"completed":\(checkedIn ? 2 : 1)},
           "shields":1,"streak":12,"best_streak":12,"month":"2026-10","first_weekday":3,
           "calendar":[{"date":"2026-10-22","state":"stamp"}],
           "weekly":{"week":"2026-W43","kind":"checkins","title":"Check in on 5 days","have":3,"need":5,"earned":false},
@@ -34,15 +34,20 @@ final class TrainingHeroTests: XCTestCase {
         return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
     }
 
-    func testMainViewIsCompactAndDetailsAreNotSpreadOut() throws {
+    func testDirectionCOverviewShowsLiveProgressAndKeepsDetailsReachable() throws {
         let snapshot = try snapshot()
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         let view = TrainingTab(snapshot: snapshot, store: store)
-        let hosting = NSHostingView(rootView: view.frame(width: 408))
-        XCTAssertLessThanOrEqual(hosting.fittingSize.height, 420)
+        let hosting = NSHostingView(rootView: view.frame(width: 400))
+        XCTAssertLessThanOrEqual(hosting.fittingSize.height, 560)
         let visible = try text(view)
-        XCTAssertTrue(visible.contains("TODAY"), visible)
-        XCTAssertTrue(visible.contains("2/3"), visible)
+        XCTAssertTrue(visible.contains("Today's training"), visible)
+        XCTAssertTrue(visible.replacingOccurrences(of: " ", with: "").contains("2/3"), visible)
+        XCTAssertTrue(visible.contains("Lv.3"), visible)
+        XCTAssertTrue(visible.contains("20 / 100 XP"), visible)
+        XCTAssertTrue(visible.contains("12-day streak"), visible)
+        XCTAssertTrue(visible.replacingOccurrences(of: " ", with: "").contains("3/5"), visible)
+        XCTAssertTrue(visible.contains("Check in on 5 days"), visible)
         XCTAssertTrue(visible.contains("Badges"), visible)
         for detail in ["Check-in calendar", "XP rewards", "Next badge", "Practice history", "Share my practice"] {
             XCTAssertFalse(visible.contains(detail), visible)
@@ -113,11 +118,25 @@ final class TrainingHeroTests: XCTestCase {
                     let view = TrainingGameView(game: changed, store: store, zh: locale == "zh")
                         .frame(width: 408).bauhausTheme().environment(\.colorScheme, scheme)
                     XCTAssertNotNil(ImageRenderer(content: view).cgImage)
-                    XCTAssertLessThanOrEqual(NSHostingView(rootView: view).fittingSize.height, 224)
-                    let tab = TrainingTab(snapshot: snapshot, store: store).frame(width: 408)
+                    XCTAssertLessThanOrEqual(NSHostingView(rootView: view).fittingSize.height, 300)
+                    let visible = try text(view)
+                    XCTAssertTrue(visible.localizedCaseInsensitiveContains("Lv.3"), visible)
+                    XCTAssertTrue(visible.contains("20 / 100 XP"), visible)
+                    if locale == "en" {
+                        XCTAssertTrue(visible.contains("Today's training"), visible)
+                        XCTAssertTrue(visible.contains(checkedIn ? "Checked in" : "Check in +5 XP"), visible)
+                    }
+                    let tabSnapshot = try self.snapshot(locale: locale, checkedIn: checkedIn)
+                    let tab = TrainingTab(snapshot: tabSnapshot, store: store).frame(width: 400)
                         .environment(\.colorScheme, scheme)
-                    XCTAssertNotNil(ImageRenderer(content: tab).cgImage)
-                    XCTAssertLessThanOrEqual(NSHostingView(rootView: tab).fittingSize.height, 420)
+                    let rendered = try XCTUnwrap(ImageRenderer(content: tab).cgImage)
+                    if let output = ProcessInfo.processInfo.environment["TRAINING_RENDER_DIR"] {
+                        let bitmap = NSBitmapImageRep(cgImage: rendered)
+                        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                        try png.write(to: URL(fileURLWithPath: output)
+                            .appendingPathComponent("training-\(locale)-\(scheme)-\(checkedIn).png"))
+                    }
+                    XCTAssertLessThanOrEqual(NSHostingView(rootView: tab).fittingSize.height, 560)
                 }
             }
         }
