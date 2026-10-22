@@ -22,19 +22,21 @@ struct CopyButton: View {
     @State private var copied = false
 
     var body: some View {
-        Button(copied ? (copiedTitle ?? (locale == "zh" ? "已复制 ✓" : "Copied ✓")) : title) {
-            NSPasteboard.general.clearContents()
-            if NSPasteboard.general.setString(prompt, forType: .string) {
-                feedback.markCopied()
-                copied = true
-                onCopied?()
+        Group {
+            Button(copied ? (copiedTitle ?? (locale == "zh" ? "已复制 ✓" : "Copied ✓")) : title) {
+                NSPasteboard.general.clearContents()
+                if NSPasteboard.general.setString(prompt, forType: .string) {
+                    feedback.markCopied()
+                    copied = true
+                    onCopied?()
+                }
             }
-        }
-        .task(id: feedback.copiedAt) {
-            guard feedback.copiedAt != nil else { return }
-            do { try await Task.sleep(nanoseconds: 1_500_000_000) }
-            catch { return }
-            copied = feedback.isCopied()
-        }
+            .task(id: feedback.copiedAt) {
+                guard feedback.copiedAt != nil else { return }
+                do { try await Task.sleep(nanoseconds: 1_500_000_000) }
+                catch { return }
+                copied = feedback.isCopied()
+            }
+        }.bauhausTheme()
     }
 }

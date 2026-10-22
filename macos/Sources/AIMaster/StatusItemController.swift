@@ -97,7 +97,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
             let menu = NSMenu()
             let zh = (store.snapshot?.locale ?? store.locale) == "zh"
             for (title, action) in [(zh ? "今日打卡" : "Daily check-in", #selector(dailyCheckIn)),
-                                    (zh ? "立即体检" : "Check now", #selector(checkNow)),
+                                    ("↻", #selector(checkNow)),
                                     (zh ? "设置…" : "Settings…", #selector(openSettings)),
                                     (zh ? "退出" : "Quit", #selector(quit))] {
                 let item = NSMenuItem(title: title, action: action, keyEquivalent: "")

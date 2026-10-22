@@ -9,33 +9,35 @@ struct DimensionRings: View {
     var onSelect: ((Dimension) -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top) {
-                ForEach(dimensions) { dimension in
-                    if let onSelect {
-                        Button { onSelect(dimension) } label: {
+        Group {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                HStack(alignment: .top) {
+                    ForEach(dimensions) { dimension in
+                        if let onSelect {
+                            Button { onSelect(dimension) } label: {
+                                dimensionRing(dimension)
+                            }.buttonStyle(.plain)
+                                .accessibilityLabel(dimension.label + (locale == "zh" ? "，查看详情" : ", view details"))
+                        } else {
                             dimensionRing(dimension)
-                        }.buttonStyle(.plain)
-                            .accessibilityLabel(dimension.label + (locale == "zh" ? "，查看详情" : ", view details"))
-                    } else {
-                        dimensionRing(dimension)
+                        }
                     }
                 }
+                if showsEvidence, dimensions.contains(where: { $0.evidence?.isEmpty == false }) {
+                    DisclosureGroup {
+                        DimensionEvidence(dimensions: dimensions)
+                    } label: { Text("Why this suggestion", bundle: .module).font(Theme.label) }
+                }
             }
-            if showsEvidence, dimensions.contains(where: { $0.evidence?.isEmpty == false }) {
-                DisclosureGroup {
-                    DimensionEvidence(dimensions: dimensions)
-                } label: { Text("Why this suggestion", bundle: .module).font(.caption) }
-            }
-        }
+        }.bauhausTheme()
     }
 
     private func dimensionRing(_ dimension: Dimension) -> some View {
-        VStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: Theme.grid) {
             RingView(score: dimension.score, size: 64)
-            Text(dimension.label).font(.system(size: 11)).multilineTextAlignment(.center)
+            Text(dimension.label).font(Theme.label).multilineTextAlignment(.leading)
             if dimension.score != nil, let caption = features.dimensionCaption(ranking, key: dimension.key, locale: locale) {
-                Text(caption).font(.system(size: 11)).foregroundStyle(.secondary)
+                Text(caption).font(Theme.label).foregroundStyle(Theme.secondary)
             }
         }.frame(maxWidth: .infinity)
     }
@@ -46,20 +48,22 @@ struct DimensionEvidence: View {
     let dimensions: [Dimension]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(dimensions) { dimension in
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(dimension.label).font(.headline)
-                    ForEach(Array((dimension.evidence ?? []).enumerated()), id: \.offset) { _, rule in
-                        Text(rule.label ?? rule.explanation ?? "").font(.caption).fixedSize(horizontal: false, vertical: true)
-                        if let n = rule.numerator, let d = rule.denominator {
-                            Text("\(n.formatted()) / \(d.formatted()) · \(rule.windowDays ?? 0)d").font(.caption2)
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(dimensions) { dimension in
+                    VStack(alignment: .leading, spacing: Theme.grid) {
+                        Text(dimension.label).font(Theme.title)
+                        ForEach(Array((dimension.evidence ?? []).enumerated()), id: \.offset) { _, rule in
+                            Text(rule.label ?? rule.explanation ?? "").font(Theme.label).fixedSize(horizontal: false, vertical: true)
+                            if let n = rule.numerator, let d = rule.denominator {
+                                Text("\(n.formatted()) / \(d.formatted()) · \(rule.windowDays ?? 0)d").font(Theme.label)
+                            }
+                            Text(rule.limitation ?? "").font(Theme.label).foregroundStyle(Theme.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        Text(rule.limitation ?? "").font(.caption2).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
-        }
+        }.bauhausTheme()
     }
 }

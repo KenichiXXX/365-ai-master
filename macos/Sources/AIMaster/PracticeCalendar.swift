@@ -26,26 +26,28 @@ struct PracticeCalendar: View {
     let data: PracticeCalendarData
     @Environment(\.locale) private var locale
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(data.labels["title"] ?? "").font(.headline)
-            if let first = data.days.first, let last = data.days.last {
-                Text("\(DisplayDate.short(first.date, locale: locale.identifier)) – \(DisplayDate.short(last.date, locale: locale.identifier))").font(.caption).foregroundStyle(.secondary)
-            }
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                ForEach(data.days) { day in
-                    VStack(spacing: 3) {
-                        Image(systemName: day.symbol)
-                        Text(String(day.date.suffix(2))).font(.caption2)
-                    }.frame(maxWidth: .infinity)
-                        .foregroundStyle(day.state == "observed" ? Color.accentColor : Color.secondary)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
-                        .help(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(data.labels["title"] ?? "").font(Theme.title)
+                if let first = data.days.first, let last = data.days.last {
+                    Text("\(DisplayDate.short(first.date, locale: locale.identifier)) – \(DisplayDate.short(last.date, locale: locale.identifier))").font(Theme.label).foregroundStyle(Theme.secondary)
                 }
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+                    ForEach(data.days) { day in
+                        VStack(spacing: Theme.grid) {
+                            Image(systemName: day.symbol)
+                            Text(String(day.date.suffix(2))).font(Theme.label)
+                        }.frame(maxWidth: .infinity)
+                            .foregroundStyle(day.state == "observed" ? Theme.ink : Theme.secondary)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
+                            .help(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
+                    }
+                }
+                Text(["observed", "self_reported", "usage_only", "unavailable"].compactMap { data.labels[$0] }.joined(separator: " · "))
+                    .font(Theme.label).foregroundStyle(Theme.secondary)
+                Text(data.labels["rest"] ?? "").font(Theme.label).foregroundStyle(Theme.secondary)
             }
-            Text(["observed", "self_reported", "usage_only", "unavailable"].compactMap { data.labels[$0] }.joined(separator: " · "))
-                .font(.caption).foregroundStyle(.secondary)
-            Text(data.labels["rest"] ?? "").font(.caption).foregroundStyle(.secondary)
-        }
+        }.bauhausTheme()
     }
 }

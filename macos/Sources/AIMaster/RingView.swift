@@ -7,16 +7,18 @@ struct RingView: View {
     var scoreText: String { score.map(String.init) ?? "—" }
 
     var body: some View {
-        ZStack {
-            Circle().stroke(Color.secondary.opacity(0.15), lineWidth: size / 10)
-            if let score {
-                Circle().trim(from: 0, to: CGFloat(min(100, max(0, score))) / 100)
-                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: size / 10, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
+        Group {
+            ZStack {
+                Circle().stroke(Theme.secondary.opacity(0.15), lineWidth: size / 10)
+                if let score {
+                    Circle().trim(from: 0, to: CGFloat(min(100, max(0, score))) / 100)
+                        .stroke(Theme.blue, style: StrokeStyle(lineWidth: size / 10, lineCap: .butt))
+                        .rotationEffect(.degrees(-90))
+                }
+                Text(scoreText).font(size >= 96 ? Theme.score : Theme.title)
             }
-            Text(scoreText).font(.system(size: size / 3, weight: .semibold, design: .rounded))
-        }
-        .frame(width: size, height: size)
-        .accessibilityLabel(score.map { "\($0) / 100" } ?? NSLocalizedString("Unknown", bundle: .module, comment: ""))
+            .frame(width: size, height: size)
+            .accessibilityLabel(score.map { "\($0) / 100" } ?? NSLocalizedString("Unknown", bundle: .module, comment: ""))
+        }.bauhausTheme()
     }
 }

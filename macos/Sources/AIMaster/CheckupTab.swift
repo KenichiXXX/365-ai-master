@@ -10,30 +10,33 @@ struct CheckupTab: View {
     @State private var selectedDimension: String?
 
     var body: some View {
-        if let key = selectedDimension,
-           let dimension = snapshot.dimensions?.first(where: { $0.key == key }) {
-            DimensionDetail(dimension: dimension, growth: snapshot.growth, features: store.features,
-                            locale: snapshot.locale ?? store.locale, store: store,
-                            back: { selectedDimension = nil })
-        } else {
-            overview
-        }
+        Group {
+            if let key = selectedDimension,
+               let dimension = snapshot.dimensions?.first(where: { $0.key == key }) {
+                DimensionDetail(dimension: dimension, growth: snapshot.growth, features: store.features,
+                                locale: snapshot.locale ?? store.locale, store: store,
+                                back: { selectedDimension = nil })
+            } else {
+                overview
+            }
+        }.bauhausTheme()
     }
 
     private var overview: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: Theme.grid) {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                ThemeLabel("LEVEL")
                 RecheckScoreView(snapshot: snapshot, store: store)
                 if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
-                    Text(title).font(.title2.bold())
+                    Text(title).font(Theme.title)
                         .help(snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) ?? "")
                 }
                 if snapshot.overall?.score == nil {
                     Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(Theme.body).foregroundStyle(Theme.secondary)
                 }
                 GlobalRankCard(store: store, locale: snapshot.locale ?? store.locale)
-            }.frame(maxWidth: .infinity).padding(.top, 8)
+            }.frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
             DimensionRings(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
                            features: store.features, locale: snapshot.locale ?? store.locale, showsEvidence: false,
                            onSelect: { selectedDimension = $0.key })
@@ -41,18 +44,18 @@ struct CheckupTab: View {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
             if let usage = snapshot.usageSummary {
-                HStack(alignment: .top, spacing: 4) {
+                HStack(alignment: .top, spacing: Theme.grid) {
                     Text(usage.caption(locale: snapshot.locale ?? store.locale)
                         .replacingOccurrences(of: " API-equivalent", with: " estimated"))
-                        .font(.system(size: 11)).lineLimit(1).minimumScaleFactor(0.6)
+                        .font(Theme.label).lineLimit(1).minimumScaleFactor(0.6)
                     Button(action: { showUsageDetails.toggle() }) {
                         Image(systemName: "info.circle")
                     }.buttonStyle(.plain).accessibilityLabel(zh ? "使用记录说明" : "Usage details")
                         .popover(isPresented: $showUsageDetails) {
                             Text(usage.details(locale: snapshot.locale ?? store.locale))
-                                .font(.caption).padding(12).frame(width: 340)
+                                .font(Theme.label).padding(Theme.grid * 2).frame(width: 340).bauhausTheme()
                         }
-                }.foregroundStyle(.secondary)
+                }.foregroundStyle(Theme.secondary)
             }
         }
     }
@@ -90,27 +93,30 @@ struct GlobalRankCard: View {
     private var zh: Bool { locale == "zh" }
 
     var body: some View {
-        VStack(spacing: 8) {
-            Text(zh ? "查看全球排名" : "View global ranking").font(.headline)
-            if store.shareAnonymousScore {
-                if let ranking = store.ranking {
-                    Text(CheckupPresentation.rankCaption(ranking, locale: locale))
-                    DisclosureGroup {
-                        Text(CheckupPresentation.participants(ranking, locale: locale)).font(.body)
-                        Text(AppScoreOut.sampleLimitation(locale: locale)).font(.caption)
-                    } label: {
-                        Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
+                ThemeLabel("GLOBAL")
+                Text(zh ? "查看全球排名" : "View global ranking").font(Theme.title)
+                if store.shareAnonymousScore {
+                    if let ranking = store.ranking {
+                        Text(CheckupPresentation.rankCaption(ranking, locale: locale))
+                        DisclosureGroup {
+                            Text(CheckupPresentation.participants(ranking, locale: locale)).font(Theme.body)
+                            Text(AppScoreOut.sampleLimitation(locale: locale)).font(Theme.label)
+                        } label: {
+                            Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
+                        }
+                    } else {
+                        Text(store.rankingCaption(locale: locale)).font(Theme.body).foregroundStyle(Theme.secondary)
                     }
                 } else {
-                    Text(store.rankingCaption(locale: locale)).font(.callout).foregroundStyle(.secondary)
+                    Text(zh ? "看看你打败了全球多少 AI 用户" : "See how many AI users you beat worldwide")
+                    Button(zh ? "加入匿名排名" : "Join anonymous ranking") { showConsent = true }
+                    if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
                 }
-            } else {
-                Text(zh ? "看看你打败了全球多少 AI 用户" : "See how many AI users you beat worldwide")
-                Button(zh ? "加入匿名排名" : "Join anonymous ranking") { showConsent = true }
-                if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
-            }
-        }.frame(maxWidth: .infinity).padding(12)
-            .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            }.frame(maxWidth: .infinity, alignment: .leading).padding(Theme.grid * 2)
+                .bauhausPanel()
+        }.bauhausTheme()
     }
 }
 
@@ -121,16 +127,18 @@ struct ScoreConsentPanel: View {
     let close: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(ScoreConsent.explanation(locale: zh ? "zh" : "en")).font(.callout)
-            HStack {
-                Button(zh ? "允许" : "Allow") {
-                    Task { await store.allowScoreSharing() }
-                    close()
+        Group {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                Text(ScoreConsent.explanation(locale: zh ? "zh" : "en")).font(Theme.body)
+                HStack {
+                    Button(zh ? "允许" : "Allow") {
+                        Task { await store.allowScoreSharing() }
+                        close()
+                    }
+                    Button(zh ? "暂不" : "Not now", action: close)
                 }
-                Button(zh ? "暂不" : "Not now", action: close)
-            }
-        }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            }.padding(Theme.grid * 2).bauhausPanel()
+        }.bauhausTheme()
     }
 }
 
@@ -147,14 +155,16 @@ struct RankingSummary: View {
     let locale: String
 
     var body: some View {
-        VStack(spacing: 6) {
-            Text(caption)
-            if let ranking {
-                DisclosureGroup {
-                    Text(ranking.participationCaption(locale: locale))
-                    Text(AppScoreOut.sampleLimitation(locale: locale))
-                } label: { Image(systemName: "info.circle").accessibilityLabel(locale == "zh" ? "排名说明" : "Ranking details") }
-            }
-        }.font(.system(size: 11)).foregroundStyle(.secondary)
+        Group {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                Text(caption)
+                if let ranking {
+                    DisclosureGroup {
+                        Text(ranking.participationCaption(locale: locale))
+                        Text(AppScoreOut.sampleLimitation(locale: locale))
+                    } label: { Image(systemName: "info.circle").accessibilityLabel(locale == "zh" ? "排名说明" : "Ranking details") }
+                }
+            }.font(Theme.label).foregroundStyle(Theme.secondary)
+        }.bauhausTheme()
     }
 }

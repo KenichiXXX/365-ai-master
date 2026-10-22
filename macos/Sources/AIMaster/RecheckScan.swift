@@ -56,39 +56,41 @@ struct RecheckScoreView: View {
     @State private var settled = false
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !needsFrames)) { context in
-            VStack(spacing: 10) {
-                if let scan = store.recheckScan {
-                    Circle().trim(from: 0, to: 0.7)
-                        .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                        .frame(width: 125, height: 125)
-                        .rotationEffect(.degrees(reduceMotion ? -90 : context.date.timeIntervalSinceReferenceDate * 240))
-                        .accessibilityLabel(snapshot.locale == "zh" ? "正在体检" : "Checking")
-                    VStack(alignment: .leading, spacing: 6) {
-                        ForEach(scan.lines.indices, id: \.self) { index in
-                            Label(scan.lines[index].title(locale: snapshot.locale ?? store.locale),
-                                  systemImage: index < scan.completed ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(index < scan.completed ? Color.accentColor : Color.secondary)
+        Group {
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !needsFrames)) { context in
+                VStack(spacing: Theme.grid) {
+                    if let scan = store.recheckScan {
+                        Circle().trim(from: 0, to: 0.7)
+                            .stroke(Theme.blue, style: StrokeStyle(lineWidth: 12, lineCap: .butt))
+                            .frame(width: 125, height: 125)
+                            .rotationEffect(.degrees(reduceMotion ? -90 : context.date.timeIntervalSinceReferenceDate * 240))
+                            .accessibilityLabel(snapshot.locale == "zh" ? "正在扫描" : "Checking")
+                        VStack(alignment: .leading, spacing: Theme.grid) {
+                            ForEach(scan.lines.indices, id: \.self) { index in
+                                Label(scan.lines[index].title(locale: snapshot.locale ?? store.locale),
+                                      systemImage: index < scan.completed ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(index < scan.completed ? Theme.ink : Theme.secondary)
+                            }
+                        }.font(Theme.body)
+                    } else {
+                        RingView(score: ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
+                            .value(at: context.date, reduceMotion: reduceMotion), size: 150)
+                        if !settled, let change = store.scoreChange, change.isVisible(at: context.date) {
+                            Text(change.caption(locale: snapshot.locale ?? store.locale))
+                                .font(Theme.body).foregroundStyle(Theme.secondary)
                         }
-                    }.font(.callout)
-                } else {
-                    RingView(score: ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
-                        .value(at: context.date, reduceMotion: reduceMotion), size: 150)
-                    if !settled, let change = store.scoreChange, change.isVisible(at: context.date) {
-                        Text(change.caption(locale: snapshot.locale ?? store.locale))
-                            .font(.callout).foregroundStyle(.secondary)
                     }
                 }
             }
-        }
-        .task(id: store.recheckCompletedAt) {
-            settled = false
-            guard let date = store.recheckCompletedAt else { return }
-            let remaining = max(0, 5 - Date().timeIntervalSince(date))
-            try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
-            guard !Task.isCancelled else { return }
-            settled = true
-        }
+            .task(id: store.recheckCompletedAt) {
+                settled = false
+                guard let date = store.recheckCompletedAt else { return }
+                let remaining = max(0, 5 - Date().timeIntervalSince(date))
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+                guard !Task.isCancelled else { return }
+                settled = true
+            }
+        }.bauhausTheme()
     }
 
     private var needsFrames: Bool {

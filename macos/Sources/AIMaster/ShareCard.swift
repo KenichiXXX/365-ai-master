@@ -113,30 +113,32 @@ struct ShareCardGraphic: View {
     let input: ShareCardInput
     let locale: String
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(shareCopy("Share my practice", locale)).font(.title.bold())
-            Text(DisplayDate.short(input.period.start, locale: locale, year: true) + " – " + DisplayDate.short(input.period.end, locale: locale, year: true)).font(.subheadline)
-            ForEach(Array(input.capabilities.enumerated()), id: \.offset) { _, entry in
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(entry.capability.title(locale: locale)).font(.headline)
-                    Text(entry.evidence.title(locale: locale)).font(.subheadline).foregroundStyle(.secondary)
-                }.fixedSize(horizontal: false, vertical: true)
+        Group {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                Text(shareCopy("Share my practice", locale)).font(Theme.title)
+                Text(DisplayDate.short(input.period.start, locale: locale, year: true) + " – " + DisplayDate.short(input.period.end, locale: locale, year: true)).font(Theme.body)
+                ForEach(Array(input.capabilities.enumerated()), id: \.offset) { _, entry in
+                    VStack(alignment: .leading, spacing: Theme.grid) {
+                        Text(entry.capability.title(locale: locale)).font(Theme.title)
+                        Text(entry.evidence.title(locale: locale)).font(Theme.body).foregroundStyle(Theme.secondary)
+                    }.fixedSize(horizontal: false, vertical: true)
+                }
+                if input.capabilities.isEmpty {
+                    Text(locale == "zh" ? "等待练习记录" : "Waiting for practice records")
+                }
+                if let score = input.score {
+                    Text((locale == "zh" ? "已知分数 " : "Known score ") + String(score.value) + "/100")
+                    Text(DisplayDate.short(score.coverage.start, locale: locale, year: true) + " – " + DisplayDate.short(score.coverage.end, locale: locale, year: true)).font(Theme.label)
+                }
+                ThemeRule()
+                Text(shareCopy("Local practice record, not a certification of ability", locale))
+                    .font(Theme.label).fixedSize(horizontal: false, vertical: true)
             }
-            if input.capabilities.isEmpty {
-                Text(locale == "zh" ? "等待练习记录" : "Waiting for practice records")
-            }
-            if let score = input.score {
-                Text((locale == "zh" ? "已知分数 " : "Known score ") + String(score.value) + "/100")
-                Text(DisplayDate.short(score.coverage.start, locale: locale, year: true) + " – " + DisplayDate.short(score.coverage.end, locale: locale, year: true)).font(.caption)
-            }
-            Divider()
-            Text(shareCopy("Local practice record, not a certification of ability", locale))
-                .font(.caption).fixedSize(horizontal: false, vertical: true)
-        }
-        .foregroundStyle(Color.black)
-        .padding(28).frame(width: 560, alignment: .leading).background(Color.white)
-        .environment(\.colorScheme, .light)
-        .environment(\.locale, Locale(identifier: locale))
+            .foregroundStyle(Theme.fixedInk)
+            .padding(Theme.grid * 2).frame(width: 560, alignment: .leading).background(Theme.fixedPaper)
+            .environment(\.colorScheme, .light)
+            .environment(\.locale, Locale(identifier: locale))
+        }.bauhausTheme()
     }
 }
 
@@ -196,43 +198,45 @@ struct ShareCard: View {
     private var locale: String { snapshot.locale ?? "en" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(shareCopy("Share my practice", locale)).font(.title2)
-            Toggle(shareCopy("Include score and coverage period", locale), isOn: $includeScore)
-                .disabled(!snapshot.hasEvaluableScores)
-                .onChange(of: includeScore) { _ in preview = nil; message = nil }
-            Button(shareCopy("Preview", locale)) {
-                do {
-                    guard let input = ShareCardInput.from(snapshot, includeScore: includeScore) else { throw EngineError.badJSON }
-                    preview = try ShareCardRenderer.png(input, locale: locale)
-                    message = nil
-                    store.recordLocalEvent(.sharePreview)
-                } catch { message = shareCopy("Refresh failed", locale) }
-            }
-            if let preview, let image = NSImage(data: preview) {
-                ScrollView { Image(nsImage: image).resizable().scaledToFit() }.frame(maxHeight: 460)
-                HStack {
-                    Button(shareCopy("Copy image", locale)) {
-                        NSPasteboard.general.clearContents()
-                        if NSPasteboard.general.setData(preview, forType: .png) {
-                            store.recordLocalEvent(.shareCopy)
-                            message = shareCopy("Copied, not published", locale)
+        Group {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                Text(shareCopy("Share my practice", locale)).font(Theme.title)
+                Toggle(shareCopy("Include score and coverage period", locale), isOn: $includeScore)
+                    .disabled(!snapshot.hasEvaluableScores)
+                    .onChange(of: includeScore) { _ in preview = nil; message = nil }
+                Button(shareCopy("Preview", locale)) {
+                    do {
+                        guard let input = ShareCardInput.from(snapshot, includeScore: includeScore) else { throw EngineError.badJSON }
+                        preview = try ShareCardRenderer.png(input, locale: locale)
+                        message = nil
+                        store.recordLocalEvent(.sharePreview)
+                    } catch { message = shareCopy("Refresh failed", locale) }
+                }
+                if let preview, let image = NSImage(data: preview) {
+                    ScrollView { Image(nsImage: image).resizable().scaledToFit() }.frame(maxHeight: 460)
+                    HStack {
+                        Button(shareCopy("Copy image", locale)) {
+                            NSPasteboard.general.clearContents()
+                            if NSPasteboard.general.setData(preview, forType: .png) {
+                                store.recordLocalEvent(.shareCopy)
+                                message = shareCopy("Copied, not published", locale)
+                            }
+                        }
+                        Button(shareCopy("Save image", locale)) {
+                            do {
+                                if try ShareCardRenderer.save(preview, chooseURL: {
+                                    let panel = NSSavePanel()
+                                    panel.allowedContentTypes = [.png]
+                                    panel.nameFieldStringValue = "practice.png"
+                                    return panel.runModal() == .OK ? panel.url : nil
+                                }) { store.recordLocalEvent(.shareSave) }
+                            } catch { message = shareCopy("Refresh failed", locale) }
                         }
                     }
-                    Button(shareCopy("Save image", locale)) {
-                        do {
-                            if try ShareCardRenderer.save(preview, chooseURL: {
-                                let panel = NSSavePanel()
-                                panel.allowedContentTypes = [.png]
-                                panel.nameFieldStringValue = "practice.png"
-                                return panel.runModal() == .OK ? panel.url : nil
-                            }) { store.recordLocalEvent(.shareSave) }
-                        } catch { message = shareCopy("Refresh failed", locale) }
-                    }
                 }
-            }
-            if let message { Text(message).font(.caption) }
-            Button(shareCopy("Done", locale)) { dismiss() }
-        }.padding(20).frame(width: 420)
+                if let message { Text(message).font(Theme.label) }
+                Button(shareCopy("Done", locale)) { dismiss() }
+            }.padding(Theme.grid * 2).frame(width: 420)
+        }.bauhausTheme()
     }
 }

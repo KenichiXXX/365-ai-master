@@ -39,75 +39,77 @@ struct FirstPracticeView: View {
     private var language: String { locale ?? store.snapshot?.locale ?? store.locale }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Try one step", bundle: .module).font(.headline)
-            if !store.onboarded && store.onboardingStep == .sources {
-                Text("Allowed source explanation", bundle: .module).font(.caption)
-                DisclosureGroup {
-                    ForEach(SnapshotStore.allTools, id: \.self) { tool in
-                        Toggle(SnapshotStore.toolNames[tool] ?? tool, isOn: Binding(
-                            get: { store.enabledTools.contains(tool) },
-                            set: { on in store.enabledTools = SnapshotStore.allTools.filter {
-                                $0 == tool ? on : store.enabledTools.contains($0)
-                            } }))
-                    }
-                } label: { Text("View allowed sources", bundle: .module) }
-                OptionalPracticePreferences(store: store)
-                Button(action: store.advanceOnboarding) { Text("Continue", bundle: .module) }
-            } else if !store.onboarded && store.onboardingStep == .obstacle {
-                Text("What is in the way?", bundle: .module)
-                Menu {
-                    ForEach(PracticeObstacle.allCases, id: \.self) { obstacle in
-                        Button(action: { store.chooseObstacle(obstacle) }) {
-                            Text(LocalizedStringKey(obstacle.label), bundle: .module)
+        Group {
+            VStack(alignment: .leading, spacing: Theme.grid) {
+                Text("Try one step", bundle: .module).font(Theme.title)
+                if !store.onboarded && store.onboardingStep == .sources {
+                    Text("Allowed source explanation", bundle: .module).font(Theme.label)
+                    DisclosureGroup {
+                        ForEach(SnapshotStore.allTools, id: \.self) { tool in
+                            Toggle(SnapshotStore.toolNames[tool] ?? tool, isOn: Binding(
+                                get: { store.enabledTools.contains(tool) },
+                                set: { on in store.enabledTools = SnapshotStore.allTools.filter {
+                                    $0 == tool ? on : store.enabledTools.contains($0)
+                                } }))
                         }
-                    }
-                } label: { Text("What is in the way?", bundle: .module) }
-            } else {
-                DisclosureGroup {
-                    Text(LocalizedStringKey(store.firstPracticeBranch.label), bundle: .module).font(.caption)
-                    if store.firstPracticeBranch == .permissionDenied {
-                        Text("Retry or practice manually; broad disk access is not required", bundle: .module).font(.caption)
-                    }
-                    Text(store.firstPracticePrompt(locale: language)).font(.callout).textSelection(.enabled)
-                    Text("Practice limitation", bundle: .module).font(.caption)
-                } label: { Image(systemName: "info.circle").accessibilityLabel(Text("Practice manually", bundle: .module)) }
-                HStack {
-                    CopyButton(prompt: store.firstPracticePrompt(locale: language),
-                               title: language == "zh" ? "复制给 Claude 的指令" : "Copy prompt", locale: language,
-                               onCopied: { store.recordFirstPractice(.copied) })
-                    Button(action: { store.dismissOnboarding(); store.refresh() }) { Text("Check now", bundle: .module) }
-                        .disabled(store.isRefreshing)
+                    } label: { Text("View allowed sources", bundle: .module) }
+                    OptionalPracticePreferences(store: store)
+                    Button(action: store.advanceOnboarding) { Text("Continue", bundle: .module) }
+                } else if !store.onboarded && store.onboardingStep == .obstacle {
+                    Text("What is in the way?", bundle: .module)
                     Menu {
-                        scanOptions
-                        Button(action: { store.recordFirstPractice(.selfReported) }) {
-                            Text("Tried (self-reported)", bundle: .module)
+                        ForEach(PracticeObstacle.allCases, id: \.self) { obstacle in
+                            Button(action: { store.chooseObstacle(obstacle) }) {
+                                Text(LocalizedStringKey(obstacle.label), bundle: .module)
+                            }
                         }
-                        Button(action: { store.chooseObstacle(store.obstacle == .noProject ? .skipped : .noProject) }) {
-                            Text(store.obstacle == .noProject ? "I have a project" : "I have no project", bundle: .module)
+                    } label: { Text("What is in the way?", bundle: .module) }
+                } else {
+                    DisclosureGroup {
+                        Text(LocalizedStringKey(store.firstPracticeBranch.label), bundle: .module).font(Theme.label)
+                        if store.firstPracticeBranch == .permissionDenied {
+                            Text("Retry or practice manually; broad disk access is not required", bundle: .module).font(Theme.label)
                         }
-                        Button(action: { store.dismissOnboarding(); store.refresh() }) {
-                            Text("Return to check-up", bundle: .module)
-                        }
-                    } label: { Text("⋯") }
+                        Text(store.firstPracticePrompt(locale: language)).font(Theme.body).textSelection(.enabled)
+                        Text("Practice limitation", bundle: .module).font(Theme.label)
+                    } label: { Image(systemName: "info.circle").accessibilityLabel(Text("Practice manually", bundle: .module)) }
+                    HStack {
+                        CopyButton(prompt: store.firstPracticePrompt(locale: language),
+                                   title: language == "zh" ? "复制给 Claude 的指令" : "Copy prompt", locale: language,
+                                   onCopied: { store.recordFirstPractice(.copied) })
+                        Button(action: { store.dismissOnboarding(); store.refresh() }) { Text("Check now", bundle: .module) }
+                            .disabled(store.isRefreshing)
+                        Menu {
+                            scanOptions
+                            Button(action: { store.recordFirstPractice(.selfReported) }) {
+                                Text("Tried (self-reported)", bundle: .module)
+                            }
+                            Button(action: { store.chooseObstacle(store.obstacle == .noProject ? .skipped : .noProject) }) {
+                                Text(store.obstacle == .noProject ? "I have a project" : "I have no project", bundle: .module)
+                            }
+                            Button(action: { store.dismissOnboarding(); store.refresh() }) {
+                                Text("Return to check-up", bundle: .module)
+                            }
+                        } label: { Text("⋯") }
+                            .menuStyle(.borderlessButton).fixedSize()
+                            .accessibilityLabel(language == "zh" ? "更多操作" : "More actions")
+                    }.controlSize(.small)
+                    if store.practiceStatus == .copied {
+                        Text("Practice copied; not verified yet", bundle: .module).font(Theme.label).foregroundStyle(Theme.secondary)
+                    } else if store.practiceStatus == .selfReported {
+                        Text("Tried (self-reported)", bundle: .module).font(Theme.label).foregroundStyle(Theme.secondary)
+                    }
+                }
+                if store.isRefreshing {
+                    ProgressView { Text("Scanning allowed sources", bundle: .module) }
+                }
+                if !store.onboarded && store.onboardingStep != .practice && store.onboardingStep != .done {
+                    Menu { scanOptions } label: { Text("⋯") }
                         .menuStyle(.borderlessButton).fixedSize()
                         .accessibilityLabel(language == "zh" ? "更多操作" : "More actions")
-                }.controlSize(.small)
-                if store.practiceStatus == .copied {
-                    Text("Practice copied; not verified yet", bundle: .module).font(.caption).foregroundStyle(.secondary)
-                } else if store.practiceStatus == .selfReported {
-                    Text("Tried (self-reported)", bundle: .module).font(.caption).foregroundStyle(.secondary)
                 }
-            }
-            if store.isRefreshing {
-                ProgressView { Text("Scanning allowed sources", bundle: .module) }
-            }
-            if !store.onboarded && store.onboardingStep != .practice && store.onboardingStep != .done {
-                Menu { scanOptions } label: { Text("⋯") }
-                    .menuStyle(.borderlessButton).fixedSize()
-                    .accessibilityLabel(language == "zh" ? "更多操作" : "More actions")
-            }
-        }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            }.padding(Theme.grid * 2).bauhausPanel()
+        }.bauhausTheme()
     }
 
     @ViewBuilder private var scanOptions: some View {
@@ -127,18 +129,20 @@ struct OptionalPracticePreferences: View {
     @ObservedObject var store: SnapshotStore
     @State private var rankingConsent = false
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Toggle(isOn: Binding(get: { store.publicDownloads == true }, set: { store.publicDownloads = $0 })) {
-                Text("Download public content", bundle: .module)
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(isOn: Binding(get: { store.publicDownloads == true }, set: { store.publicDownloads = $0 })) {
+                    Text("Download public content", bundle: .module)
+                }
+                Text("Public download explanation", bundle: .module).font(Theme.label)
+                Toggle(isOn: Binding(get: { store.shareAnonymousScore }, set: { on in
+                    if on { rankingConsent = true } else { store.shareAnonymousScore = false }
+                })) { Text("Join ranking", bundle: .module) }
+                if rankingConsent {
+                    ScoreConsentPanel(store: store, zh: store.locale == "zh", close: { rankingConsent = false })
+                }
+                ReminderSettings(store: store)
             }
-            Text("Public download explanation", bundle: .module).font(.caption)
-            Toggle(isOn: Binding(get: { store.shareAnonymousScore }, set: { on in
-                if on { rankingConsent = true } else { store.shareAnonymousScore = false }
-            })) { Text("Join ranking", bundle: .module) }
-            if rankingConsent {
-                ScoreConsentPanel(store: store, zh: store.locale == "zh", close: { rankingConsent = false })
-            }
-            ReminderSettings(store: store)
-        }
+        }.bauhausTheme()
     }
 }
