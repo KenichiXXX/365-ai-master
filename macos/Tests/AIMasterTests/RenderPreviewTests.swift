@@ -129,6 +129,34 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testCompactSettingsFitsOneScreen() throws {
+        for locale in ["zh", "en"] {
+            for pro in [false, true] {
+                var trialData: Data?
+                let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                    proTrial: ProTrial(read: { trialData }, write: { trialData = $0 }))
+                store.actionCommand = { _ in true }
+                if pro { store.startProTrial() }
+                XCTAssertEqual(store.isPro, pro)
+                let hosting = NSHostingView(rootView: SettingsView(store: store)
+                    .environment(\.locale, Locale(identifier: locale))
+                    .background(Color(nsColor: .windowBackgroundColor)))
+                hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+                hosting.layoutSubtreeIfNeeded()
+                XCTAssertEqual(hosting.bounds.width, 440)
+                XCTAssertLessThanOrEqual(hosting.bounds.height, 600)
+                let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+                let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                XCTAssertFalse(png.isEmpty)
+                print("Settings \(locale) \(pro ? "Pro" : "Free"): \(hosting.bounds.width) x \(hosting.bounds.height) pt")
+                if let out = ProcessInfo.processInfo.environment["RENDER_OUT"] {
+                    try png.write(to: URL(fileURLWithPath: out + "-settings-\(locale)-\(pro ? "pro" : "free").png"))
+                }
+            }
+        }
+    }
+
     func testRenderPopoverSections() async throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         let store = SnapshotStore(defaults: UserDefaults(suiteName: "render-preview")!) { locale, tools in
@@ -156,16 +184,21 @@ final class RenderPreviewTests: XCTestCase {
         let views: [(String, AnyView)] = [
             ("checkup", AnyView(CheckupTab(snapshot: snap, store: store))),
             ("today", AnyView(TodaySkillTab(snapshot: snap, store: store))),
-            ("training", AnyView(TrainingTab(snapshot: snap, store: store)))
+            ("training", AnyView(TrainingTab(snapshot: snap, store: store))),
+            ("settings", AnyView(SettingsView(store: store)))
         ]
         for (name, tab) in views {
-            let view = tab.padding(16).frame(width: 440)
+            let view = tab.padding(name == "settings" ? 0 : 16).frame(width: 440)
                 .background(Color(nsColor: .windowBackgroundColor))
             // NSHostingView renders native menu controls that ImageRenderer cannot draw.
             let hosting = NSHostingView(rootView: view)
             hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
             hosting.layoutSubtreeIfNeeded()
             XCTAssertEqual(hosting.bounds.width, 440)
+            if name == "settings" {
+                XCTAssertLessThanOrEqual(hosting.bounds.height, 600)
+                print("Settings preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")
+            }
             if name == "today" {
                 XCTAssertLessThanOrEqual(hosting.bounds.height, 1500)
                 print("Today preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")

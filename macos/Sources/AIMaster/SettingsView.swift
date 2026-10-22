@@ -4,56 +4,85 @@ import ServiceManagement
 struct SettingsView: View {
     @ObservedObject var store: SnapshotStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginError = false
     @State private var showSnapshot = false
     @State private var showLocalValidation = false
+    @State private var showConsent = false
+    @State private var showPro = false
+    private var zh: Bool { locale.language.languageCode?.identifier == "zh" }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Settings", bundle: .module).font(.title2)
-                ForEach(SnapshotStore.allTools, id: \.self) { tool in
-                    Toggle(SnapshotStore.toolNames[tool] ?? tool, isOn: Binding(
-                        get: { store.enabledTools.contains(tool) },
-                        set: { enabled in
-                            store.enabledTools = SnapshotStore.allTools.filter {
-                                $0 == tool ? enabled : store.enabledTools.contains($0)
-                            }
-                        }
-                    ))
-                }
-                Picker(selection: $store.refreshSeconds) {
-                    ForEach(SnapshotStore.refreshIntervals, id: \.self) { seconds in Text("\(seconds) s").tag(seconds) }
-                } label: { Text("Refresh interval", bundle: .module) }
-                Toggle(isOn: Binding(get: { launchAtLogin }, set: { enabled in
-                    do {
-                        if enabled { try SMAppService.mainApp.register() }
-                        else { try SMAppService.mainApp.unregister() }
-                        launchAtLogin = SMAppService.mainApp.status == .enabled
-                        loginError = enabled && !launchAtLogin
-                    } catch { loginError = true }
-                })) { Text("Launch at login", bundle: .module) }
-                if loginError { Text("Login item unavailable", bundle: .module).font(.system(size: 11)).foregroundStyle(.orange) }
-                Button(action: { showSnapshot = true }) { Text("View my snapshot", bundle: .module) }
-                    .disabled(store.snapshot == nil)
-                Button(shareCopy("Local validation", store.locale)) {
-                    store.refresh()
-                    showLocalValidation = true
-                }.disabled(store.snapshot == nil)
-                OptionalPracticePreferences(store: store)
-                Text(store.locale == "zh" ? "关闭后停止上报，服务器上已有的排名记录仍会保留。"
-                     : "Turning sharing off stops reporting. Your existing ranking record stays on the server.")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
-                Button(action: { store.resetActionPreferences() }) {
-                    Text("Reset suggestion preferences", bundle: .module)
-                }.disabled(store.isRefreshing)
-                ProSettingsSection(store: store, zh: store.locale == "zh")
-                Button(action: { NSApp.terminate(nil) }) { Text("Quit", bundle: .module) }
-                Button(action: { dismiss() }) { Text("Done", bundle: .module) }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(zh ? "设置" : "Settings").font(.title2)
+                Spacer()
+                Button(zh ? "完成" : "Done") { dismiss() }
             }
-            .padding(20)
-        }.frame(width: 380, height: 660)
+            group(zh ? "通用" : "General") {
+                Toggle(zh ? "开机启动" : "Launch at login", isOn: Binding(get: { launchAtLogin }, set: setLaunchAtLogin))
+                if loginError {
+                    Text("Login item unavailable", bundle: .module).font(.caption).foregroundStyle(.orange)
+                }
+                Picker(zh ? "刷新频率" : "Refresh interval", selection: $store.refreshSeconds) {
+                    ForEach(SnapshotStore.refreshIntervals, id: \.self) { seconds in
+                        Text("\(seconds) s").tag(seconds)
+                    }
+                }
+            }
+            group(zh ? "隐私" : "Privacy") {
+                Toggle(zh ? "匿名排名" : "Anonymous ranking", isOn: Binding(
+                    get: { store.shareAnonymousScore },
+                    set: { if $0 { showConsent = true } else { store.shareAnonymousScore = false } }
+                ))
+                Toggle(zh ? "每日榜单更新" : "Daily ranking updates", isOn: Binding(
+                    get: { store.publicDownloads == true }, set: { store.publicDownloads = $0 }
+                ))
+                Button(zh ? "查看我的数据" : "View my data") { showSnapshot = true }
+                    .disabled(store.snapshot == nil)
+            }
+            group("Pro") {
+                HStack {
+                    Text(store.isPro ? (zh ? "Pro 已开启" : "Pro is active") : (zh ? "免费版" : "Free"))
+                    Spacer()
+                    Button(zh ? "输入激活码" : "Enter activation key") { showPro = true }
+                    Button(store.license != nil ? (zh ? "管理" : "Manage") : (zh ? "购买" : "Buy")) { showPro = true }
+                }
+            }
+            group(zh ? "关于" : "About") {
+                HStack {
+                    Text((zh ? "版本 " : "Version ") +
+                         (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"))
+                    Spacer()
+                    Button(zh ? "反馈" : "Feedback") { showLocalValidation = true }.disabled(store.snapshot == nil)
+                    Button(zh ? "退出" : "Quit") { NSApp.terminate(nil) }
+                }
+            }
+            DisclosureGroup(zh ? "高级" : "Advanced") {
+                ScrollView {
+                    advanced.padding(.top, 8)
+                }.frame(height: 130)
+            }
+        }
+        .font(.system(size: 12))
+        .padding(20)
+        .frame(width: 440)
+        .fixedSize(horizontal: false, vertical: true)
+        .sheet(isPresented: $showConsent) {
+            VStack(alignment: .leading, spacing: 12) {
+                ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false })
+                Text(zh ? "关闭后停止上报，已有的排名记录仍会保留。"
+                     : "Turning sharing off stops reporting. Existing ranking records are kept.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }.padding(20).frame(width: 400)
+        }
+        .sheet(isPresented: $showPro) {
+            VStack {
+                ScrollView { ProSettingsSection(store: store, zh: zh).padding(20) }
+                Button(zh ? "完成" : "Done") { showPro = false }.padding()
+            }.frame(width: 440, height: 580)
+        }
         .sheet(isPresented: $showLocalValidation) {
             if let snapshot = store.snapshot { LocalValidationView(snapshot: snapshot, store: store) }
         }
@@ -66,6 +95,52 @@ struct SettingsView: View {
                 Button(action: { showSnapshot = false }) { Text("Done", bundle: .module) }
             }.padding().frame(width: 600, height: 450)
         }
+    }
+
+    private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.headline)
+            content()
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var advanced: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(SnapshotStore.allTools, id: \.self) { tool in
+                Toggle(SnapshotStore.toolNames[tool] ?? tool, isOn: Binding(
+                    get: { store.enabledTools.contains(tool) },
+                    set: { enabled in
+                        store.enabledTools = SnapshotStore.allTools.filter {
+                            $0 == tool ? enabled : store.enabledTools.contains($0)
+                        }
+                    }
+                ))
+            }
+            Button(shareCopy("Local validation", store.locale)) {
+                store.refresh()
+                showLocalValidation = true
+            }.disabled(store.snapshot == nil)
+            ReminderSettings(store: store)
+            Text("Public download explanation", bundle: .module).font(.caption)
+            Text(zh ? "关闭匿名排名后停止上报，已有的排名记录仍会保留。"
+                 : "Turning sharing off stops reporting. Existing ranking records are kept.")
+                .font(.caption).foregroundStyle(.secondary)
+            Button(action: { store.resetActionPreferences() }) {
+                Text("Reset suggestion preferences", bundle: .module)
+            }.disabled(store.isRefreshing)
+        }
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+            loginError = enabled && !launchAtLogin
+        } catch { loginError = true }
     }
 }
 
