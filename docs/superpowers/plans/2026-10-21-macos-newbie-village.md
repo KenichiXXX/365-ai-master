@@ -1683,3 +1683,11 @@ Kenichi: the layout still looks clumsy ("多了一个体检这两个字"); lead 
 ### Task 54: Render & copy check
 
 Real-data renders of all three tabs, a dimension detail, a Training detail, the Pro sheet, light and dark. Assert: no page label 「体检」; tab bar shows ● ■ ▲; free renders show the `PRO` header block and the locked ranking row. Commit `test: phase 6 renders`.
+
+### Task 55: Phase 6 polish from the real-data review (2026-10-22)
+
+1. Pro sheet: 「开始 14 天免费试用」 renders as plain text — make it the primary solid block button (red `#D7282F`, white text, full width); `输入激活码` stays the ink-outline secondary.
+2. 「为你推荐」 shows the same 「能帮你」 line for both picks (「让不同模型各展所长」) — derive each pick's line from its own tagline/category (≤ 12 汉字), never duplicate within the section.
+3. Add a full-popover render (header with `↻` + `PRO` block, the ● ■ ▲ tab bar, and each tab body) in RenderPreviewTests for real data (zh) so the header/tab bar is verified, at 440×720.
+4. Check-up: when the user has not joined the ranking, the black GLOBAL block is the strongest element; keep it, but make `加入` a yellow solid block button.
+Commit `fix(macos): phase 6 polish — solid trial button, distinct picks, full-popover render`.
