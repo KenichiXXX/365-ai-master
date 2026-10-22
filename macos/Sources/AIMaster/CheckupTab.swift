@@ -7,6 +7,7 @@ struct CheckupTab: View {
     private var zh: Bool { snapshot.locale == "zh" }
 
     @State private var selectedDimension: String?
+    @State private var showAnalysisPromise = false
 
     var body: some View {
         Group {
@@ -19,12 +20,18 @@ struct CheckupTab: View {
                 overview
             }
         }.bauhausTheme()
+            .sheet(isPresented: $showAnalysisPromise) {
+                AnalysisPromiseSheet(locale: snapshot.locale ?? store.locale)
+            }
     }
 
     private var overview: some View {
         VStack(alignment: .leading, spacing: Theme.sectionGap) {
             HStack(alignment: .center, spacing: 16) {
-                RecheckScoreView(snapshot: snapshot, store: store)
+                VStack(spacing: Theme.grid) {
+                    RecheckScoreView(snapshot: snapshot, store: store)
+                    Text(AnalysisPromise.caption).font(Theme.label).foregroundStyle(Theme.secondary)
+                }
                 VStack(alignment: .leading, spacing: 8) {
                     if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
                         Text(title).font(Theme.title)
@@ -33,7 +40,14 @@ struct CheckupTab: View {
                         Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
                             .font(Theme.body).foregroundStyle(Theme.secondary)
                     }
-                    Text(zh ? "你的 AI 掌握度" : "Your AI mastery").font(Theme.label).foregroundStyle(Theme.secondary)
+                    HStack(spacing: Theme.grid) {
+                        Text(zh ? "你的 AI 掌握度" : "Your AI mastery").font(Theme.label).foregroundStyle(Theme.secondary)
+                        Button { showAnalysisPromise = true } label: {
+                            Image(systemName: "info.circle").font(Theme.label)
+                        }.buttonStyle(.plain)
+                            .accessibilityLabel(AnalysisPromise.title(locale: snapshot.locale ?? store.locale))
+                            .help(AnalysisPromise.title(locale: snapshot.locale ?? store.locale))
+                    }
                     if let trend = MePresentation.yesterday(snapshot.progressMe?.vsYesterday, locale: snapshot.locale ?? store.locale) {
                         Text(trend).font(Theme.label)
                             .foregroundStyle((snapshot.progressMe?.vsYesterday ?? 0) > 0 ? Theme.accent : Theme.secondary)

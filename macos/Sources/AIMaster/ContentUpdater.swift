@@ -147,6 +147,13 @@ enum PublicContent {
                 if let value = item["source_url"], !(value is NSNull), !safeURL(value) { return false }
                 if let value = item["source_date"], !(value is NSNull), !date(value) { return false }
                 if let value = item["source_type"], !(value is String) || !["curated", "repository", "catalog"].contains(value as! String) { return false }
+                if let value = item["category"] {
+                    guard let category = value as? String,
+                          ["coding", "automation", "memory", "browser", "data", "design", "research", "other"].contains(category) else { return false }
+                }
+                if let value = item["beginner"] {
+                    guard let n = number(value), n.rounded() == n, (1...5).contains(n) else { return false }
+                }
                 if let value = item["task_category"], !(value is NSNull), !text(value) { return false }
                 if let value = item["caution"], !bilingual(value) { return false }
             }

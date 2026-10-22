@@ -3,8 +3,10 @@ import argparse
 from copy import deepcopy
 from datetime import date, timedelta
 import json
+import math
 import os
 import re
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -18,6 +20,50 @@ from agentfit.engine.content_pool import OFFICIAL_REPOS, validate
 
 USER_AGENT = "365aimaster-harvester/0.1 (+https://github.com/19800104zhao-svg/365-ai-master)"
 CATALOG_URL = "https://www.skillleaderboard.com/api/catalog"
+
+
+JEV_SPEC = Path(__file__).with_name("jev-ranking.json")
+RANKING_CATEGORIES = {"coding", "automation", "memory", "browser", "data", "design", "research", "other"}
+
+
+def judge_rankings(items: list[dict], *, run_jev=None, find_jev=None) -> list[dict]:
+    """Optional public-data judgments. A failed/incomplete batch changes nothing."""
+    if not items:
+        return items
+    run_jev = run_jev or subprocess.run
+    find_jev = find_jev or shutil.which
+    try:
+        executable = find_jev("jev")
+        if not executable:
+            raise ValueError("unavailable")
+        status = run_jev([executable, "auth", "status"], capture_output=True, text=True, timeout=10)
+        if status.returncode != 0:
+            raise ValueError("unconfigured")
+        # Explicit allowlist: never forward item metadata or any local usage data.
+        states = [{"name": item["name"], "description": item["tagline"]["en"]} for item in items]
+        response = run_jev([executable, "run", str(JEV_SPEC), "-l", "--json"],
+                           input="".join(json.dumps(state, ensure_ascii=False) + "\n" for state in states),
+                           capture_output=True, text=True, timeout=60, check=True)
+        results = [json.loads(line) for line in response.stdout.splitlines() if line.strip()]
+        if len(results) != len(items):
+            raise ValueError("incomplete batch")
+        judged = []
+        for item, result in zip(items, results):
+            answers = result["answers"]
+            spam = answers["spam"]["noul"]
+            category = answers["category"]["choice"]
+            # jev run score is zero-based; its argmax label uses our 1–5 criteria.
+            label = answers["beginner"]["label"]
+            if (type(spam) not in (int, float) or not math.isfinite(spam) or not 0 <= spam <= 1
+                    or category not in RANKING_CATEGORIES or label not in ("1", "2", "3", "4", "5")):
+                raise ValueError("invalid judgment")
+            if spam < 0.8:
+                judged.append({**item, "category": category, "beginner": int(label)})
+        return judged
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        # No provider output: it may echo input or configuration details.
+        print("jev skipped: unavailable or invalid batch; keeping public rankings", file=sys.stderr)
+        return items
 
 
 def urllib_fetch(url: str) -> dict:
@@ -269,6 +315,14 @@ def main(argv=None) -> int:
                                        texts[len(skills) + len(agents) + i], translations[len(skills) + len(agents) + i],
                                        item["stargazers_count"], item["stars7d"], metadata=item)
                         for i, item in enumerate(products)]
+        # Track candidates separately: the same repo can appear in several lists.
+        all_rows = [{**row, "_ranking_kind": kind} for kind, rows in (
+            ("skill", skill_rows), ("agent", agent_rows), ("product", product_rows)) for row in rows]
+        judged = judge_rankings(all_rows)
+        groups = {kind: [{key: value for key, value in row.items() if key != "_ranking_kind"}
+                         for row in judged if row["_ranking_kind"] == kind]
+                  for kind in ("skill", "agent", "product")}
+        skill_rows, agent_rows, product_rows = groups["skill"], groups["agent"], groups["product"]
         content = build_content(base, skill_rows, agent_rows, today, tool_updates=updates, products=product_rows)
         if not validate(content):
             raise ValueError("generated content failed validation")

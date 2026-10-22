@@ -225,7 +225,7 @@ def daily_rankings(content: dict, inv: dict[str, Inventory], locale: str,
         items = rankings.get(kind, [])
         offset = today.toordinal() % len(items) if items and kind != "product" and rankings.get("rotate", True) else 0
         result[kind] = [
-            {**{key: item[key] for key in ("stars", "stars7d") if key in item},
+            {**{key: item[key] for key in ("stars", "stars7d", "category", "beginner") if key in item},
              "name": item["name"], "url": item["url"], "tagline": item["tagline"][locale],
              "installation_hint": any(name.casefold() in installed for name in item["match"]),
              "source_url": item.get("source_url", item["url"]), "source_date": item.get("source_date"),

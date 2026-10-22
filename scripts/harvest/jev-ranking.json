@@ -1,0 +1,38 @@
+{
+  "description": "Public ranking spam, category and beginner judgments",
+  "questions": {
+    "spam": {
+      "type": "noul",
+      "instructions": "这个公开仓库是否主要用于推广、卖课、引流或垃圾信息，而非提供实质开源功能？",
+      "criteria": {
+        "true": "推广、卖课、引流、无实质功能",
+        "false": "真实的开源工具或技能"
+      }
+    },
+    "category": {
+      "type": "choice",
+      "instructions": "按公开名称与描述选择主要用途",
+      "criteria": {
+        "coding": "编程工具与编码助手",
+        "automation": "自动化与工作流",
+        "memory": "记忆与上下文管理",
+        "browser": "浏览器与网页操作",
+        "data": "数据处理与分析",
+        "design": "视觉与设计",
+        "research": "研究与信息检索",
+        "other": "其他用途或描述不足"
+      }
+    },
+    "beginner": {
+      "type": "score",
+      "instructions": "仅按公开描述判断新手友好度：1 需要大量专业配置；2 偏专业；3 一般；4 容易上手；5 几乎无需配置。",
+      "criteria": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  }
+}

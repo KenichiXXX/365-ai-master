@@ -89,6 +89,7 @@ def test_build_content():
 
 
 def setup_main(tmp_path, monkeypatch):
+    monkeypatch.setattr(h.shutil, "which", lambda _: None)  # Never invoke real jev in tests.
     monkeypatch.setattr(h, "fetch_skill_leaderboard", lambda: fixture("skillleaderboard_catalog.json")["catalog"])
     monkeypatch.setattr(h, "fetch_github_agents", lambda **kw: fixture("github_search_agents.json")["items"])
     monkeypatch.setattr(h, "fetch_github_products", lambda: [

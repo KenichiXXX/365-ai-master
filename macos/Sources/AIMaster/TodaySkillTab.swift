@@ -100,7 +100,7 @@ struct TodaySkillTab: View {
                         PicksRankingRow(position: index + 1,
                             name: DiscoverContent.shortName(row, in: rows), tagline: row.tagline,
                             metric: DiscoverContent.metric(row, locale: locale), weekly: row.stars7d, locale: locale,
-                            tag: row.installed == true || row.installationHint == true ? (zh ? "已装" : "Installed") : nil)
+                            tag: row.installed == true || row.installationHint == true ? (zh ? "已装" : "Installed") : row.beginnerTag(locale: locale))
                     }.buttonStyle(.plain)
                 }
             }
