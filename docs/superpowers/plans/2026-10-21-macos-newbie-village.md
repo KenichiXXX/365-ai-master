@@ -1691,3 +1691,7 @@ Real-data renders of all three tabs, a dimension detail, a Training detail, the 
 3. Add a full-popover render (header with `↻` + `PRO` block, the ● ■ ▲ tab bar, and each tab body) in RenderPreviewTests for real data (zh) so the header/tab bar is verified, at 440×720.
 4. Check-up: when the user has not joined the ranking, the black GLOBAL block is the strongest element; keep it, but make `加入` a yellow solid block button.
 Commit `fix(macos): phase 6 polish — solid trial button, distinct picks, full-popover render`.
+
+### Task 56: Background refresh must never replace content (2026-10-22)
+
+Full-popover real render of ■ 大师推荐 caught a background refresh: the list was cut after row 1 and replaced by 「正在扫描允许的来源 ↻ 取消扫描」. Rules: (1) timer/automatic refreshes are silent — keep showing the last snapshot; at most a 6 pt spinning ↻ in the header. (2) The scan block (with the per-tool lines from Task 41) appears ONLY after the user presses ↻ / 立即体检, and only on the ● 我 tab in place of the score circle. (3) Remove the engineering wording 「允许的来源」 everywhere in the main UI (use 「正在体检…」/「Checking…」). (4) Test: a store refresh triggered by the timer leaves the rendered Picks/Training lists intact. Commit `fix(macos): silent background refresh; scan view only for manual re-check`.
