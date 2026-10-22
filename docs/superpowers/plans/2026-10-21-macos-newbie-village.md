@@ -1779,3 +1779,17 @@ Kenichi: 「配色有点素，换个」, picked option C (warm paper + clay oran
 4. Remove any remaining hard-coded old palette hex (`007F75`, `65DCC6`, `EDF2F5`, `242E39`, `3A4858`, `1D2933`, `596773`) from Sources; tests updated accordingly (ThemeTests etc.).
 5. Contrast check in a test: ink/secondary on paper ≥ 4.5:1, onAccent on accent ≥ 4.5:1 for white-on-`#C95A24` light (if it fails, darken accent minimally and note it in the report).
 6. Real-data renders zh light + dark via RenderPreviewTests (me, picks, training, Pro sheet). Commit `style(macos): palette C warm paper + clay accent, four dimension colors`.
+
+---
+
+### Task 66: Palette A 大师金 replaces palette C (Kenichi, 2026-10-22)
+
+Kenichi switched from C to option A (night blue + gold: rank / trophy feel). Same structure as Task 65 — only token values change; keep the dimension-color mechanism, PaletteCTests become palette A tests (rename to PaletteTests). Light / dark:
+- paper `#F7F2E8` α0.88 / `#12161F` α0.92
+- surface `#FFFFFF` α0.72 / `#1D2330` α0.72
+- ink `#1E1A14` / `#EEE8DC`; secondary `#6B6155` / `#B3AA9C`
+- hairline `#5A4A2E` α0.15 / `#E0D3B8` α0.17
+- accent (gold) `#A87518` / `#F0BE5A`; accentSurface = accent α0.12
+- onAccent **dark text on gold**: `#1E1A14` / `#12161F` (gold is too light for white text). Primary buttons and the PRO pill = gold fill + onAccent.
+- Four dimension colors: gold `#A87518`/`#F0BE5A`, coral `#C8553A`/`#F08A6A`, teal `#2E8C7C`/`#4FC7B2`, indigo `#5566D6`/`#8C9BFF`.
+Contrast test: ink/secondary on paper ≥ 4.5:1; onAccent on accent ≥ 4.5:1 (both modes). If the gold accent as small text on paper is < 3:1, use ink for small accent text and keep gold for the score number, ring, fills, and pills. Remove palette C hex from Sources. Real-data renders zh light + dark (me, picks, training, Pro). Commit `style(macos): palette A night blue + gold`.
