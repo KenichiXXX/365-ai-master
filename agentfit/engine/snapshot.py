@@ -24,6 +24,7 @@ from agentfit.engine.content_pool import load_content
 from agentfit.engine.coverage import source_coverage
 from agentfit.engine.history import record_history
 from agentfit.engine.profile import build_profile, dimensions
+from agentfit.engine.dimension_details import dimension_details
 from agentfit.engine.scan_state import ScanState
 from agentfit.engine.village import advance, evaluate, today_tip, village_block
 
@@ -158,8 +159,7 @@ def build_snapshot(
         "local_validation": validation,
         "schema": 3, "coverage": coverage, "generated_at": now.isoformat(), "locale": locale,
         "tools": tools, "quota": {"codex": quota},
-        "dimensions": [{"key": d.key, "label": d.label, "score": d.score,
-                        "availability": d.availability, "evidence": d.evidence} for d in dims],
+        "dimensions": dimension_details(profile, dims, locale, coverage),
         "overall": assessment,
         "village": village_block(progress, met, locale, supported_quests(coverage, inventories), persisted.get("practice")),
         "first_practice": first_practice(locale),

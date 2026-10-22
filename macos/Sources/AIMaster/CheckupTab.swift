@@ -4,14 +4,29 @@ struct CheckupTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
 
-    @State private var showRankingConsent = false
     @State private var showUsageDetails = false
     private var zh: Bool { snapshot.locale == "zh" }
 
+    @State private var selectedDimension: String?
+
     var body: some View {
+        if let key = selectedDimension,
+           let dimension = snapshot.dimensions?.first(where: { $0.key == key }) {
+            DimensionDetail(dimension: dimension, growth: snapshot.growth, features: store.features,
+                            locale: snapshot.locale ?? store.locale, store: store,
+                            back: { selectedDimension = nil })
+        } else {
+            overview
+        }
+    }
+
+    private var overview: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(spacing: 10) {
                 RecheckScoreView(snapshot: snapshot, store: store)
+                if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
+                    Text(title).font(.title2.bold())
+                }
                 if let caption = snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) {
                     Text(caption).font(.callout).foregroundStyle(.secondary)
                 }
@@ -19,39 +34,18 @@ struct CheckupTab: View {
                     Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
                         .font(.callout).foregroundStyle(.secondary)
                 }
-                if let village = snapshot.village {
-                    Text(village.rankTitle).font(.title2.bold())
-                    if store.shareAnonymousScore && snapshot.hasEvaluableScores {
-                        RankingSummary(caption: store.rankingCaption(locale: snapshot.locale ?? store.locale),
-                                       ranking: store.ranking, locale: snapshot.locale ?? store.locale)
-                    } else if snapshot.hasEvaluableScores {
-                        Button(zh ? "看看你击败了全球多少 AI 用户 →" : "See how you rank worldwide →") {
-                            showRankingConsent = true
-                        }.buttonStyle(.plain).foregroundStyle(.tint).font(.system(size: 11))
-                        if showRankingConsent {
-                            ScoreConsentPanel(store: store, zh: zh, close: { showRankingConsent = false })
-                        }
-                    }
-                    Text(progressLine).font(.system(size: 11)).foregroundStyle(.secondary)
-                }
+                GlobalRankCard(store: store, locale: snapshot.locale ?? store.locale)
             }.frame(maxWidth: .infinity).padding(.top, 8)
             DimensionRings(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
-                           features: store.features, locale: snapshot.locale ?? store.locale, showsEvidence: false)
-            if let tip = snapshot.todayTip {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(zh ? "今天先改这一处" : "One thing to improve today").font(.headline)
-                    TipCard(tip: tip, store: store, dimensions: snapshot.dimensions ?? [])
-                }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-            }
-            if store.features.growthCurve, let growth = snapshot.growth {
-                DisclosureGroup(zh ? "成长曲线" : "Growth curve") { GrowthCurve(growth: growth, zh: zh) }
-            }
+                           features: store.features, locale: snapshot.locale ?? store.locale, showsEvidence: false,
+                           onSelect: { selectedDimension = $0.key })
             if store.features.weeklyReview {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
             if let usage = snapshot.usageSummary {
                 HStack(alignment: .top, spacing: 4) {
-                    Text(usage.caption(locale: snapshot.locale ?? store.locale))
+                    Text(usage.caption(locale: snapshot.locale ?? store.locale)
+                        .replacingOccurrences(of: " API-equivalent", with: " estimated"))
                         .font(.system(size: 11)).lineLimit(1).minimumScaleFactor(0.6)
                     Button(action: { showUsageDetails.toggle() }) {
                         Image(systemName: "info.circle")
@@ -64,14 +58,63 @@ struct CheckupTab: View {
             }
         }
     }
+}
 
-    private var progressLine: String {
-        let village = snapshot.village
-        let current = village?.quests.firstIndex(where: { $0.key == village?.current }).map { $0 + 1 }
-            ?? village?.quests.count ?? 0
-        let days = snapshot.streak?.days ?? 0
-        return snapshot.locale == "zh" ? "新手村第 \(current) 关 · 连续 \(days) 天"
-            : "Village quest \(current) · \(days)-day streak"
+
+enum CheckupPresentation {
+    static func title(score: Int?, locale: String) -> String? {
+        guard let score else { return nil }
+        switch score {
+        case 90...: return locale == "zh" ? "AI 宗师" : "AI Grandmaster"
+        case 75...: return locale == "zh" ? "AI 大师" : "AI Master"
+        case 60...: return locale == "zh" ? "AI 熟练者" : "AI Practitioner"
+        default: return locale == "zh" ? "AI 探索者" : "AI Explorer"
+        }
+    }
+
+    static func rankCaption(_ ranking: AppScoreOut, locale: String) -> String {
+        if ranking.total < 20 { return ranking.caption(locale: locale) }
+        guard let percentile = ranking.percentile else { return "" }
+        return locale == "zh" ? "打败了全球 \(percentile)% 的 AI 用户"
+            : "You beat \(percentile)% of AI users worldwide"
+    }
+
+    static func participants(_ ranking: AppScoreOut, locale: String) -> String {
+        locale == "zh" ? "\(ranking.total) 人参与 · 第 \(ranking.rank) 名"
+            : "\(ranking.total) participants · #\(ranking.rank)"
+    }
+}
+
+struct GlobalRankCard: View {
+    @ObservedObject var store: SnapshotStore
+    let locale: String
+    @State private var showConsent = false
+    private var zh: Bool { locale == "zh" }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(zh ? "全球排名" : "Global ranking").font(.headline)
+            if store.shareAnonymousScore {
+                if let ranking = store.ranking {
+                    Text(CheckupPresentation.rankCaption(ranking, locale: locale))
+                    if ranking.total >= 20 {
+                        Text(CheckupPresentation.participants(ranking, locale: locale)).font(.caption)
+                    }
+                    DisclosureGroup {
+                        Text(AppScoreOut.sampleLimitation(locale: locale)).font(.caption)
+                    } label: {
+                        Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
+                    }
+                } else {
+                    Text(store.rankingCaption(locale: locale)).font(.callout).foregroundStyle(.secondary)
+                }
+            } else {
+                Text(zh ? "看看你打败了全球多少 AI 用户" : "See how many AI users you beat worldwide")
+                Button(zh ? "加入匿名排名" : "Join anonymous ranking") { showConsent = true }
+                if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
+            }
+        }.frame(maxWidth: .infinity).padding(12)
+            .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 

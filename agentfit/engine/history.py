@@ -60,7 +60,7 @@ def record_history(progress_path: Path, now: datetime, score: int | None,
     for n in range(29, -1, -1):
         day = (today - timedelta(days=n)).isoformat()
         row = history.get(day, {})
-        days.append({"date": day, "score": row.get("score"),
+        days.append({"date": day, "score": row.get("score"), "dims": row.get("dims", {}),
                      "score_version": row.get("score_version"), "rule_version": row.get("rule_version"),
                      "coverage": row.get("coverage"), "timezone": row.get("timezone"),
                      "price_version": row.get("price_version")})

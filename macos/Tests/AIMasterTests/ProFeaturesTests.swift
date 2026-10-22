@@ -186,13 +186,18 @@ final class ProFeaturesTests: XCTestCase {
                 {"schema":2,"locale":"\(locale)","growth":{"days":[{"date":"2026-10-20","score":80},{"date":"2026-10-21","score":88}],"week_delta":3},"weekly":{"week_start":"2026-10-19","score_delta":3,"cards_lit_this_week":[],"quests_passed_this_week":[],"days_active":2}}
                 """.utf8)
                 let snapshot = try EngineRunner.decode(data, status: 0).snapshot
-                XCTAssertEqual(contains(GrowthCurve.self, in: CheckupTab(snapshot: snapshot, store: store).body), pro)
+                let dimension = Dimension(key: "routing", label: "Routing", score: 80)
+                let dimensionDetails = DimensionDetail(dimension: dimension, growth: snapshot.growth,
+                    features: store.features, locale: locale, store: store, back: {})
+                XCTAssertFalse(contains(GrowthCurve.self, in: CheckupTab(snapshot: snapshot, store: store).body))
+                XCTAssertEqual(contains(GrowthCurve.self, in: dimensionDetails.body), pro)
                 let details = SkillCardDetails(card: card, todayID: "today", store: store, locale: locale)
                 XCTAssertEqual(contains(PracticeControls.self, in: details.body), pro)
                 let today = SkillCardDetails(card: card, todayID: card.id, store: store, locale: locale)
                 XCTAssertTrue(contains(PracticeControls.self, in: today.body))
                 let views: [(String, AnyView)] = [
                     ("checkup", AnyView(CheckupTab(snapshot: snapshot, store: store))),
+                    ("dimension", AnyView(dimensionDetails)),
                     ("skill", AnyView(details)),
                     ("weekly", AnyView(WeeklyReviewSheet(snapshot: snapshot)))
                 ]

@@ -119,17 +119,29 @@ struct Dimension: Decodable, Identifiable {
     let score: Int?
     var availability: String? = nil
     var evidence: [RuleEvidence]? = nil
+    var verdict: String? = nil
+    var deductions: [ScoreDeduction]? = nil
+    var steps: [String]? = nil
+    var prompt: String? = nil
+}
+
+struct ScoreDeduction: Decodable {
+    let title: String
+    let points: Int
 }
 
 struct RuleEvidence: Decodable {
-    let ruleId: String
-    let version: String
-    let windowDays: Int
-    let numerator: Double?
-    let denominator: Double?
-    let availability: String
-    let explanation: String
-    let limitation: String
+    var ruleId: String? = nil
+    var version: String? = nil
+    var windowDays: Int? = nil
+    var numerator: Double? = nil
+    var denominator: Double? = nil
+    var availability: String? = nil
+    var explanation: String? = nil
+    var limitation: String? = nil
+    var label: String? = nil
+    var value: String? = nil
+    var target: String? = nil
 }
 
 struct Overall: Decodable {
@@ -502,6 +514,13 @@ struct Growth: Decodable {
         return result
     }
 
+    func forDimension(_ key: String) -> Growth {
+        Growth(days: days.map { day in
+            ScoreDay(date: day.date, score: day.dims?[key] ?? nil,
+                     scoreVersion: day.scoreVersion, ruleVersion: day.ruleVersion)
+        }, weekDelta: nil, comparison: nil, labels: labels)
+    }
+
     var comparableDelta: Double? {
         comparison?.reason == nil && comparison?.window == "matched_completed_weekdays" ? weekDelta : nil
     }
@@ -513,6 +532,7 @@ struct ScoreDay: Decodable, Identifiable {
     let score: Int?
     let scoreVersion: String?
     let ruleVersion: String?
+    var dims: [String: Int?]? = nil
 }
 
 struct ReviewStatement: Decodable {

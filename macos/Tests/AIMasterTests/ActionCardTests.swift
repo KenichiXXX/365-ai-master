@@ -21,7 +21,7 @@ final class ActionCardTests: XCTestCase {
         }
     }
 
-    func testOnePrimaryActionAndReadableFeedbackLabels() throws {
+    func testCheckupHasNoPrimaryTipCardAndKeepsReadableFeedbackLabels() throws {
         let result = try unknown()
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         store.dismissOnboarding()
@@ -29,7 +29,7 @@ final class ActionCardTests: XCTestCase {
             if value is TipCard { return 1 }
             return Mirror(reflecting: value).children.reduce(0) { $0 + countCards($1.value) }
         }
-        XCTAssertEqual(countCards(CheckupTab(snapshot: result.snapshot, store: store).body), 1)
+        XCTAssertEqual(countCards(CheckupTab(snapshot: result.snapshot, store: store).body), 0)
         XCTAssertEqual(SnapshotStore.ActionReason.allCases.map(\.label),
                        ["I do not understand", "My tool does not support this", "I have no project", "Not useful right now"])
     }

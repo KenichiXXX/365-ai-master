@@ -576,3 +576,59 @@ def local_validation_labels(locale):
     return {"title": "本机验证面板" if zh else "Local validation",
             "privacy": "仅代表本次安装，不会上报" if zh else "This installation only. Nothing is reported",
             "not_yet": "尚未到观察日期" if zh else "Observation date has not arrived"}
+
+
+_CHECKUP_DETAILS = {
+    "zh": {
+        "healthy": "目前没有触发扣分项，保持住。",
+        "unknown": "记录还不够，暂时无法判断。",
+        "keep": "保持当前习惯，过几天再来看看。",
+        "model_overuse": ("贵模型用得多，可以让轻量模型分担一些。", ["日常任务默认用均衡档，难题再切旗舰档。", "格式转换、提取和分类试试轻量档。"]),
+        "fast_gap": ("轻量模型几乎没用，简单任务可以试试它。", ["列出最常做的三类简单任务。", "下次做这些任务时，试用轻量模型。"]),
+        "late_night": ("深夜使用较多，留一点时间给休息。", ["区分深夜任务中需要你判断和能交给机器的部分。", "白天安排任务，第二天再检查结果。"]),
+        "fragmented": ("使用时间比较零散，试试集中处理。", ["每天留出两三个集中使用 AI 的时段。", "零散问题先记下来，同类任务一起处理。"]),
+        "context_bloat": ("长对话压缩较多，旧背景可能占了太多空间。", ["完成一个任务后开新对话。", "大文件只读取需要的部分。", "把常用背景整理成固定说明。"]),
+        "cache": ("重复背景的缓存利用较少。", ["固定规则和参考资料放在提示词开头。", "变化的问题放到最后。"]),
+        "retry": ("中断比例偏高，试试换个问法或拆小任务。", ["连续失败两次就停止原样重发。", "缩小任务、补充信息或换一种表述后再试。"]),
+        "evidence": {
+            "premium_tokens": ("近 7 天旗舰模型 token 占比", "≤60%"),
+            "model_overuse": ("近 7 天旗舰模型占折算成本", "≤60%"),
+            "fast_gap": ("近 7 天轻量模型占比", "≥5%"),
+            "late_night": ("近 7 天深夜用量占比", "≤25%"),
+            "fragmented": ("近 7 天最集中三小时的用量占比", None),
+            "concentrated": ("近 7 天有使用的小时段", None),
+            "context_bloat": ("近 14 天上下文压缩 / 提问", "压缩少于 3 次或占比 <10%"),
+            "retry": ("近 14 天中断 / 提问", "提问少于 10 次或占比 <10%"),
+            "cache": ("近 7 天输入缓存命中率", "≥50%"),
+            "reuse": ("近 14 天技能调用", None),
+        },
+    },
+    "en": {
+        "healthy": "No deductions right now. Keep it up.",
+        "unknown": "Not enough records to assess this yet.",
+        "keep": "Keep your current habits and check again in a few days.",
+        "model_overuse": ("Flagship models do most of the work; let lighter models help.", ["Use a balanced model by default; switch to flagship for hard problems.", "Try a light model for formatting, extraction and classification."]),
+        "fast_gap": ("Light models are rarely used; try one for simple tasks.", ["List your three most frequent simple tasks.", "Try a light model next time you do them."]),
+        "late_night": ("There is a lot of late-night use. Make room for rest.", ["Separate late-night tasks that need your judgment from routine work.", "Plan the work during the day and review results the next morning."]),
+        "fragmented": ("Your AI time is scattered; try batching similar tasks.", ["Set aside two or three focused AI work periods each day.", "Save small questions and handle similar tasks together."]),
+        "context_bloat": ("Long chats are compressed often; old context may be crowding things out.", ["Start a fresh chat after finishing a task.", "Read only the needed parts of large files.", "Save recurring background as fixed instructions."]),
+        "cache": ("Repeated background is not making much use of the cache.", ["Keep fixed rules and reference material at the start of your prompt.", "Put changing questions at the end."]),
+        "retry": ("Interruptions are frequent; try rephrasing or smaller tasks.", ["After two failures, stop sending the same request unchanged.", "Narrow the task, add information or rephrase before retrying."]),
+        "evidence": {
+            "premium_tokens": ("7-day flagship token share", "≤60%"),
+            "model_overuse": ("7-day flagship share of estimated cost", "≤60%"),
+            "fast_gap": ("7-day light-model token share", "≥5%"),
+            "late_night": ("7-day midnight–6am usage share", "≤25%"),
+            "fragmented": ("7-day usage in the busiest three hours", None),
+            "concentrated": ("7-day active hours of the day", None),
+            "context_bloat": ("14-day compressions / prompts", "Fewer than 3 compressions or <10%"),
+            "retry": ("14-day interruptions / prompts", "Fewer than 10 prompts or <10%"),
+            "cache": ("7-day input cache hit rate", "≥50%"),
+            "reuse": ("14-day skill calls", None),
+        },
+    },
+}
+
+
+def checkup_detail_copy(locale: str) -> dict:
+    return deepcopy(_CHECKUP_DETAILS[locale])
