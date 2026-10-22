@@ -149,7 +149,7 @@ final class ProFeaturesTests: XCTestCase {
             XCTAssertEqual(text, locale == "zh" ? "可比数据积累中" : "Collecting comparable data")
             XCTAssertFalse(text.contains("20"))
             XCTAssertFalse(text.contains("%"))
-            let caption = UsageSummary(tokens7d: 12, costUsd7d: 500, codexQuotaPct: 80).caption(locale: locale)
+            let caption = UsageSummary(tokens7d: 12, costUsd7d: 500, codexQuotaPct: 80).details(locale: locale)
             XCTAssertTrue(caption.contains(locale == "zh" ? "非订阅账单" : "not a subscription bill"))
             XCTAssertFalse(caption.contains("500"))
             XCTAssertFalse(caption.contains("saved"))

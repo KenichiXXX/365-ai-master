@@ -5,6 +5,7 @@ struct DimensionRings: View {
     var ranking: AppScoreOut? = nil
     var features = ProFeatures(isPro: false)
     var locale = "en"
+    var showsEvidence = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -19,22 +20,33 @@ struct DimensionRings: View {
                     }.frame(maxWidth: .infinity)
                 }
             }
-            if dimensions.contains(where: { $0.evidence?.isEmpty == false }) {
+            if showsEvidence, dimensions.contains(where: { $0.evidence?.isEmpty == false }) {
                 DisclosureGroup {
-                    ForEach(dimensions) { dimension in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(dimension.label).font(.headline)
-                            ForEach(Array((dimension.evidence ?? []).enumerated()), id: \.offset) { _, rule in
-                                Text(rule.explanation).font(.caption).fixedSize(horizontal: false, vertical: true)
-                                if let n = rule.numerator, let d = rule.denominator {
-                                    Text("\(n.formatted()) / \(d.formatted()) · \(rule.windowDays)d").font(.caption2)
-                                }
-                                Text(rule.limitation).font(.caption2).foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
+                    DimensionEvidence(dimensions: dimensions)
                 } label: { Text("Why this suggestion", bundle: .module).font(.caption) }
+            }
+        }
+    }
+}
+
+
+struct DimensionEvidence: View {
+    let dimensions: [Dimension]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(dimensions) { dimension in
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(dimension.label).font(.headline)
+                    ForEach(Array((dimension.evidence ?? []).enumerated()), id: \.offset) { _, rule in
+                        Text(rule.explanation).font(.caption).fixedSize(horizontal: false, vertical: true)
+                        if let n = rule.numerator, let d = rule.denominator {
+                            Text("\(n.formatted()) / \(d.formatted()) · \(rule.windowDays)d").font(.caption2)
+                        }
+                        Text(rule.limitation).font(.caption2).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
         }
     }

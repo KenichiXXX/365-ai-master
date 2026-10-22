@@ -125,8 +125,8 @@ struct LocalValidationView: View {
                         Text(text("Local diagnostics were unreadable. Measurement restarted; installation date is unknown.",
                                   "本机诊断记录不可读，已重新开始测量；安装日期未知。"))
                     }
-                    Text(text("Measurement started: ", "测量开始：") + data.measurementStart)
-                    Text(text("Observation window: ", "观察窗口：") + data.windowStart + " → " + data.windowEnd).font(.caption)
+                    Text(text("Measurement started: ", "测量开始：") + DisplayDate.short(data.measurementStart, locale: locale))
+                    Text(text("Observation window: ", "观察窗口：") + DisplayDate.short(data.windowStart, locale: locale) + " → " + DisplayDate.short(data.windowEnd, locale: locale)).font(.caption)
                     Text(text("Retains up to 90 days. Daily event counts are deduplicated.", "最多保留 90 天。交互事件按日去重计数。"))
                         .font(.caption)
                     if data.truncated {

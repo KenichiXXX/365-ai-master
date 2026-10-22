@@ -9,8 +9,8 @@ struct PracticeCalendarDay: Decodable, Identifiable {
     let date: String
     let state: String
     var id: String { date }
-    func accessibilityLabel(labels: [String: String]) -> String {
-        "\(date), \(labels[state] ?? labels["unavailable"] ?? state)"
+    func accessibilityLabel(labels: [String: String], locale: String = "en") -> String {
+        "\(DisplayDate.short(date, locale: locale)), \(labels[state] ?? labels["unavailable"] ?? state)"
     }
     var symbol: String {
         switch state {
@@ -24,11 +24,12 @@ struct PracticeCalendarDay: Decodable, Identifiable {
 
 struct PracticeCalendar: View {
     let data: PracticeCalendarData
+    @Environment(\.locale) private var locale
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(data.labels["title"] ?? "").font(.headline)
             if let first = data.days.first, let last = data.days.last {
-                Text("\(first.date) – \(last.date)").font(.caption).foregroundStyle(.secondary)
+                Text("\(DisplayDate.short(first.date, locale: locale.identifier)) – \(DisplayDate.short(last.date, locale: locale.identifier))").font(.caption).foregroundStyle(.secondary)
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
                 ForEach(data.days) { day in
@@ -38,8 +39,8 @@ struct PracticeCalendar: View {
                     }.frame(maxWidth: .infinity)
                         .foregroundStyle(day.state == "observed" ? Color.accentColor : Color.secondary)
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(day.accessibilityLabel(labels: data.labels))
-                        .help(day.accessibilityLabel(labels: data.labels))
+                        .accessibilityLabel(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
+                        .help(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
                 }
             }
             Text(["observed", "self_reported", "usage_only", "unavailable"].compactMap { data.labels[$0] }.joined(separator: " · "))

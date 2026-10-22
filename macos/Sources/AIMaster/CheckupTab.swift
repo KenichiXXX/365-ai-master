@@ -5,6 +5,7 @@ struct CheckupTab: View {
     @ObservedObject var store: SnapshotStore
 
     @State private var showRankingConsent = false
+    @State private var showUsageDetails = false
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
@@ -35,21 +36,31 @@ struct CheckupTab: View {
                 }
             }.frame(maxWidth: .infinity).padding(.top, 8)
             DimensionRings(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
-                           features: store.features, locale: snapshot.locale ?? store.locale)
+                           features: store.features, locale: snapshot.locale ?? store.locale, showsEvidence: false)
+            if let tip = snapshot.todayTip {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(zh ? "今天先改这一处" : "One thing to improve today").font(.headline)
+                    TipCard(tip: tip, store: store, dimensions: snapshot.dimensions ?? [])
+                }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+            }
             if store.features.growthCurve, let growth = snapshot.growth {
-                GrowthCurve(growth: growth, zh: zh)
+                DisclosureGroup(zh ? "成长曲线" : "Growth curve") { GrowthCurve(growth: growth, zh: zh) }
             }
             if store.features.weeklyReview {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
-            DisclosureGroup {
-                FirstPracticeView(store: store)
-            } label: { Text("Practice manually", bundle: .module) }
-            Divider()
-            if let tip = snapshot.todayTip { TipCard(tip: tip, store: store) }
             if let usage = snapshot.usageSummary {
-                Text(usage.caption(locale: snapshot.locale ?? store.locale))
-                    .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .top, spacing: 4) {
+                    Text(usage.caption(locale: snapshot.locale ?? store.locale))
+                        .font(.system(size: 11)).lineLimit(1).minimumScaleFactor(0.6)
+                    Button(action: { showUsageDetails.toggle() }) {
+                        Image(systemName: "info.circle")
+                    }.buttonStyle(.plain).accessibilityLabel(zh ? "使用记录说明" : "Usage details")
+                        .popover(isPresented: $showUsageDetails) {
+                            Text(usage.details(locale: snapshot.locale ?? store.locale))
+                                .font(.caption).padding(12).frame(width: 340)
+                        }
+                }.foregroundStyle(.secondary)
             }
         }
     }
@@ -100,9 +111,10 @@ struct RankingSummary: View {
         VStack(spacing: 6) {
             Text(caption)
             if let ranking {
-                Text(ranking.participationCaption(locale: locale))
-                Text(AppScoreOut.sampleLimitation(locale: locale))
-                    .fixedSize(horizontal: false, vertical: true)
+                DisclosureGroup {
+                    Text(ranking.participationCaption(locale: locale))
+                    Text(AppScoreOut.sampleLimitation(locale: locale))
+                } label: { Image(systemName: "info.circle").accessibilityLabel(locale == "zh" ? "排名说明" : "Ranking details") }
             }
         }.font(.system(size: 11)).foregroundStyle(.secondary)
     }

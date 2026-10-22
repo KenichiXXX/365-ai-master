@@ -26,9 +26,9 @@ struct GrowthCurve: View {
             .chartXAxis(.hidden)
             .frame(height: 130)
             HStack {
-                Text(growth.days.first?.date ?? "")
+                Text(DisplayDate.short(growth.days.first?.date ?? "", locale: zh ? "zh" : "en"))
                 Spacer()
-                Text(growth.days.last?.date ?? "")
+                Text(DisplayDate.short(growth.days.last?.date ?? "", locale: zh ? "zh" : "en"))
             }.font(.caption).foregroundStyle(.secondary)
             if let delta = growth.comparableDelta {
                 let signed = String(format: "%+.2f", delta)
@@ -53,7 +53,7 @@ struct WeeklyReviewSheet: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text(zh ? "本周复盘" : "Weekly review").font(.title2.bold())
                 if let weekly = snapshot.weekly {
-                    Text(weekly.weekStart).foregroundStyle(.secondary)
+                    Text(DisplayDate.short(weekly.weekStart, locale: snapshot.locale ?? "en")).foregroundStyle(.secondary)
                     Text(weekly.summary(locale: snapshot.locale ?? "en"))
                     if let observed = weekly.observedChange {
                         Text(observed.text).font(.headline)

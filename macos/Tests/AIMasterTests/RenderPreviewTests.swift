@@ -161,15 +161,22 @@ final class RenderPreviewTests: XCTestCase {
         for (name, tab) in views {
             let view = tab.padding(16).frame(width: 440)
                 .background(Color(nsColor: .windowBackgroundColor))
-            let renderer = ImageRenderer(content: view); renderer.scale = 2
-            let img = try XCTUnwrap(renderer.nsImage)
-            if name == "training" {
-                XCTAssertEqual(img.size.width, 440)
-                XCTAssertLessThanOrEqual(img.size.height, 1100)
-                XCTAssertEqual(snap.book?.groups?.map(\.total), [8, 10, 6])
-                print("Training preview: \(img.size.width) x \(img.size.height) pt")
+            // NSHostingView renders native menu controls that ImageRenderer cannot draw.
+            let hosting = NSHostingView(rootView: view)
+            hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+            hosting.layoutSubtreeIfNeeded()
+            XCTAssertEqual(hosting.bounds.width, 440)
+            if name == "today" {
+                XCTAssertLessThanOrEqual(hosting.bounds.height, 1500)
+                print("Today preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")
             }
-            let rep = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(img.tiffRepresentation)))
+            if name == "training" {
+                XCTAssertLessThanOrEqual(hosting.bounds.height, 1100)
+                XCTAssertEqual(snap.book?.groups?.map(\.total), [8, 10, 6])
+                print("Training preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")
+            }
+            let rep = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+            hosting.cacheDisplay(in: hosting.bounds, to: rep)
             try XCTUnwrap(rep.representation(using: .png, properties: [:]))
                 .write(to: URL(fileURLWithPath: out + "-" + name + ".png"))
         }
@@ -343,7 +350,7 @@ final class RenderPreviewTests: XCTestCase {
             let states = ["observed", "self_reported", "usage_only", "unavailable"]
             let days = (1...30).map { PracticeCalendarDay(date: String(format: "2026-10-%02d", $0), state: states[($0 - 1) % 4]) }
             let calendar = PracticeCalendarData(days: days, labels: labels)
-            XCTAssertEqual(days[0].accessibilityLabel(labels: labels), "2026-10-01, " + labels["observed"]!)
+            XCTAssertEqual(days[0].accessibilityLabel(labels: labels, locale: locale), DisplayDate.short("2026-10-01", locale: locale) + ", " + labels["observed"]!)
             let renderer = ImageRenderer(content: PracticeCalendar(data: calendar).padding(16).frame(width: 440)
                 .background(Color(nsColor: .windowBackgroundColor)))
             renderer.scale = 2
@@ -409,6 +416,18 @@ final class RenderPreviewTests: XCTestCase {
                 ("training", AnyView(TrainingTab(snapshot: result.snapshot, store: store)))
             ]
             for (name, tab) in tabs {
+                let full = ImageRenderer(content: tab.padding(16).frame(width: 440)
+                    .environment(\.locale, Locale(identifier: locale)))
+                let fullImage = try XCTUnwrap(full.nsImage)
+                if name == "today" {
+                    XCTAssertGreaterThanOrEqual(result.snapshot.rankings?.skill?.count ?? 0, 5)
+                    XCTAssertGreaterThanOrEqual(result.snapshot.rankings?.agent?.count ?? 0, 5)
+                    XCTAssertLessThanOrEqual(fullImage.size.height, 1500)
+                    print("Synthetic Today (\(locale)): \(fullImage.size.height) pt")
+                }
+                let fullRep = try XCTUnwrap(NSBitmapImageRep(data: XCTUnwrap(fullImage.tiffRepresentation)))
+                try XCTUnwrap(fullRep.representation(using: .png, properties: [:])).write(to:
+                    URL(fileURLWithPath: out + "-matrix-full-" + name + "-" + locale + ".png"))
                 for (appearance, scheme) in [("light", ColorScheme.light), ("dark", ColorScheme.dark)] {
                     let hosting = NSHostingView(rootView: ScrollView { tab.padding(16) }
                         .frame(width: 440, height: 720)

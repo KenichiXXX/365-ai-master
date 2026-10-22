@@ -8,7 +8,7 @@ struct TrainingTab: View {
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
             Button(shareCopy("Share my practice", snapshot.locale ?? "en")) { showShareCard = true }
                 .sheet(isPresented: $showShareCard) { ShareCard(snapshot: snapshot, store: store) }
             HStack(spacing: 8) {

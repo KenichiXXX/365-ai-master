@@ -79,9 +79,9 @@ struct ProSettingsSection: View {
             Divider()
             Text("365 AI Master Pro").font(.headline)
             if let license = store.signedLicense {
-                Text(verbatim: t("Local activation key valid through {date}").replacingOccurrences(of: "{date}", with: license.exp))
+                Text(verbatim: t("Local activation key valid through {date}").replacingOccurrences(of: "{date}", with: DisplayDate.short(license.exp, locale: zh ? "zh" : "en", year: true)))
                 if case .active(_, let end) = store.renewalState {
-                    Text(verbatim: t("Verified paid period ends {date}").replacingOccurrences(of: "{date}", with: end))
+                    Text(verbatim: t("Verified paid period ends {date}").replacingOccurrences(of: "{date}", with: DisplayDate.short(end, locale: zh ? "zh" : "en", year: true)))
                 }
                 Button(t("Refresh activation key")) { store.refreshLicense(explicit: true) }
                     .disabled(store.licenseRefreshTask != nil)

@@ -115,7 +115,7 @@ struct ShareCardGraphic: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(shareCopy("Share my practice", locale)).font(.title.bold())
-            Text(input.period.start + " – " + input.period.end).font(.subheadline)
+            Text(DisplayDate.short(input.period.start, locale: locale, year: true) + " – " + DisplayDate.short(input.period.end, locale: locale, year: true)).font(.subheadline)
             ForEach(Array(input.capabilities.enumerated()), id: \.offset) { _, entry in
                 VStack(alignment: .leading, spacing: 3) {
                     Text(entry.capability.title(locale: locale)).font(.headline)
@@ -127,7 +127,7 @@ struct ShareCardGraphic: View {
             }
             if let score = input.score {
                 Text((locale == "zh" ? "已知分数 " : "Known score ") + String(score.value) + "/100")
-                Text(score.coverage.start + " – " + score.coverage.end).font(.caption)
+                Text(DisplayDate.short(score.coverage.start, locale: locale, year: true) + " – " + DisplayDate.short(score.coverage.end, locale: locale, year: true)).font(.caption)
             }
             Divider()
             Text(shareCopy("Local practice record, not a certification of ability", locale))

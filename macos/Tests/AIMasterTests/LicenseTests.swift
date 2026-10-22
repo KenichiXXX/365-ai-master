@@ -134,6 +134,6 @@ final class LicenseTests: XCTestCase {
             XCTAssertTrue(containsText(Text(LocalizedStringKey(item)), in: free))
         }
         XCTAssertTrue(store.activateLicense(try key(exp: "2099-01-01")))
-        XCTAssertTrue(containsText(Text(verbatim: "本地激活码有效至 2099-01-01"), in: ProSettingsSection(store: store, zh: true).body))
+        XCTAssertTrue(containsText(Text(verbatim: "本地激活码有效至 " + DisplayDate.short("2099-01-01", locale: "zh", year: true)), in: ProSettingsSection(store: store, zh: true).body))
     }
 }

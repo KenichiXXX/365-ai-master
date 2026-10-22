@@ -27,7 +27,7 @@ final class HistoryCoverageTests: XCTestCase {
 
     func testQuotaUsesRecordedDurationAndPartialPriceWording() throws {
         let usage = try XCTUnwrap(snapshot().usageSummary)
-        let caption = usage.caption(locale: "en")
+        let caption = usage.details(locale: "en")
         XCTAssertTrue(caption.contains("5-hour window: 42%"))
         XCTAssertTrue(caption.contains("weekly window: 25%"))
         XCTAssertTrue(caption.contains("Matched subtotal USD"))
@@ -36,7 +36,7 @@ final class HistoryCoverageTests: XCTestCase {
         XCTAssertEqual(usage.codexQuota?.primaryResetsAt, "2026-10-22T00:00:00Z")
         for locale in ["zh", "en"] {
             let legacy = UsageSummary(tokens7d: 100, costUsd7d: 10, codexQuotaPct: 42)
-            let text = legacy.caption(locale: locale)
+            let text = legacy.details(locale: locale)
             XCTAssertFalse(text.contains("42%")) // no duration, no invented weekly window
             XCTAssertTrue(text.contains(locale == "zh" ? "价格未知" : "Price unknown"))
             XCTAssertFalse(text.contains("节省"))

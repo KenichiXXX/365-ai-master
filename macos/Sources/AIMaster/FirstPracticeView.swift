@@ -56,50 +56,71 @@ struct FirstPracticeView: View {
                 Button(action: store.advanceOnboarding) { Text("Continue", bundle: .module) }
             } else if !store.onboarded && store.onboardingStep == .obstacle {
                 Text("What is in the way?", bundle: .module)
-                ForEach(PracticeObstacle.allCases, id: \.self) { obstacle in
-                    Button(action: { store.chooseObstacle(obstacle) }) {
-                        Text(LocalizedStringKey(obstacle.label), bundle: .module)
+                Menu {
+                    ForEach(PracticeObstacle.allCases, id: \.self) { obstacle in
+                        Button(action: { store.chooseObstacle(obstacle) }) {
+                            Text(LocalizedStringKey(obstacle.label), bundle: .module)
+                        }
                     }
-                }
+                } label: { Text("What is in the way?", bundle: .module) }
             } else {
-                Text(LocalizedStringKey(store.firstPracticeBranch.label), bundle: .module).font(.caption)
-                if store.firstPracticeBranch == .permissionDenied {
-                    Text("Retry or practice manually; broad disk access is not required", bundle: .module).font(.caption)
-                }
-                Text(store.firstPracticePrompt(locale: language)).font(.callout).textSelection(.enabled)
-                Text("Practice limitation", bundle: .module).font(.caption).foregroundStyle(.secondary)
-                Button(action: {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(store.firstPracticePrompt(locale: language), forType: .string)
-                    store.recordFirstPractice(.copied)
-                }) { Text("Copy practice", bundle: .module) }
+                DisclosureGroup {
+                    Text(LocalizedStringKey(store.firstPracticeBranch.label), bundle: .module).font(.caption)
+                    if store.firstPracticeBranch == .permissionDenied {
+                        Text("Retry or practice manually; broad disk access is not required", bundle: .module).font(.caption)
+                    }
+                    Text(store.firstPracticePrompt(locale: language)).font(.callout).textSelection(.enabled)
+                    Text("Practice limitation", bundle: .module).font(.caption)
+                } label: { Image(systemName: "info.circle").accessibilityLabel(Text("Practice manually", bundle: .module)) }
+                HStack {
+                    CopyButton(prompt: store.firstPracticePrompt(locale: language),
+                               title: language == "zh" ? "复制给 Claude 的指令" : "Copy prompt", locale: language,
+                               onCopied: { store.recordFirstPractice(.copied) })
+                    Button(action: { store.dismissOnboarding(); store.refresh() }) { Text("Check now", bundle: .module) }
+                        .disabled(store.isRefreshing)
+                    Menu {
+                        scanOptions
+                        Button(action: { store.recordFirstPractice(.selfReported) }) {
+                            Text("Tried (self-reported)", bundle: .module)
+                        }
+                        Button(action: { store.chooseObstacle(store.obstacle == .noProject ? .skipped : .noProject) }) {
+                            Text(store.obstacle == .noProject ? "I have a project" : "I have no project", bundle: .module)
+                        }
+                        Button(action: { store.dismissOnboarding(); store.refresh() }) {
+                            Text("Return to check-up", bundle: .module)
+                        }
+                    } label: { Text("⋯") }
+                        .menuStyle(.borderlessButton).fixedSize()
+                        .accessibilityLabel(language == "zh" ? "更多操作" : "More actions")
+                }.controlSize(.small)
                 if store.practiceStatus == .copied {
-                    Text("Practice copied; not verified yet", bundle: .module).font(.caption)
-                }
-                if store.practiceStatus == .selfReported {
-                    Text("Tried (self-reported)", bundle: .module).font(.caption)
-                }
-                Button(action: { store.recordFirstPractice(.selfReported) }) {
-                    Text("Tried (self-reported)", bundle: .module)
-                }
-                Button(action: { store.chooseObstacle(store.obstacle == .noProject ? .skipped : .noProject) }) {
-                    Text(store.obstacle == .noProject ? "I have a project" : "I have no project", bundle: .module)
-                }
-                Button(action: { store.dismissOnboarding(); store.refresh() }) {
-                    Text("Return to check-up", bundle: .module)
+                    Text("Practice copied; not verified yet", bundle: .module).font(.caption).foregroundStyle(.secondary)
+                } else if store.practiceStatus == .selfReported {
+                    Text("Tried (self-reported)", bundle: .module).font(.caption).foregroundStyle(.secondary)
                 }
             }
             if store.isRefreshing {
                 ProgressView { Text("Scanning allowed sources", bundle: .module) }
-                Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
-            } else {
-                Button(action: { store.refresh() }) { Text("Retry", bundle: .module) }
             }
-            if !store.onboarded {
-                Button(action: { store.chooseObstacle(.skipped) }) { Text("Practice manually", bundle: .module) }
+            if !store.onboarded && store.onboardingStep != .practice && store.onboardingStep != .done {
+                Menu { scanOptions } label: { Text("⋯") }
+                    .menuStyle(.borderlessButton).fixedSize()
+                    .accessibilityLabel(language == "zh" ? "更多操作" : "More actions")
             }
         }.padding(12).background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
     }
+
+    @ViewBuilder private var scanOptions: some View {
+        if store.isRefreshing {
+            Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
+        } else {
+            Button(action: { store.refresh() }) { Text("Retry", bundle: .module) }
+        }
+        if !store.onboarded {
+            Button(action: { store.chooseObstacle(.skipped) }) { Text("Practice manually", bundle: .module) }
+        }
+    }
+
 }
 
 struct OptionalPracticePreferences: View {

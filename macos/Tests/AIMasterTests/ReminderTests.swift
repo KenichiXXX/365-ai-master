@@ -211,7 +211,7 @@ final class ReminderTests: XCTestCase {
         let legacy = try EngineRunner.decode(Data(#"{"schema":2}"#.utf8), status: 0).snapshot
         XCTAssertNil(legacy.book?.practiceCalendar)
         XCTAssertEqual(snap.book?.practiceCalendar?.days.first?.accessibilityLabel(labels: ["unavailable": "Data unavailable"]),
-                       "2026-10-19, Data unavailable")
+                       "Oct 19, Data unavailable")
     }
 }
 

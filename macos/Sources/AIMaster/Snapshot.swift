@@ -242,9 +242,15 @@ struct Rankings: Decodable {
     let origin: String?
     let updatedAt: String?
 
+    func footnote(locale: String) -> String {
+        if origin != "cached" { return locale == "zh" ? "内置精选" : "Bundled selection" }
+        return locale == "zh" ? "数据：The Skill Leaderboard · GitHub · 安装前请自行核对权限"
+            : "Data: The Skill Leaderboard · GitHub · Check permissions before installing"
+    }
+
     func sourceLabel(locale: String, stale: Bool = false) -> String {
         if origin != "cached" { return locale == "zh" ? "内置精选，非实时榜单" : "Bundled selection, not a live leaderboard" }
-        let date = updatedAt ?? "—"
+        let date = updatedAt.map { DisplayDate.short($0, locale: locale) } ?? "—"
         let label = locale == "zh" ? "缓存内容，更新于 \(date)" : "Cached content, updated \(date)"
         return stale ? label + (locale == "zh" ? "（更新失败，保留缓存）" : " (update failed; cache retained)") : label
     }
@@ -342,6 +348,39 @@ struct UsageSummary: Decodable {
 
     func caption(locale: String) -> String {
         let zh = locale == "zh"
+        var text = (zh ? "本周 " : "This week ") + Self.tokens(tokens7d, locale: locale) + " tokens"
+        if let price = priceEstimate, let coverage = price.coveragePct, coverage > 0 {
+            let amount = price.matchedSubtotalUsd.formatted(.number.locale(Locale(identifier: "en_US"))
+                .grouping(.never).precision(.fractionLength(0...2)))
+            // Partial matches must never look like the full week's cost.
+            text += zh ? " · \(coverage < 100 ? "部分" : "")折算 $\(amount)"
+                : " · ≈$\(amount) API-equivalent\(coverage < 100 ? " (partial)" : "")"
+        } else { text += zh ? " · 价格未知" : " · Price unknown" }
+        if let quota = codexQuota {
+            let windows = [(quota.primaryPct, quota.primaryWindowMin, quota.primaryResetsAt),
+                           (quota.secondaryPct, quota.secondaryWindowMin, quota.secondaryResetsAt)]
+            // Prefer the weekly window, otherwise show the actual recorded duration.
+            let valid = windows.filter { $0.0?.isFinite == true && ($0.1 ?? 0) > 0 }
+            if let window = valid.first(where: { $0.1 == 10080 }) ?? valid.first,
+               let pct = window.0, let minutes = window.1 {
+                let duration = minutes == 10080 ? (zh ? "周额度" : "weekly")
+                    : minutes % 60 == 0 ? (zh ? "\(minutes / 60)小时额度" : "\(minutes / 60)-hour")
+                    : (zh ? "\(minutes)分钟额度" : "\(minutes)-minute")
+                let percent = pct.formatted(.number.locale(Locale(identifier: "en_US")).precision(.fractionLength(0...1)))
+                text += " · Codex \(duration) \(percent)%"
+                if let reset = window.2 {
+                    let date = DisplayDate.short(reset, locale: locale, time: false)
+                    text += zh ? "（\(date)重置）" : " (resets \(date))"
+                }
+                if quota.freshness == "stale" { text += zh ? "（过时）" : " (stale)" }
+                if quota.freshness == "future" { text += zh ? "（时间异常）" : " (future-dated)" }
+            }
+        }
+        return text
+    }
+
+    func details(locale: String) -> String {
+        let zh = locale == "zh"
         func copy(_ key: String, _ en: String, _ chinese: String) -> String {
             labels?[key] ?? (zh ? chinese : en)
         }
@@ -362,7 +401,7 @@ struct UsageSummary: Decodable {
         }
         text += " · " + copy("price_basis", "API-equivalent at public prices, not a subscription bill", "按公开 API 单价折算，非订阅账单")
         if let date = priceEstimate?.reviewedAt {
-            text += " · " + fill(copy("price_date", "Price table dated {date}", "价格表日期 {date}"), ["date": date])
+            text += " · " + fill(copy("price_date", "Price table dated {date}", "价格表日期 {date}"), ["date": DisplayDate.short(date, locale: locale)])
         }
         if let quota = codexQuota {
             for (pct, minutes, reset) in [(quota.primaryPct, quota.primaryWindowMin, quota.primaryResetsAt),
@@ -375,11 +414,11 @@ struct UsageSummary: Decodable {
                     : copy("quota_minutes", "Codex {minutes}-minute window: {pct}% used", "Codex {minutes} 分钟窗口已用 {pct}%")
                 text += " · " + fill(template, ["pct": number(pct), "hours": number(Double(minutes) / 60), "minutes": String(minutes)])
                 if let reset {
-                    text += " · " + fill(copy("quota_reset", "Resets {date}", "重置时间 {date}"), ["date": reset])
+                    text += " · " + fill(copy("quota_reset", "Resets {date}", "重置时间 {date}"), ["date": DisplayDate.short(reset, locale: locale)])
                 }
             }
             if let date = quota.recordedAt {
-                text += " · " + fill(copy("quota_recorded", "Quota recorded {date}", "额度记录时间 {date}"), ["date": date])
+                text += " · " + fill(copy("quota_recorded", "Quota recorded {date}", "额度记录时间 {date}"), ["date": DisplayDate.short(date, locale: locale)])
             }
             if quota.freshness == "stale" {
                 text += " · " + copy("quota_stale", "Quota record is stale", "额度记录已过时")

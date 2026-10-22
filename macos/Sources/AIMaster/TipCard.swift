@@ -3,6 +3,7 @@ import SwiftUI
 struct TipCard: View {
     let tip: Tip
     @ObservedObject var store: SnapshotStore
+    var dimensions: [Dimension] = []
     @Environment(\.locale) private var displayLocale
 
     private var copyTitle: String {
@@ -16,15 +17,15 @@ struct TipCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(tip.title).font(.title2.bold())
             Text(tip.why).font(.body).foregroundStyle(.secondary)
-            if let evidence = tip.evidenceSummary {
-                DisclosureGroup {
-                    Text(evidence).font(.callout)
-                    if let limitation = tip.limitation { Text(limitation).font(.caption).foregroundStyle(.secondary) }
-                } label: { Text("Why this suggestion", bundle: .module) }
-            }
-            ForEach(Array(tip.steps.enumerated()), id: \.offset) { index, step in
-                Text("\(index + 1). \(step)").font(.callout)
-            }
+            DisclosureGroup {
+                if let evidence = tip.evidenceSummary { Text(evidence).font(.callout) }
+                if let limitation = tip.limitation { Text(limitation).font(.caption) }
+                ForEach(Array(tip.steps.enumerated()), id: \.offset) { index, step in
+                    Text("\(index + 1). \(step)").font(.callout)
+                }
+                if !dimensions.isEmpty { DimensionEvidence(dimensions: dimensions) }
+                FirstPracticeView(store: store)
+            } label: { Image(systemName: "info.circle").accessibilityLabel(Text("Why this suggestion", bundle: .module)) }
             if !tip.promptForClaude.isEmpty {
                 HStack {
                     CopyButton(prompt: tip.promptForClaude,
@@ -35,31 +36,29 @@ struct TipCard: View {
                                })
                     Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
                         .disabled(store.isRefreshing)
-                }.controlSize(.small)
-            }
-            if let id = tip.actionId {
-                HStack {
-                    Button(displayLocale.identifier.hasPrefix("zh") ? "开始实践" : "Start practice") {
-                        store.practice(id: id, operation: "start")
-                    }
-                    if tip.validationKind == "self_report" {
-                        Button(displayLocale.identifier.hasPrefix("zh") ? "已尝试（自报）" : "Tried (self-reported)") {
-                            store.practice(id: id, operation: "self")
-                        }
-                    }
-                }.controlSize(.small).disabled(store.isRefreshing)
-            }
-            if tip.actionId != nil {
-                HStack {
-                    Button(action: { store.actionFeedback(.later) }) { Text("Later", bundle: .module) }
-                    Menu {
-                        ForEach(SnapshotStore.ActionReason.allCases, id: \.self) { reason in
-                            Button(action: { store.actionFeedback(.notSuitable, reason: reason) }) {
-                                Text(LocalizedStringKey(reason.label), bundle: .module)
+                    if let id = tip.actionId {
+                        Menu {
+                            Button(displayLocale.identifier.hasPrefix("zh") ? "开始实践" : "Start practice") {
+                                store.practice(id: id, operation: "start")
                             }
-                        }
-                    } label: { Text("Not suitable", bundle: .module) }
-                    Button(action: { store.actionFeedback(.never) }) { Text("Do not suggest again", bundle: .module) }
+                            if tip.validationKind == "self_report" {
+                                Button(displayLocale.identifier.hasPrefix("zh") ? "已尝试（自报）" : "Tried (self-reported)") {
+                                    store.practice(id: id, operation: "self")
+                                }
+                            }
+                            Button(action: { store.actionFeedback(.later) }) { Text("Later", bundle: .module) }
+                            Menu {
+                                ForEach(SnapshotStore.ActionReason.allCases, id: \.self) { reason in
+                                    Button(action: { store.actionFeedback(.notSuitable, reason: reason) }) {
+                                        Text(LocalizedStringKey(reason.label), bundle: .module)
+                                    }
+                                }
+                            } label: { Text("Not suitable", bundle: .module) }
+                            Button(action: { store.actionFeedback(.never) }) { Text("Do not suggest again", bundle: .module) }
+                        } label: { Text("⋯") }
+                            .menuStyle(.borderlessButton).fixedSize()
+                            .accessibilityLabel(displayLocale.identifier.hasPrefix("zh") ? "更多操作" : "More actions")
+                    }
                 }.controlSize(.small).disabled(store.isRefreshing)
             }
         }
