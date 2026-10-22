@@ -18,6 +18,7 @@ struct CopyButton: View {
     let locale: String
     var copiedTitle: String? = nil
     var onCopied: (() -> Void)? = nil
+    var primary = false
     @State private var feedback = CopyFeedback()
     @State private var copied = false
 
@@ -31,6 +32,7 @@ struct CopyButton: View {
                     onCopied?()
                 }
             }
+            .buttonStyle(ThemeButtonStyle(primary: primary))
             .task(id: feedback.copiedAt) {
                 guard feedback.copiedAt != nil else { return }
                 do { try await Task.sleep(nanoseconds: 1_500_000_000) }

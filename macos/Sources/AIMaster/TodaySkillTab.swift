@@ -14,71 +14,38 @@ struct TodaySkillTab: View {
         _selectedRanking = State(initialValue: ranking)
     }
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.grid * 2) {
+        VStack(alignment: .leading, spacing: Theme.sectionGap) {
             if let card = snapshot.book?.today {
-                VStack(alignment: .leading, spacing: Theme.grid) {
-                    Text("TODAY'S PICK").font(Theme.label).tracking(2).foregroundStyle(Theme.ink)
-                    Text(ActionCopy.line(card.title, locale: locale, hanLimit: 14, englishLimit: 32))
-                        .font(Theme.title).lineLimit(1)
-                    CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy & try", locale: locale,
-                               onCopied: { store.practice(id: card.id, operation: "copy") })
-                        .disabled(store.isRefreshing)
-                }.padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-                    .foregroundStyle(Theme.ink).background(Theme.accentSurface)
-                    .accessibilityIdentifier("today-pick")
+                todayPick(card)
             }
             let picks = DiscoverContent.picks(snapshot)
             let benefits = DiscoverContent.benefits(picks, locale: locale)
             if !picks.isEmpty {
-                VStack(alignment: .leading, spacing: Theme.grid) {
-                    Text(zh ? "为你推荐" : "For you").font(Theme.label)
+                VStack(alignment: .leading, spacing: Theme.grid * 2) {
+                    Text(zh ? "为你推荐" : "For you").font(Theme.sectionTitle)
                     ForEach(Array(picks.enumerated()), id: \.element.url) { index, row in
                         Button { openRepository(row) } label: {
-                            VStack(alignment: .leading, spacing: Theme.grid) {
-                                Text(DiscoverContent.shortName(row, in: recommendationRows)).font(Theme.title).lineLimit(1)
-                                Text(ActionCopy.benefit(benefits[index], locale: locale))
-                                    .font(Theme.body).foregroundStyle(Theme.secondary).lineLimit(1)
-                            }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+                            HStack(spacing: Theme.grid * 2) {
+                                Text(snapshot.rankings?.skill?.contains(where: { $0.url == row.url }) == true ? "Skill" : "Agent")
+                                    .font(Theme.label).foregroundStyle(Theme.secondary)
+                                    .frame(width: Theme.grid * 8, alignment: .leading)
+                                Text(benefits[index])
+                                    .font(Theme.body).lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Text("↗").foregroundStyle(Theme.secondary)
+                            }.contentShape(Rectangle())
                         }.buttonStyle(.plain)
+                            .help(DiscoverContent.shortName(row, in: recommendationRows))
+                            .accessibilityLabel("\(DiscoverContent.shortName(row, in: recommendationRows)), \(benefits[index])")
                     }
                 }
             }
-            rankingTabs
-            VStack(alignment: .leading, spacing: Theme.grid) {
-                if selectedRanking == .learnable {
-                    ForEach(Array(store.features.discoverRankings(cards).enumerated()), id: \.element.id) { index, card in
-                        Button { store.reminderCard = card } label: {
-                            PicksRankingRow(position: index + 1, name: card.title,
-                                tagline: card.why, tag: card.lit ? (zh ? "已点亮" : "Lit") : nil)
-                        }.buttonStyle(.plain)
-                        ThemeRule()
-                    }
-                } else {
-                    ForEach(Array(store.features.discoverRankings(rows).enumerated()), id: \.offset) { index, row in
-                        Button { openRepository(row) } label: {
-                            PicksRankingRow(position: index + 1,
-                                name: DiscoverContent.shortName(row, in: rows), tagline: row.tagline,
-                                metric: DiscoverContent.metric(row, locale: locale), weekly: row.stars7d, locale: locale,
-                                tag: row.installed == true || row.installationHint == true ? (zh ? "已装" : "Installed") : nil)
-                        }.buttonStyle(.plain)
-                        ThemeRule()
-                    }
-                }
-                if rowCount == 0 {
-                    Text(zh ? "暂无榜单" : "No rankings yet").font(Theme.body).foregroundStyle(Theme.secondary)
-                }
-                if DiscoverContent.hasLockedRows(count: rowCount, isPro: store.isPro) {
-                    Button { store.showProSettings = true } label: {
-                        HStack(spacing: Theme.grid) {
-                            Image(systemName: "lock.fill").font(Theme.label)
-                                .frame(width: 20, height: 20).bauhausPanel()
-                            Text(zh ? "第 11–20 名 · PRO 解锁" : "Ranks 11–20 · Unlock with PRO")
-                                .font(Theme.title).lineLimit(1)
-                            Spacer(minLength: 0)
-                        }.padding(.vertical, Theme.grid).contentShape(Rectangle())
-                    }.buttonStyle(.plain).accessibilityIdentifier("rankings-pro-lock")
-                }
+            VStack(alignment: .leading, spacing: Theme.grid * 2) {
+                rankingTabs
+                rankingList
             }
             if let rankings = snapshot.rankings {
                 Text(rankings.footnote(locale: locale)).font(Theme.label).foregroundStyle(Theme.secondary)
@@ -87,20 +54,89 @@ struct TodaySkillTab: View {
         }.bauhausTheme()
     }
 
+    private func todayPick(_ card: SkillCard) -> some View {
+        VStack(alignment: .leading, spacing: Theme.grid * 2) {
+            HStack(alignment: .top, spacing: Theme.grid * 3) {
+                VStack(alignment: .leading, spacing: Theme.grid * 2) {
+                    Text(zh ? "今日推荐" : "TODAY'S PICK")
+                        .font(Theme.label).foregroundStyle(Theme.secondary)
+                    Text(ActionCopy.line(card.title, locale: locale, hanLimit: 14, englishLimit: 32))
+                        .font(Theme.title).lineLimit(1).minimumScaleFactor(0.8)
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                RoundedRectangle(cornerRadius: Theme.grid)
+                    .fill(Theme.accent).frame(width: Theme.grid * 4, height: Theme.grid * 4)
+                    .accessibilityHidden(true)
+            }
+            Text(ActionCopy.line(card.why, locale: locale, hanLimit: 24, englishLimit: 64))
+                .font(Theme.label).foregroundStyle(Theme.secondary).lineLimit(1)
+            CopyButton(prompt: card.prompt, title: zh ? "复制试一下 ↗" : "Copy & try ↗", locale: locale,
+                       onCopied: { store.practice(id: card.id, operation: "copy") }, primary: true)
+                .disabled(store.isRefreshing)
+        }.padding(Theme.cardPadding).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.accentSurface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius))
+            .accessibilityIdentifier("today-pick")
+    }
+
+    private var rankingList: some View {
+        VStack(spacing: 0) {
+            if selectedRanking == .learnable {
+                ForEach(Array(store.features.discoverRankings(cards).enumerated()), id: \.element.id) { index, card in
+                    if index > 0 { ThemeRule() }
+                    Button { store.reminderCard = card } label: {
+                        PicksRankingRow(position: index + 1, name: card.title,
+                            tagline: card.why, tag: card.lit ? (zh ? "已点亮" : "Lit") : nil)
+                    }.buttonStyle(.plain)
+                }
+            } else {
+                ForEach(Array(store.features.discoverRankings(rows).enumerated()), id: \.offset) { index, row in
+                    if index > 0 { ThemeRule() }
+                    Button { openRepository(row) } label: {
+                        PicksRankingRow(position: index + 1,
+                            name: DiscoverContent.shortName(row, in: rows), tagline: row.tagline,
+                            metric: DiscoverContent.metric(row, locale: locale), weekly: row.stars7d, locale: locale,
+                            tag: row.installed == true || row.installationHint == true ? (zh ? "已装" : "Installed") : nil)
+                    }.buttonStyle(.plain)
+                }
+            }
+            if rowCount == 0 {
+                Text(zh ? "暂无榜单" : "No rankings yet").font(Theme.body).foregroundStyle(Theme.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, Theme.cardPadding)
+            }
+            if DiscoverContent.hasLockedRows(count: rowCount, isPro: store.isPro) {
+                ThemeRule()
+                Button { store.showProSettings = true } label: {
+                    HStack(spacing: Theme.grid) {
+                        Text(zh ? "第 11–20 名" : "Ranks 11–20").foregroundStyle(Theme.secondary)
+                        Spacer(minLength: Theme.grid)
+                        Text(zh ? "PRO 解锁 ↗" : "Unlock with PRO ↗")
+                    }.font(Theme.label).padding(.vertical, Theme.grid * 3).contentShape(Rectangle())
+                }.buttonStyle(.plain).accessibilityIdentifier("rankings-pro-lock")
+            }
+        }.padding(.horizontal, Theme.grid * 3)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.listRadius))
+    }
+
     private var rankingTabs: some View {
-        HStack(spacing: Theme.grid * 2) {
+        HStack(spacing: Theme.grid) {
             ForEach(DiscoverRanking.allCases, id: \.self) { kind in
                 Button { selectedRanking = kind } label: {
-                    Text(kind.title(zh: zh)).font(Theme.title)
+                    Text(kind.title(zh: zh)).font(Theme.label)
+                        .fontWeight(selectedRanking == kind ? .semibold : .regular)
                         .foregroundStyle(selectedRanking == kind ? Theme.ink : Theme.secondary)
-                        .padding(.vertical, Theme.grid)
-                        .overlay(alignment: .bottom) {
-                            Rectangle().fill(selectedRanking == kind ? Theme.ink : .clear).frame(height: 2)
+                        .frame(maxWidth: .infinity).padding(.vertical, Theme.grid)
+                        .background {
+                            if selectedRanking == kind {
+                                RoundedRectangle(cornerRadius: Theme.buttonRadius).fill(Theme.surface)
+                                    .shadow(color: Theme.ink.opacity(0.08), radius: 2, y: 1)
+                            }
                         }
                 }.buttonStyle(.plain)
                     .accessibilityAddTraits(selectedRanking == kind ? .isSelected : [])
+                    .accessibilityIdentifier("ranking-tab-\(kind.rawValue)")
             }
-        }
+        }.padding(Theme.grid)
+            .background(Theme.hairline, in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
+            .animation(reduceMotion ? nil : .easeInOut(duration: Theme.feedbackDuration), value: selectedRanking)
     }
 
     private var recommendationRows: [Ranking] { (snapshot.rankings?.skill ?? []) + (snapshot.rankings?.agent ?? []) }
@@ -129,37 +165,25 @@ private struct PicksRankingRow: View {
     var locale: String = "en"
     var tag: String? = nil
 
-    private var rankColor: Color {
-        switch position {
-        case 1: return Theme.accent
-        case 2: return Theme.accent
-        default: return Theme.ink
-        }
-    }
-
     var body: some View {
-        HStack(spacing: Theme.grid) {
-            Text("\(position)").font(Theme.label).monospacedDigit()
-                .foregroundStyle(position <= 2 ? Theme.surface : position == 3 ? Theme.paper : Theme.ink)
-                .frame(width: 20, height: 20)
-                .background(position <= 3 ? rankColor : Color.clear)
-                .overlay(Rectangle().strokeBorder(rankColor, lineWidth: Theme.ruleWidth))
+        HStack(spacing: Theme.grid * 3) {
+            Text(String(format: "%02d", position)).font(Theme.label).monospacedDigit()
+                .foregroundStyle(Theme.secondary).frame(width: Theme.grid * 4, alignment: .leading)
             VStack(alignment: .leading, spacing: Theme.grid) {
                 HStack(spacing: Theme.grid) {
-                    Text(name).font(Theme.title).lineLimit(1)
+                    Text(name).font(Theme.body).lineLimit(1)
                     if let tag {
-                        Text(tag).font(Theme.label).lineLimit(1).fixedSize()
-                            .padding(.horizontal, 4).padding(.vertical, 2).bauhausPanel()
+                        Text(tag).font(Theme.label).foregroundStyle(Theme.secondary).lineLimit(1).fixedSize()
                     }
                 }
-                Text(tagline).font(Theme.body).foregroundStyle(Theme.secondary).lineLimit(1)
+                Text(tagline).font(Theme.label).foregroundStyle(Theme.secondary).lineLimit(1)
             }.frame(maxWidth: .infinity, alignment: .leading)
             if !metric.isEmpty {
                 Text(metric).font(Theme.label).monospacedDigit().lineLimit(1).fixedSize()
                     .foregroundStyle((weekly ?? 0) > 0 ? Theme.accent : Theme.secondary)
                     .accessibilityLabel(weekly != nil ? metric + (locale == "zh" ? " 本周增长" : " weekly growth") : metric)
             }
-        }.padding(.vertical, Theme.grid).contentShape(Rectangle())
+        }.padding(.vertical, Theme.grid * 3).contentShape(Rectangle())
     }
 }
 
