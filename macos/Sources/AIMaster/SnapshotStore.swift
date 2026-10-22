@@ -379,6 +379,16 @@ final class SnapshotStore: ObservableObject {
     @Published private(set) var lastError: String?
     @Published private(set) var lastRun: Date?
     @Published private(set) var isRefreshing = false
+    @Published var showSettings = false
+    @Published private(set) var recheckScan: RecheckScan?
+    @Published private(set) var scoreChange: ScoreChange?
+    @Published private(set) var recheckCompletedAt: Date?
+
+    @discardableResult
+    func recheck() -> Task<Void, Never>? {
+        guard !isRefreshing else { return nil }
+        return refresh(showScan: true)
+    }
     @Published var enabledTools: [String] {
         didSet { defaults.set(enabledTools, forKey: "enabledTools"); refresh() }
     }
@@ -571,7 +581,7 @@ final class SnapshotStore: ObservableObject {
     }
 
     @discardableResult
-    func refresh() -> Task<Void, Never>? {
+    func refresh(showScan: Bool = false) -> Task<Void, Never>? {
         revalidateEntitlement()
         guard !isRefreshing else { return nil }
         isRefreshing = true
@@ -579,8 +589,27 @@ final class SnapshotStore: ObservableObject {
         let language = locale
         let loader = load
         let scan = EngineScan()
+        let previousScore = snapshot?.overall?.score
+        if showScan {
+            recheckScan = RecheckScan(lines: RecheckScan.lines(snapshot: snapshot, enabledTools: tools))
+            scoreChange = nil
+            recheckCompletedAt = nil
+        }
         activeScan = scan
         return Task {
+            let scanAnimation = Task { @MainActor in
+                guard showScan else { return }
+                let count = recheckScan?.lines.count ?? 0
+                for index in 0..<count {
+                    try? await Task.sleep(nanoseconds: 220_000_000)
+                    guard !Task.isCancelled, !scan.isCancelled else { return }
+                    recheckScan?.completed = index + 1
+                }
+            }
+            defer {
+                scanAnimation.cancel()
+                if showScan { recheckScan = nil }
+            }
             do {
                 let result = try await Task.detached {
                     if let loader { return try loader(language, tools) }
@@ -590,6 +619,20 @@ final class SnapshotStore: ObservableObject {
                     activeScan = nil
                     isRefreshing = false
                     return
+                }
+                if showScan {
+                    await scanAnimation.value
+                    guard !scan.isCancelled else {
+                        activeScan = nil
+                        isRefreshing = false
+                        return
+                    }
+                    let completedAt = Date()
+                    recheckCompletedAt = completedAt
+                    if let previousScore, let score = result.snapshot.overall?.score, score != previousScore {
+                        scoreChange = ScoreChange(delta: score - previousScore, date: completedAt)
+                    }
+                    recheckScan = nil
                 }
                 snapshot = result.snapshot
                 courseCatalogue = EngineRunner.courseSources(practiceIDs: Set(result.snapshot.book?.cards.map(\.id) ?? []), content: courseContentURL)

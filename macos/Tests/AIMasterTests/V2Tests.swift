@@ -44,7 +44,7 @@ final class V2Tests: XCTestCase {
             let data = Data("""
             {"schema":2,"book":{"lit":0,"total":1,"cards":[],"today":{"id":"s","title":"S","why":"W","prompt":"P","level":1,"lit":\(lit)}},"village":{"current":"q","rank_title":"R","quests":[{"key":"q","title":"Q","status":"current"}]}}
             """.utf8)
-            XCTAssertEqual(StatusItemController.badgeTitle(snapshot: try EngineRunner.decode(data, status: 0).snapshot), "①" + suffix)
+            XCTAssertEqual(StatusItemController.badgeTitle(snapshot: try EngineRunner.decode(data, status: 0).snapshot), "—" + suffix)
         }
     }
 }

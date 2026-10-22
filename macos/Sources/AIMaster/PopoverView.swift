@@ -2,11 +2,16 @@ import SwiftUI
 
 struct PopoverView: View {
     @ObservedObject var store: SnapshotStore
-    @State private var settings = false
     @AppStorage("selectedTab") private var selectedTab = 0
 
     var body: some View {
         VStack(spacing: 12) {
+            HStack {
+                Text("365 AI Master").font(.headline)
+                Spacer()
+                Button((store.snapshot?.locale ?? store.locale) == "zh" ? "↻ 重新体检" : "↻ Re-check") { store.recheck() }
+                    .disabled(store.isRefreshing)
+            }
             Picker(selection: $selectedTab) {
                 Text("Check-up", bundle: .module).tag(0)
                 Text("New today", bundle: .module).tag(1)
@@ -49,7 +54,7 @@ struct PopoverView: View {
                     if store.lastError != nil { Text("stale", bundle: .module).foregroundStyle(.orange) }
                 }.font(.system(size: 11))
                 Spacer()
-                Button(action: { settings = true }) { Text("Settings", bundle: .module) }
+                Button(action: { store.showSettings = true }) { Text("Settings", bundle: .module) }
             }
         }
         .onAppear { store.resumeEntitlement() }
@@ -76,6 +81,6 @@ struct PopoverView: View {
                 }.padding(20)
             }.frame(width: 440, height: 480)
         }
-        .sheet(isPresented: $settings) { SettingsView(store: store) }
+        .sheet(isPresented: $store.showSettings) { SettingsView(store: store) }
     }
 }

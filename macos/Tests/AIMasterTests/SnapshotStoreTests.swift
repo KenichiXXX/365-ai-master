@@ -27,10 +27,10 @@ final class SnapshotStoreTests: XCTestCase {
         XCTAssertNotNil(store.lastError)
     }
 
-    @MainActor func testMenuBadgeUsesQuestAndNoData() throws {
-        XCTAssertEqual(StatusItemController.badgeTitle(snapshot: nil), "○")
+    @MainActor func testMenuBadgeUsesScoreAndNoData() throws {
+        XCTAssertEqual(StatusItemController.badgeTitle(snapshot: nil), "—")
         let data = Data("{\"schema\":1,\"village\":{\"current\":null,\"rank_title\":\"Master\",\"quests\":[]}}".utf8)
-        XCTAssertEqual(StatusItemController.badgeTitle(snapshot: try EngineRunner.decode(data, status: 0).snapshot), "✓")
+        XCTAssertEqual(StatusItemController.badgeTitle(snapshot: try EngineRunner.decode(data, status: 0).snapshot), "—")
     }
     @MainActor func testCancelBlockedScanDiscardsOutputAndRetryIsSerialized() async throws {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!

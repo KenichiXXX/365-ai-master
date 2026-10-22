@@ -23,6 +23,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
         statusItem.button?.title = Self.badgeTitle(snapshot: nil)
         statusItem.button?.target = self
         statusItem.button?.action = #selector(togglePopover)
+        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         subscription = store.$snapshot.sink { [weak self] snapshot in
             self?.statusItem.button?.title = Self.badgeTitle(snapshot: snapshot)
         }
@@ -36,11 +37,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
     }
 
     static func badgeTitle(snapshot: Snapshot?) -> String {
-        guard let village = snapshot?.village else { return "○" }
-        guard let current = village.current else { return "✓" + (snapshot?.book?.today?.lit == false ? " •" : "") }
-        let numbers = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"]
-        guard let index = village.quests.firstIndex(where: { $0.key == current }), index < numbers.count else { return "○" }
-        return numbers[index] + (snapshot?.book?.today?.lit == false ? " •" : "")
+        (snapshot?.overall?.score.map(String.init) ?? "—") + (snapshot?.book?.today?.lit == false ? " •" : "")
     }
 
     func popoverDidClose(_ notification: Notification) {
@@ -76,7 +73,35 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
         }
     }
 
+    @objc private func checkNow() {
+        store.recheck()
+        showPopover()
+    }
+
+    @objc private func openSettings() {
+        store.showSettings = true
+        showPopover()
+    }
+
+    @objc private func quit() { NSApp.terminate(nil) }
+
     @objc private func togglePopover() {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            popover.performClose(nil)
+            let menu = NSMenu()
+            let zh = (store.snapshot?.locale ?? store.locale) == "zh"
+            for (title, action) in [(zh ? "立即体检" : "Check now", #selector(checkNow)),
+                                    (zh ? "设置…" : "Settings…", #selector(openSettings)),
+                                    (zh ? "退出" : "Quit", #selector(quit))] {
+                let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+                item.target = self
+                menu.addItem(item)
+            }
+            statusItem.menu = menu
+            statusItem.button?.performClick(nil)
+            statusItem.menu = nil
+            return
+        }
         if popover.isShown { popover.performClose(nil) }
         else {
             store.recordLocalEvent(.foregroundOpen)

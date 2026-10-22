@@ -11,7 +11,7 @@ struct CheckupTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(spacing: 10) {
-                RingView(score: snapshot.overall?.score, size: 150)
+                RecheckScoreView(snapshot: snapshot, store: store)
                 if let caption = snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) {
                     Text(caption).font(.callout).foregroundStyle(.secondary)
                 }
