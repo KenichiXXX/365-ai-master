@@ -9,7 +9,13 @@ mkdir -p "$(dirname "$PLIST")" "$HOME/Library/Logs"
 # into Application Support and run it from there. Re-run this script after updating the code.
 RUNTIME="$HOME/Library/Application Support/365AIMaster-harvest/runtime"
 ORIGIN="$(git -C "$REPO" remote get-url origin)"
-PYTHON="$(readlink -f "$REPO/.venv/bin/python")"
+BASE_PYTHON="$(readlink -f "$REPO/.venv/bin/python")"
+# The runtime gets its own venv (outside ~/Documents, which launchd may not read) with the
+# package's runtime dependencies; validation imports agentfit.pricing -> pydantic.
+RUNTIME_VENV="$HOME/Library/Application Support/365AIMaster-harvest/venv"
+[ -x "$RUNTIME_VENV/bin/python" ] || "$BASE_PYTHON" -m venv "$RUNTIME_VENV"
+"$RUNTIME_VENV/bin/python" -m pip install --quiet --disable-pip-version-check "pydantic>=2"
+PYTHON="$RUNTIME_VENV/bin/python"
 rm -rf "$RUNTIME"
 mkdir -p "$RUNTIME/scripts/harvest"
 # Copy the whole agentfit package: validation imports grow over time (e.g. engine/prices.py).
