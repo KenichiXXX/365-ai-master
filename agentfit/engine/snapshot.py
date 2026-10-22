@@ -28,6 +28,24 @@ from agentfit.engine.scan_state import ScanState
 from agentfit.engine.village import advance, evaluate, today_tip, village_block
 
 
+def _quota_freshness(quota, now):
+    windows = [name for name in ("primary", "secondary")
+               if (quota.get(f"{name}_window_min") or 0) > 0]
+    name = next((n for n in windows if quota[f"{n}_window_min"] == 10080),
+                next(iter(windows), None))
+    recorded = quota.get("recorded_at")
+    if not recorded or name is None:
+        return "unknown"
+    age = (now - datetime.fromisoformat(recorded)).total_seconds()
+    if age < 0:
+        return "future"
+    reset = quota.get(f"{name}_resets_at")
+    if age > quota[f"{name}_window_min"] * 60 or (
+            reset and datetime.fromisoformat(reset) <= now):
+        return "stale"
+    return "fresh"
+
+
 def build_snapshot(
     home: Path, state_dir: Path, locale: str, now: datetime | None = None,
     enabled: set[str] | None = None, content: Path | None = None,
@@ -82,10 +100,7 @@ def build_snapshot(
             if collector.tool == "codex" and row["error"] is None:
                 quota = latest_rate_limits(home)
                 if quota:
-                    recorded = quota.get("recorded_at")
-                    age = (now - datetime.fromisoformat(recorded)).total_seconds() if recorded else None
-                    quota["freshness"] = ("unknown" if age is None else "future" if age < 0 else
-                                          "stale" if age > 3600 else "fresh")
+                    quota["freshness"] = _quota_freshness(quota, now)
         except Exception:
             row["error"] = "unavailable"
     dims = dimensions(profile, coverage, locale)

@@ -41,7 +41,7 @@ def test_price_metadata_validation_and_unsupported_conditions():
         assert not validate_prices(table)
     assert estimate([event()], {**TABLE, "currency": "JPY"})["matched_tokens"] == 0
 
-def test_profile_separates_categories_and_never_falls_back_to_tier_price():
+def test_profile_separates_categories_and_unknown_models_remain_unpriced():
     p = build_profile([event(), event()], NOW, prices=TABLE)
     assert p.price_estimate["matched_tokens"] == 190  # deduplicated
     assert p.by_tool["codex"]["7d"]["tokens"] == 150
@@ -73,3 +73,40 @@ def test_content_rejects_invalid_price_override_and_accepts_absent_section(tmp_p
     path = tmp_path / "content.json"
     path.write_text(json.dumps(pool))
     assert load_content(path)["prices"]["models"] == []
+
+
+@pytest.mark.parametrize("tool,model,rates", [
+    ("claude_code", "claude-opus-5", (15, 75, 1.5)),
+    ("claude_code", "claude-sonnet-5", (3, 15, .3)),
+    ("claude_code", "claude-haiku-4-5", (1, 5, .1)),
+    ("codex", "gpt-6-astra", (15, 75, 1.5)),
+    ("codex", "gpt-6.1-sol", (3, 15, .3)),
+    ("codex", "gpt-6-terra", (3, 15, .3)),
+    ("codex", "gpt-6-luna", (1, 5, .1)),
+])
+def test_known_family_tier_estimate_keeps_all_token_categories(tool, model, rates):
+    result = estimate([event(tool=tool, model=model)])
+    p_in, p_out, p_cache = rates
+    assert result["total_usd"] == pytest.approx((110 * p_in + 50 * p_out + 40 * p_cache) / 1e6)
+    assert result["coverage_pct"] == 100
+    assert result["tier_estimated_tokens"] == 200
+    assert result["price_version"].endswith("+tier-v1")
+
+
+def test_reviewed_known_model_row_takes_precedence_without_filling_missing_categories():
+    table = deepcopy(TABLE)
+    table["models"][0]["model"] = "gpt-6.1-sol"
+    result = estimate([event(model="gpt-6.1-sol")], table)
+    assert result["matched_subtotal_usd"] == pytest.approx(.00064)
+    assert result["unknown_tokens"] == 10
+    assert result["total_usd"] is None
+    assert result["tier_estimated_tokens"] == 0
+    assert result["price_version"] == "synthetic-v1"
+
+
+@pytest.mark.parametrize("model", ["", "unknown", "unreviewed", "gpt-6-mystery", "my-custom-balanced"])
+def test_arbitrary_scoring_default_is_not_evidence_of_a_known_price(model):
+    result = estimate([event(model=model)])
+    assert result["total_usd"] is None
+    assert result["matched_tokens"] == 0
+    assert result["unknown_tokens"] == 200

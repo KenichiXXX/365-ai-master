@@ -122,11 +122,18 @@ def assign_action(state: dict, dims, locale: str, today: date, path: Path | None
     previous = main["assignment"]
     if previous and previous["source"]["kind"] == "quest" and previous["source"]["ref"] in state["passed"]:
         main["assignment"] = previous = None
+    # Retire an automatic no-data fallback when assessable logs arrive. Keep
+    # deliberate alternatives selected after feedback, including legacy ones.
+    if (previous and previous["source"]["kind"] == "pool"
+            and previous.get("missing_data_fallback", not main["feedback"])
+            and any(d.score is not None for d in dims)):
+        main["assignment"] = previous = None
     if previous:
         kind, ref = previous["source"]["kind"], previous["source"]["ref"]
     else:
         candidates = []
-        if not main.pop("safe_alternative", False):
+        safe_alternative = main.pop("safe_alternative", False)
+        if not safe_alternative:
             if state["current"] in supported:
                 candidates.append(("quest", state["current"]))
             candidates.extend(("dimension", d.key) for d in sorted(
@@ -143,7 +150,9 @@ def assign_action(state: dict, dims, locale: str, today: date, path: Path | None
         rule_id = f"{kind}:{ref}"
         main["sequence"] = main.get("sequence", 0) + 1
         previous = {"source": {"kind": kind, "ref": ref}, "rule_id": rule_id,
-                    "action_id": f"{rule_id}:{main['sequence']}", "assigned_on": today.isoformat()}
+                    "action_id": f"{rule_id}:{main['sequence']}", "assigned_on": today.isoformat(),
+                    "missing_data_fallback": kind == "pool" and not safe_alternative
+                        and not any(d.score is not None for d in dims)}
         main["assignment"] = previous
         dim = next((d for d in dims if kind == "dimension" and d.key == ref), None)
         previous["evidence"] = [{k: e[k] for k in ("rule_id", "numerator", "denominator", "window_days")}

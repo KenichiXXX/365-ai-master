@@ -1,4 +1,6 @@
 from datetime import datetime, timezone, timedelta
+
+import pytest
 from agentfit.engine.events import CompactEvent
 from agentfit.engine.profile import build_profile, dimensions, event_cost
 
@@ -17,7 +19,7 @@ def test_dedupe_and_windows():
         ev(key="cx", tool="codex", model="gpt-6.1-sol", input=200, cache_read=800, output=50),
     ]
     p = build_profile(events, NOW)
-    assert p.usage_by_model_7d["claude-sonnet-5"] == {"tokens": 140, "cost": None, "requests": 1}
+    assert p.usage_by_model_7d["claude-sonnet-5"] == {"tokens": 140, "cost": .0009, "requests": 1}
     assert p.tool_calls_14d == {"Edit": 1, "Read": 1}
     assert "old" not in str(p.usage_by_model_7d) and p.turns_14d == 1 and p.aborted_14d == 1
     assert p.light_token_share_14d == round(100 / (140 + 100 + 250), 4)
@@ -97,16 +99,17 @@ def test_today_and_histogram_use_local_timezone(monkeypatch):
 
 def test_costs_model_order_and_empty_profile():
     assert event_cost(ev(model="claude-opus-4", input=1_000_000, output=1_000_000,
-                         cache_read=1_000_000, cache_write=999_999)) is None
+                         cache_read=1_000_000, cache_write=999_999)) == pytest.approx(106.499985)
     events = [ev(key="small", input=1, cache_read=1),
               ev(key="large", model="claude-haiku-4-5", input=2, output=3)]
     p = build_profile(events, NOW)
-    assert p.total_cost_7d is None
+    assert p.total_cost_7d == pytest.approx(.0000203)
     assert p.by_tool["claude_code"]["7d"]["tokens"] == 6
-    assert p.by_tool["claude_code"]["7d"]["cost_usd"] is None
+    assert p.by_tool["claude_code"]["7d"]["cost_usd"] == pytest.approx(.0000203)
     assert [(r["model"], r["tokens"], r["cost_usd"]) for r in p.by_tool["claude_code"]["by_model"]] == [
-        ("claude-haiku-4-5", 5, None), ("claude-sonnet-5", 1, None)]
-    assert p.price_estimate["unknown_tokens"] == 7
+        ("claude-haiku-4-5", 5, .000017), ("claude-sonnet-5", 1, .0000033)]
+    assert p.price_estimate["unknown_tokens"] == 0
+    assert p.price_estimate["tier_estimated_tokens"] == 7
     empty = build_profile([], NOW)
     assert empty.now == NOW
     assert empty.cache_hit_rate_7d is None

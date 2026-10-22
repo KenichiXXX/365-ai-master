@@ -115,13 +115,13 @@ def test_snapshot_v2_blocks(tmp_path):
     assert len(s["badges"]) == 9
     usage = s["usage_summary"]
     assert usage["tokens_7d"] == sum(t["usage_7d"]["tokens"] for t in s["tools"])
-    assert usage["cost_usd_7d"] is None
-    assert usage["price_estimate"]["unknown_tokens"] > 0
+    assert usage["cost_usd_7d"] == .005963
+    assert usage["price_estimate"]["unknown_tokens"] == 0
     assert usage["codex_quota"]["primary_pct"] == 42.5
     assert usage["codex_quota"]["primary_window_min"] == 300
     assert usage["codex_quota"]["secondary_window_min"] == 10080
     assert usage["codex_quota"]["recorded_at"]
-    assert usage["codex_quota"]["freshness"] == "stale"
+    assert usage["codex_quota"]["freshness"] == "fresh"
     empty = build_snapshot(tmp_path / "empty", tmp_path / "empty-state", "zh", now=NOW)
     assert empty["usage_summary"]["tokens_7d"] == 0
     assert empty["usage_summary"]["cost_usd_7d"] is None

@@ -93,6 +93,23 @@ struct CodexQuota: Decodable {
     let planType: String?
     let recordedAt: String?
     let freshness: String?
+
+    func freshness(minutes: Int, reset: String?, now: Date = Date()) -> String {
+        let iso = ISO8601DateFormatter()
+        func parse(_ value: String) -> Date? {
+            if let date = iso.date(from: value) { return date }
+            iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let date = iso.date(from: value)
+            iso.formatOptions = [.withInternetDateTime]
+            return date
+        }
+        guard let recordedAt, let recorded = parse(recordedAt) else { return "unknown" }
+        let age = now.timeIntervalSince(recorded)
+        if age < 0 { return "future" }
+        if age > Double(minutes) * 60 { return "stale" }
+        if let reset, let date = parse(reset), date <= now { return "stale" }
+        return "fresh"
+    }
 }
 
 struct Dimension: Decodable, Identifiable {
@@ -372,8 +389,9 @@ struct UsageSummary: Decodable {
                     let date = DisplayDate.short(reset, locale: locale, time: false)
                     text += zh ? "（\(date)重置）" : " (resets \(date))"
                 }
-                if quota.freshness == "stale" { text += zh ? "（过时）" : " (stale)" }
-                if quota.freshness == "future" { text += zh ? "（时间异常）" : " (future-dated)" }
+                let freshness = quota.freshness(minutes: minutes, reset: window.2)
+                if freshness == "stale" { text += zh ? "（过时）" : " (stale)" }
+                if freshness == "future" { text += zh ? "（时间异常）" : " (future-dated)" }
             }
         }
         return text
@@ -399,6 +417,14 @@ struct UsageSummary: Decodable {
         } else {
             text += " · " + copy("price_unknown", "Price unknown", "价格未知")
         }
+        if let price = priceEstimate, let coverage = price.coveragePct, coverage > 0, coverage < 100 {
+            text += " · " + copy("price_partial_unknown", "Some model prices are unknown", "部分模型价格未知")
+        }
+        if (priceEstimate?.tierEstimatedTokens ?? 0) > 0 {
+            text += " · " + copy("price_tier_basis",
+                "Known model tiers use approximate API rates; cache writes use the input tier rate",
+                "已知模型按档位近似折算，缓存写入按输入档位价估算")
+        }
         text += " · " + copy("price_basis", "API-equivalent at public prices, not a subscription bill", "按公开 API 单价折算，非订阅账单")
         if let date = priceEstimate?.reviewedAt {
             text += " · " + fill(copy("price_date", "Price table dated {date}", "价格表日期 {date}"), ["date": DisplayDate.short(date, locale: locale)])
@@ -420,9 +446,13 @@ struct UsageSummary: Decodable {
             if let date = quota.recordedAt {
                 text += " · " + fill(copy("quota_recorded", "Quota recorded {date}", "额度记录时间 {date}"), ["date": DisplayDate.short(date, locale: locale)])
             }
-            if quota.freshness == "stale" {
+            let minutes = [quota.primaryWindowMin, quota.secondaryWindowMin].compactMap { $0 }.filter { $0 > 0 }
+            let preferred = minutes.first(where: { $0 == 10080 }) ?? minutes.first
+            let reset = preferred == quota.primaryWindowMin ? quota.primaryResetsAt : quota.secondaryResetsAt
+            let freshness = preferred.map { quota.freshness(minutes: $0, reset: reset) } ?? "unknown"
+            if freshness == "stale" {
                 text += " · " + copy("quota_stale", "Quota record is stale", "额度记录已过时")
-            } else if quota.freshness == "future" {
+            } else if freshness == "future" {
                 text += " · " + copy("quota_future", "Quota record is future-dated", "额度记录时间在未来")
             }
         }
@@ -434,6 +464,7 @@ struct PriceEstimate: Decodable {
     let matchedSubtotalUsd: Double
     let coveragePct: Double?
     let reviewedAt: String?
+    var tierEstimatedTokens: Int? = nil
 }
 
 struct HistoryComparison: Decodable {

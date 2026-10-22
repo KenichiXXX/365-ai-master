@@ -232,3 +232,33 @@ def test_unsuitable_action_offers_safe_practice_even_when_scores_are_known(tmp_p
     b = assign(path, dims=dims)
     assert b["source"]["kind"] == "pool"
     assert b["validation_kind"] == "self_report"
+
+
+def test_no_data_pool_upgrades_to_lowest_dimension_when_quests_are_met(tmp_path):
+    from agentfit.engine.action_rules import evaluate_dimensions
+    path = tmp_path / "progress.json"
+    initial = assign(path, current=None, supported=set())
+    assert initial["source"]["kind"] == "pool"
+    dims = evaluate_dimensions(profile(), covered(), "en")
+    tip = assign(path, current=None, supported=set(), dims=dims)
+    assert tip["source"] == {"kind": "dimension", "ref": "routing"}
+    assert assign(path, current=None, supported=set(), dims=dims) == tip
+
+
+def test_legacy_automatic_pool_upgrades_but_feedback_alternative_stays(tmp_path):
+    from agentfit.engine.action_rules import action_feedback, evaluate_dimensions
+    path = tmp_path / "progress.json"
+    initial = assign(path, supported=set())
+    saved = json.loads(path.read_text())
+    del saved["main_action"]["assignment"]["missing_data_fallback"]
+    path.write_text(json.dumps(saved))
+    dims = evaluate_dimensions(profile(), covered(), "en")
+    quest = assign(path, dims=dims)
+    assert quest["source"]["kind"] == "quest"
+    assert quest["action_id"] != initial["action_id"]
+    assert action_feedback(path, quest["action_id"], "later", "not_now", NOW.date())
+    alternative = assign(path, dims=dims)
+    saved = json.loads(path.read_text())
+    del saved["main_action"]["assignment"]["missing_data_fallback"]
+    path.write_text(json.dumps(saved))
+    assert assign(path, dims=dims) == alternative
