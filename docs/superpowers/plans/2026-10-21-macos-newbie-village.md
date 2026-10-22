@@ -1732,3 +1732,20 @@ Real-data renders (light and dark) of the full popover for all three tabs, a dim
 2. ● 我: the one-line usage footer is clipped/overlapping the bottom hairline (text cut in half). It must sit fully visible above the footer separator at 440×720 (scroll if needed).
 3. ■ 大师推荐 「为你推荐」 rows lost the tool name — show `Skill  dspy · 把提示词写成可优化的程序 ↗` (name in text color, line in secondary), truncate the line, never the name.
 Real-data render (zh light + dark) via RenderPreviewTests; assert the primary buttons' rendered color equals the accent. Commit `fix(macos): solid primary buttons, visible usage line, named picks`.
+
+---
+
+### Task 63: WeChat Pay and Alipay (Kenichi, 2026-10-22)
+
+Kenichi: 「加上中国人的微信和支付宝的支付方式」.
+Facts (researched 2026-10-22): Waffo lists WeChat Pay and Alipay among its wallets for payments ([payment methods](https://waffo.com/docs/en/essentials/payment-methods)); its subscription docs do not list them as subscription-capable and say support depends on the merchant contract and `paymethodconfig/inquiry` ([subscription payment methods](https://waffo.com/docs/en/developer-docs/tools-and-references/references/subscription-payment-methods)). Third-party sources say WeChat Pay/Alipay generally cannot auto-renew. Therefore:
+
+- **Two purchase options** in the Pro sheet, both $12/year founding price:
+  1. 「银行卡 / Apple Pay · 每年自动续费」 → Waffo subscription checkout (existing auto-renew flow).
+  2. 「微信支付 / 支付宝 · 一次付一年」 → Waffo one-time checkout for a 365-day licence; NO auto-renewal. Show 「到期前 7 天提醒你续费」.
+  Copy (zh/en) must state clearly which option auto-renews. In zh locale, list option 2 first; in en, option 1 first. Show the WeChat Pay / Alipay names (text; no third-party logos unless bundled assets with permission — use text badges).
+- **Configuration**: `checkoutURL` becomes two constants `subscriptionCheckoutURL` and `oneTimeCheckoutURL` (both placeholders until Kenichi's Waffo merchant is live); each button is hidden while its URL is a placeholder (keep the 「付款通道开通中」 line).
+- **Worker**: the payment interface gains a `one_time_annual` product: a verified paid one-time order issues one 365-day licence (idempotent per order id); no renewal period is created; refunds revoke as for subscriptions. Keep the Waffo-specific verification behind the existing interface with a fake in tests and a TODO for the real webhook fields.
+- **App**: for a one-time licence, 7 days before `exp` show a renewal card in Settings/Pro and (if notifications allowed) one local notification 「Pro 将于 X 天后到期 · 续费」 → opens the Pro sheet with option 2 preselected. Never auto-charge.
+- Tests: worker (one-time issue idempotency, refund revoke, no renewal period); Swift (two options visible/hidden by URL, zh order, renewal reminder timing, copy says which auto-renews).
+- Commit `feat: WeChat Pay and Alipay as one-time yearly purchase alongside auto-renew cards`.
