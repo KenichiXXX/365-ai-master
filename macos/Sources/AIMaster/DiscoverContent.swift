@@ -5,15 +5,34 @@ enum DiscoverRanking: String, CaseIterable {
 
     func title(zh: Bool) -> String {
         switch self {
-        case .skill: return zh ? "Skill 榜" : "Skills"
-        case .agent: return zh ? "Agent 榜" : "Agents"
-        case .learnable: return zh ? "技能榜" : "Learn"
-        case .product: return zh ? "产品榜" : "Products"
+        case .skill: return "Skill"
+        case .agent: return "Agent"
+        case .learnable: return zh ? "技能" : "Learn"
+        case .product: return zh ? "产品" : "Products"
         }
     }
 }
 
 enum DiscoverContent {
+    static func shortName(_ row: Ranking, in rows: [Ranking]) -> String {
+        let name = row.name.split(separator: "/").last.map(String.init) ?? row.name
+        let matches = rows.filter {
+            ($0.name.split(separator: "/").last.map(String.init) ?? $0.name)
+                .caseInsensitiveCompare(name) == .orderedSame
+        }
+        return matches.count == 1 ? name : row.name
+    }
+
+    static func metric(_ row: Ranking, locale: String) -> String {
+        if let weekly = row.stars7d {
+            let marker = weekly > 0 ? "▲" : weekly < 0 ? "▼" : "="
+            return marker + " " + weekly.magnitude.formatted(.number.locale(Locale(identifier: "en_US")))
+        }
+        return row.growth(locale: locale)
+    }
+
+    static func hasLockedRows(count: Int, isPro: Bool) -> Bool { !isPro && count > 10 }
+
     static let categories: [String: Set<String>] = [
         "routing": ["model", "agent"], "context": ["memory", "context"],
         "leverage": ["skills", "automation"], "timing": ["productivity", "automation"]]
