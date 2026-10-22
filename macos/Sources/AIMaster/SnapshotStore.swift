@@ -42,7 +42,30 @@ final class SnapshotStore: ObservableObject {
     var signedLicense: License.Payload? {
         defaults.string(forKey: "licenseKey").flatMap { try? License.authenticate($0, publicKeyBase64: licensePublicKeyBase64) }
     }
-    let purchaseConfiguration = PurchaseConfiguration.unavailable
+    let purchaseConfiguration: PurchaseConfiguration
+    @Published var selectedPurchaseOption: PurchaseOption?
+    private let oneTimeNotifications: OneTimeRenewalNotifications?
+    private(set) var oneTimeNotificationTask: Task<Void, Never>?
+    var oneTimeRenewalDays: Int? {
+        guard renewalState != .revoked else { return nil }
+        return OneTimeRenewal.daysRemaining(signedLicense, now: licenseClock())
+    }
+
+    func openOneTimeRenewal() {
+        selectedPurchaseOption = .oneTimeAnnual
+        showProSettings = true
+    }
+
+    private func updateOneTimeNotification() {
+        guard let oneTimeNotifications else { return }
+        let proof = renewalState == .revoked ? nil : signedLicense
+        let language = locale
+        let previous = oneTimeNotificationTask
+        oneTimeNotificationTask = Task {
+            await previous?.value
+            await oneTimeNotifications.schedule(license: proof, locale: language)
+        }
+    }
 
     func checkoutReturned() {
         renewalState = .pending
@@ -135,6 +158,12 @@ final class SnapshotStore: ObservableObject {
     @discardableResult
     func openReminder(_ route: [AnyHashable: Any]) -> Bool {
         revalidateEntitlement()
+        if let lic = route["one_time_lic"] as? String, lic == signedLicense?.lic,
+           let exp = route["one_time_exp"] as? String, exp == signedLicense?.exp,
+           oneTimeRenewalDays != nil {
+            openOneTimeRenewal()
+            return true
+        }
         if let id = route["daily_id"] as? String, WeeklyNotifications.safeID(id),
            let day = route["daily_date"] as? String, day == snapshot?.book?.practiceCalendar?.days.last?.date,
            let card = snapshot?.book?.today, card.id == id {
@@ -191,6 +220,7 @@ final class SnapshotStore: ObservableObject {
         }
         scheduleTrialExpiry()
         scheduleLicenseExpiry()
+        updateOneTimeNotification()
         if !isPro {
             showWeeklyReview = false
             if wasPro {
@@ -574,7 +604,11 @@ final class SnapshotStore: ObservableObject {
          proTrial: ProTrial? = nil,
          licenseTransport: LicenseTransport? = nil,
          licenseClock: @escaping () -> Date = Date.init,
-         courseContentURL: URL = EngineRunner.contentURL) {
+         courseContentURL: URL = EngineRunner.contentURL,
+         purchaseConfiguration: PurchaseConfiguration = .unavailable,
+         oneTimeNotifications: OneTimeRenewalNotifications? = nil) {
+        self.purchaseConfiguration = purchaseConfiguration
+        self.oneTimeNotifications = oneTimeNotifications
         self.courseContentURL = courseContentURL
         self.licenseClock = licenseClock
         self.licenseRenewal = LicenseRenewal(defaults: defaults, transport: licenseTransport ?? LicenseServiceTransport(),

@@ -6,13 +6,17 @@
  * failed, cancelled, refunded or revoked. Dates are UTC instants; paidThrough is
  * exclusive. managementURL must already be verified by the provider integration.
  */
+// One-time verified events instead carry {product: "one_time_annual", eventId,
+// orderRef, revision, paidAt, status}. paidAt is the immutable UTC payment date.
 export class PaymentProvider {
   async verifyWebhook(_rawBytes, _headers) { throw new Error("unavailable"); }
+  async getOrder(_orderRef) { throw new Error("unavailable"); }
   async getSubscription(_providerRef) { throw new Error("unavailable"); }
 }
 
 // TODO(WAFFO_VERIFIED_INTEGRATION): obtain official webhook signature/API docs,
 // authenticated sandbox fixtures and ordering semantics, verify renewal/refund,
-// cancellation management, verified annual checkout terms and receipt/support recovery
+// cancellation management, verified annual checkout terms and receipt/support recovery.
+// Also verify real one-time webhook product/order/refund fields and getOrder API
 // before enabling payments. The app keeps checkout and management unavailable until then.
 export class WaffoPaymentProvider extends PaymentProvider {}

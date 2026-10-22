@@ -20,7 +20,7 @@ async function currentKey() {
 }
 beforeEach(async () => {
   await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
-  for (const table of ["license_keys", "license_refresh_limits", "subscription_events", "subscription_periods", "subscriptions", "manual_orders", "licenses"]) {
+  for (const table of ["one_time_events", "one_time_orders", "license_keys", "license_refresh_limits", "subscription_events", "subscription_periods", "subscriptions", "manual_orders", "licenses"]) {
     await env.DB.prepare(`DELETE FROM ${table}`).run();
   }
   const pair = await crypto.subtle.generateKey("Ed25519", true, ["sign", "verify"]);
@@ -286,4 +286,51 @@ test("phase4 annual payment, cancel, renewal, outage and repeated callbacks pres
   expect(await (await refresh(original.lic, fresh)).json()).toEqual({ status: "unavailable" });
   expect(await currentKey()).toBe(fresh);
   expect((await env.DB.prepare("SELECT count(*) AS n FROM cohort_devices").first()).n).toBe(0);
+});
+
+
+const oneTime = (overrides = {}) => ({ product: "one_time_annual", eventId: "wallet-paid",
+  orderRef: "wallet-order", revision: 1, paidAt: "2026-10-21T00:00:00Z", status: "paid", ...overrides });
+
+test("one-time annual order issues one 365-day signed licence per order, without renewal periods", async () => {
+  const responses = await Promise.all([webhook(oneTime()), webhook(oneTime()),
+    webhook(oneTime({ eventId: "wallet-retry" }))]);
+  expect(responses.map(r => r.status)).toEqual([200, 200, 200]);
+  const key = await currentKey();
+  const data = payload(key);
+  expect(data).toMatchObject({ product: "one_time_annual", iat: "2026-10-21", exp: "2027-10-20" });
+  expect(await crypto.subtle.verify("Ed25519", publicKey, decode(key.split(".")[2]), decode(key.split(".")[1]))).toBe(true);
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM license_keys").first()).n).toBe(1);
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM subscription_periods").first()).n).toBe(0);
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM subscriptions").first()).n).toBe(0);
+  const result = await (await refresh(data.lic, key)).json();
+  expect(result).toEqual({ status: "active", key, auto_renew: false, paid_through: "2027-10-21T00:00:00.000Z" });
+});
+
+test("one-time refund revokes and late paid events cannot resurrect or extend access", async () => {
+  expect((await webhook(oneTime())).status).toBe(200);
+  const key = await currentKey();
+  expect((await webhook(oneTime({ eventId: "wallet-refund", revision: 2, status: "refunded" }))).status).toBe(200);
+  await webhook(oneTime({ eventId: "late-paid", revision: 3 }));
+  expect(await (await refresh(payload(key).lic, key)).json()).toEqual({ status: "revoked" });
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM license_keys").first()).n).toBe(1);
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM subscription_periods").first()).n).toBe(0);
+});
+
+test("unpaid or unauthenticated one-time orders never issue keys; conflicting paid date fails closed", async () => {
+  for (const status of ["pending", "failed"]) await webhook(oneTime({ eventId: status, revision: status === "pending" ? 0 : 1, status }));
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM license_keys").first()).n).toBe(0);
+  expect((await handle(request("/v1/waffo/webhook", "unverified"), bindings)).status).toBe(503);
+  expect((await webhook(oneTime({ eventId: "paid", revision: 2 }))).status).toBe(200);
+  const key = await currentKey();
+  expect((await webhook(oneTime({ eventId: "changed-date", revision: 3, paidAt: "2030-01-01T00:00:00Z" }))).status).toBe(503);
+  expect(await currentKey()).toBe(key);
+});
+
+test("one-time licence expires without any automatic renewal", async () => {
+  await webhook(oneTime());
+  const key = await currentKey();
+  const handler = createSubscriptionHandler(provider, () => new Date("2027-10-21T00:00:00Z"));
+  expect(await (await handler(request("/v1/license/refresh", JSON.stringify({ lic: payload(key).lic, key })), bindings)).json())
+    .toEqual({ status: "expired" });
 });

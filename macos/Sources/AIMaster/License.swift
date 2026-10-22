@@ -23,6 +23,9 @@ enum License {
         let plan: String
         let iat: String
         let exp: String
+        let product: String?
+
+        var isOneTimeAnnual: Bool { product == "one_time_annual" }
     }
 
     enum Failure: Error {
@@ -82,6 +85,7 @@ enum License {
         guard payload.v == 1, payload.plan == "pro", payload.lic.count == 16,
               payload.lic.utf8.allSatisfy({ (65...90).contains($0) || (97...122).contains($0)
                   || (48...57).contains($0) || $0 == 45 || $0 == 95 }),
+              (payload.product == nil || payload.product == "one_time_annual"),
               validDate(payload.iat), validDate(payload.exp), payload.iat <= payload.exp else { throw Failure.format }
         return payload
     }
@@ -182,16 +186,18 @@ final class LicenseRenewal {
 }
 
 struct PurchaseConfiguration {
-    private let checkoutURL: URL?
+    let subscriptionCheckoutURL: URL?
+    let oneTimeCheckoutURL: URL?
     private let management: URL?
     private let allowedHosts: Set<String>
     let verifiedIntegration: Bool
     let verifiedTerms: Bool
-    static let unavailable = PurchaseConfiguration(checkout: nil, management: nil, allowedHosts: [],
+    static let unavailable = PurchaseConfiguration(subscriptionCheckout: nil, management: nil, allowedHosts: [],
                                                   verifiedIntegration: false, verifiedTerms: false)
 
-    init(checkout: URL?, management: URL?, allowedHosts: Set<String>, verifiedIntegration: Bool, verifiedTerms: Bool) {
-        self.checkoutURL = checkout
+    init(subscriptionCheckout: URL?, oneTimeCheckout: URL? = nil, management: URL?, allowedHosts: Set<String>, verifiedIntegration: Bool, verifiedTerms: Bool) {
+        self.subscriptionCheckoutURL = subscriptionCheckout
+        self.oneTimeCheckoutURL = oneTimeCheckout
         self.management = management
         self.allowedHosts = allowedHosts
         self.verifiedIntegration = verifiedIntegration
@@ -210,8 +216,10 @@ struct PurchaseConfiguration {
         return allowed(management)
     }
 
-    func checkout(source: CourseSource?) -> URL? {
-        guard verifiedIntegration, verifiedTerms, managementURL != nil, let url = allowed(checkoutURL) else { return nil }
+    func checkout(option: PurchaseOption = .subscription, source: CourseSource?) -> URL? {
+        guard verifiedIntegration, verifiedTerms else { return nil }
+        if option == .subscription, managementURL == nil { return nil }
+        guard let url = allowed(option == .subscription ? subscriptionCheckoutURL : oneTimeCheckoutURL) else { return nil }
         guard let source else { return url }
         var parts = URLComponents(url: url, resolvingAgainstBaseURL: false)
         parts?.queryItems = [URLQueryItem(name: "source", value: source.code)]
@@ -219,16 +227,26 @@ struct PurchaseConfiguration {
     }
 
     @discardableResult
-    func openCheckout(termsPresented: Bool, source: CourseSource?, open: (URL) -> Void) -> Bool {
-        guard termsPresented, let url = checkout(source: source) else { return false }
+    func openCheckout(option: PurchaseOption = .subscription, termsPresented: Bool, source: CourseSource?, open: (URL) -> Void) -> Bool {
+        guard termsPresented, let url = checkout(option: option, source: source) else { return false }
         open(url)
         return true
     }
 }
 
 enum PurchaseTerms {
-    static func lines(locale: String) -> [String] {
-        ["Pro founding price: USD $12/year, renews automatically every year",
+    static func lines(locale: String, option: PurchaseOption = .subscription) -> [String] {
+        if option == .oneTimeAnnual {
+            return locale == "zh" ? ["Pro 创始价：USD $12，一次付一年（365 天），不自动续费",
+                "微信支付 / 支付宝", "到期前 7 天提醒你续费", "14 天本地试用无需银行卡，不会自动转为付费",
+                "激活码到期后需主动购买，不会自动扣款", "支持或退款：请通过购买凭证联系支持"]
+                : ["Pro founding price: USD $12 for one year (365 days); does not auto-renew",
+                   "WeChat Pay / Alipay", "We'll remind you 7 days before expiry",
+                   "The 14-day local trial needs no card and never automatically becomes paid",
+                   "Purchase again to continue after expiry; no automatic charge",
+                   "For support or refunds, use your purchase receipt to contact support"]
+        }
+        return ["Pro founding price: USD $12/year, renews automatically every year",
          "To cancel, use the verified subscription-management link in your purchase receipt before the next renewal",
          "After cancellation, access continues until the paid period ends",
          "The 14-day local trial needs no card and never automatically becomes paid",
@@ -241,5 +259,17 @@ enum PurchaseTerms {
         let language = locale == "zh" ? "zh-Hans" : "en"
         let bundle = Bundle.module.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .module
         return NSLocalizedString(key, bundle: bundle, comment: "")
+    }
+}
+
+enum PurchaseOption: String, CaseIterable, Identifiable {
+    case subscription, oneTimeAnnual
+    var id: String { rawValue }
+    static func ordered(zh: Bool) -> [Self] { zh ? [.oneTimeAnnual, .subscription] : [.subscription, .oneTimeAnnual] }
+    func title(zh: Bool) -> String {
+        switch self {
+        case .subscription: return zh ? "银行卡 / Apple Pay · 每年自动续费" : "Card / Apple Pay · renews automatically every year"
+        case .oneTimeAnnual: return zh ? "微信支付 / 支付宝 · 一次付一年" : "WeChat Pay / Alipay · pay once for one year"
+        }
     }
 }

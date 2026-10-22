@@ -6,6 +6,7 @@ import SwiftUI
 final class VisibleProTests: XCTestCase {
     // Inspect declared Text and Button labels without launching an app or opening URLs.
     private func labels(_ value: Any) -> [String] {
+        if let options = value as? PurchaseOptionsView { return labels(options.body) }
         if let trial = value as? ProTrialSection { return labels(trial.body) }
         if let lock = value as? ProLockLabel { return labels(lock.body) }
         if String(describing: type(of: value)).hasPrefix("DisclosureGroup<") { return [] }

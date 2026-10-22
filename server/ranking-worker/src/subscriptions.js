@@ -47,7 +47,7 @@ export function inclusiveExpiry(paidThrough) {
   return new Date(Math.floor(end / DAY) * DAY - DAY).toISOString().slice(0, 10);
 }
 function normalize(value) {
-  if (!value || ![value.eventId, value.subscriptionRef, value.orderRef].every(ref)
+  if (!value || (value.product != null && value.product !== "subscription") || ![value.eventId, value.subscriptionRef, value.orderRef].every(ref)
     || !Number.isSafeInteger(value.revision) || value.revision < 0 || !statuses.has(value.status)
     || typeof value.autoRenew !== "boolean") throw new Error("unavailable");
   const dates = [value.periodStart, value.paidThrough].map(date => {
@@ -75,6 +75,77 @@ async function ordered(provider, value) {
     return normalize({ ...reconciled, eventId: value.eventId });
   }
   return normalize(value);
+}
+
+function normalizeOrder(value) {
+  if (value?.product !== "one_time_annual" || ![value.eventId, value.orderRef].every(ref)
+    || !Number.isSafeInteger(value.revision) || value.revision < 0 || !statuses.has(value.status)
+    || typeof value.paidAt !== "string" || !/^\d{4}-\d{2}-\d{2}T.*Z$/.test(value.paidAt)
+    || !Number.isFinite(Date.parse(value.paidAt))) throw new Error("unavailable");
+  return { product: value.product, eventId: value.eventId, orderRef: value.orderRef,
+    revision: value.revision, status: value.status, paidAt: new Date(value.paidAt).toISOString() };
+}
+
+async function persistOrder(env, e) {
+  const hash = async value => base64url(await crypto.subtle.digest("SHA-256", encoder.encode(JSON.stringify(value))));
+  const fingerprint = await hash(e);
+  const { eventId: _, ...snapshot } = e;
+  const snapshotHash = await hash(snapshot);
+  const terminal = ["refunded", "revoked"].includes(e.status);
+  // The transaction binds every update to authenticated event bytes. A paid order's
+  // date is immutable; retries and later paid events never add another year.
+  await env.DB.batch([
+    env.DB.prepare("INSERT OR IGNORE INTO one_time_events(event_id, fingerprint) VALUES (?, ?)")
+      .bind(e.eventId, fingerprint),
+    env.DB.prepare(`INSERT INTO one_time_orders(order_ref, lic, revision, status, snapshot_hash, paid_at, terminal_revision)
+      SELECT ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM one_time_events WHERE event_id = ? AND fingerprint = ?)
+      ON CONFLICT(order_ref) DO UPDATE SET revision = excluded.revision, status = excluded.status,
+        snapshot_hash = excluded.snapshot_hash, paid_at = COALESCE(one_time_orders.paid_at, excluded.paid_at),
+        terminal_revision = excluded.terminal_revision
+      WHERE one_time_orders.revision < excluded.revision AND one_time_orders.terminal_revision IS NULL
+        AND (one_time_orders.paid_at IS NULL OR one_time_orders.paid_at = ?)`)
+      .bind(e.orderRef, base64url(crypto.getRandomValues(new Uint8Array(12))), e.revision, e.status, snapshotHash,
+        e.status === "paid" ? e.paidAt : null, terminal ? e.revision : null, e.eventId, fingerprint, e.paidAt),
+  ]);
+  const stored = await env.DB.prepare("SELECT fingerprint FROM one_time_events WHERE event_id = ?").bind(e.eventId).first();
+  const order = await env.DB.prepare("SELECT * FROM one_time_orders WHERE order_ref = ?").bind(e.orderRef).first();
+  if (stored?.fingerprint !== fingerprint || !order || (order.terminal_revision === null
+      && (order.revision < e.revision || (order.revision === e.revision && order.snapshot_hash !== snapshotHash)))) {
+    throw new Error("unavailable");
+  }
+  return order;
+}
+
+function orderPaidThrough(order) {
+  // AIM1 exp is an inclusive date: issue exactly 365 complete UTC days.
+  const start = Math.floor(Date.parse(order.paid_at) / DAY) * DAY;
+  return new Date(start + 365 * DAY).toISOString();
+}
+async function orderKey(env, order) {
+  if (!order.paid_at || order.terminal_revision !== null) return null;
+  const payload = { v: 1, lic: order.lic, plan: "pro", iat: order.paid_at.slice(0, 10),
+    exp: inclusiveExpiry(orderPaidThrough(order)), product: "one_time_annual" };
+  const key = await signLicense(env, payload);
+  await env.DB.prepare("INSERT OR IGNORE INTO license_keys(lic, period_ref, exp, key) VALUES (?, ?, ?, ?)")
+    .bind(order.lic, order.order_ref, payload.exp, key).run();
+  return (await env.DB.prepare("SELECT key FROM license_keys WHERE lic = ? AND period_ref = ?")
+    .bind(order.lic, order.order_ref).first()).key;
+}
+
+async function refreshOrder(env, provider, order, now) {
+  if (order.terminal_revision !== null) return licenseResponse({ status: "revoked" });
+  const latest = normalizeOrder(await provider.getOrder(order.order_ref));
+  if (latest.orderRef !== order.order_ref) throw new Error("unavailable");
+  order = await persistOrder(env, latest);
+  if (order.terminal_revision !== null) return licenseResponse({ status: "revoked" });
+  if (!order.paid_at || Date.parse(order.paid_at) > now.getTime()) return licenseResponse({ status: "pending" });
+  const through = orderPaidThrough(order);
+  if (Date.parse(through) <= now.getTime()) return licenseResponse({ status: "expired" });
+  const key = await orderKey(env, order);
+  const final = await env.DB.prepare("SELECT terminal_revision FROM one_time_orders WHERE order_ref = ?")
+    .bind(order.order_ref).first();
+  if (final.terminal_revision !== null) return licenseResponse({ status: "revoked" });
+  return licenseResponse({ status: "active", key, auto_renew: false, paid_through: through });
 }
 
 async function persistEvent(env, value) {
@@ -148,7 +219,8 @@ async function verifyProof(env, key, lic) {
     const p = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
     const date = value => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
       && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
-    if (!exact(p, ["v", "lic", "plan", "iat", "exp"]) || p.v !== 1 || p.plan !== "pro" || p.lic !== lic
+    if (!(exact(p, ["v", "lic", "plan", "iat", "exp"])
+      || (exact(p, ["v", "lic", "plan", "iat", "exp", "product"]) && p.product === "one_time_annual")) || p.v !== 1 || p.plan !== "pro" || p.lic !== lic
       || !date(p.iat) || !date(p.exp) || p.exp < p.iat) return false;
     const known = await env.DB.prepare("SELECT 1 FROM license_keys WHERE lic = ? AND key = ?").bind(lic, key).first();
     if (known) return true;
@@ -179,7 +251,13 @@ export function createSubscriptionHandler(provider = new WaffoPaymentProvider(),
     try {
       if (url.pathname === "/v1/waffo/webhook") {
         const raw = await readBytes(request, 65536);
-        const e = await ordered(provider, await provider.verifyWebhook(raw, request.headers));
+        const verified = await provider.verifyWebhook(raw, request.headers);
+        if (verified?.product === "one_time_annual") {
+          const order = await persistOrder(env, normalizeOrder(verified));
+          await orderKey(env, order);
+          return licenseResponse({ status: "accepted" });
+        }
+        const e = await ordered(provider, verified);
         const sub = await persistEvent(env, e);
         if (sub.terminal_revision === null) await paidKey(env, sub);
         return licenseResponse({ status: "accepted" });
@@ -193,6 +271,8 @@ export function createSubscriptionHandler(provider = new WaffoPaymentProvider(),
       if (!await verifyProof(env, body.key, body.lic)) return licenseResponse({ status: "unauthorized" }, 401);
       const now = clock();
       if (!await allowRefresh(env, body.lic, now)) return licenseResponse({ status: "rate_limited" }, 429, { "Retry-After": "60" });
+      const order = await env.DB.prepare("SELECT * FROM one_time_orders WHERE lic = ?").bind(body.lic).first();
+      if (order) return await refreshOrder(env, provider, order, now);
       let sub = await env.DB.prepare("SELECT * FROM subscriptions WHERE lic = ?").bind(body.lic).first();
       if (!sub) return licenseResponse({ status: "manual" });
       if (sub.terminal_revision !== null) return licenseResponse({ status: "revoked" });

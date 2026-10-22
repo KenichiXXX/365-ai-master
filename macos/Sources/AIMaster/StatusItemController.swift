@@ -7,7 +7,7 @@ import UserNotifications
 final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificationCenterDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
-    private let store = SnapshotStore(weeklyNotifications: WeeklyNotifications())
+    private let store = SnapshotStore(weeklyNotifications: WeeklyNotifications(), oneTimeNotifications: OneTimeRenewalNotifications())
     private var clickMonitor: Any?
     private var subscription: AnyCancellable?
 
@@ -50,8 +50,8 @@ final class StatusItemController: NSObject, NSPopoverDelegate, UNUserNotificatio
         Task { @MainActor in
             if response.notification.request.identifier == WeeklyNotifications.identifier {
                 await self.store.refresh()?.value
-                if self.store.openReminder(response.notification.request.content.userInfo) { self.showPopover() }
             }
+            if self.store.openReminder(response.notification.request.content.userInfo) { self.showPopover() }
             completionHandler()
         }
     }

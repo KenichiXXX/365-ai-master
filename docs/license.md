@@ -126,3 +126,27 @@ Task 35 fake-backed tests and local renders verify our client/server contract. T
 See [Phase 4 acceptance](testing/phase4-acceptance.md) for commands, actual results, synthetic artifacts, request contracts and the observer checklist. Local practice, explicit trial, expiry, signed-key import, cancel-at-period-end, same-license renewal and offline expiry are exercised with separate injected engine/client/worker harnesses. Synthetic Ed25519 signatures and local D1 prove our contract only. Imported keys and browser returns are not evidence of new purchases; no paid demand or population retention is established.
 
 Waffo real webhook signatures, sandbox annual renewal, refund/cancellation and receipt recovery remain blocked pending a verified provider integration and test access. Production public-key configuration, real public-source compatibility, app signing/notarization, target-user usability and an agreed baseline/head performance budget remain unverified. Production checkout is still unavailable. The task's explicit no-package/no-launch constraint leaves an app bundle, controlled running-app request capture, manual keyboard/VoiceOver/reduced-motion/popover checks and observer video unrun. Offscreen synthetic PNGs are not a running-app usability result. No new production behavior, public-key format, live endpoint, permission, scheduled job or payment action was introduced.
+
+
+### One-time annual wallets (Task 63)
+
+WeChat Pay / Alipay use the separate `one_time_annual` product: USD $12 for
+365 complete UTC calendar days from the verified payment date, with no automatic
+renewal. Subscription cards / Apple Pay remain a separate automatic yearly renewal.
+Both checkout URLs remain unavailable until merchant integration and terms are verified.
+
+The existing `AIM1` Ed25519 envelope, version, dates and license ID are unchanged.
+New one-time keys add the signed optional field `"product":"one_time_annual"`.
+Legacy/manual/subscription keys omit this field. The app must never infer a wallet
+purchase from a cancelled subscription (`auto_renew:false`). The signed product
+allows offline renewal cards and one local reminder seven days before `exp`;
+notification permission must already be granted. A notification opens Pro with
+the wallet option selected. Expiry never initiates a charge.
+
+The provider interface verifies raw webhook bytes before returning a one-time
+order `{product, eventId, orderRef, revision, paidAt, status}`. `paidAt` is immutable;
+`revision` is monotonic per order. `getOrder(orderRef)` reconciles refunds on
+explicit/key refresh. One order creates one license/key; retries never extend it,
+and refunds/revocations are terminal. No `subscription_periods` row is created.
+The real Waffo signature, order/product/refund fields and order-query API are
+still a TODO; fake-provider tests do not establish a live payment integration.

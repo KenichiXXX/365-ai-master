@@ -47,7 +47,7 @@ final class CourseSourceTests: XCTestCase {
         XCTAssertTrue(CourseSource.catalogue(raw, practiceIDs: []).isEmpty)
         XCTAssertTrue(CourseSource.catalogue(Data(#"{"course_sources":[]}"#.utf8), practiceIDs: []).isEmpty)
         XCTAssertTrue(CourseSource.catalogue(Data(repeating: 0, count: 2_000_001), practiceIDs: []).isEmpty)
-        let config = PurchaseConfiguration(checkout: URL(string: "https://merchant.example/pay"), management: URL(string: "https://merchant.example/manage"),
+        let config = PurchaseConfiguration(subscriptionCheckout: URL(string: "https://merchant.example/pay"), management: URL(string: "https://merchant.example/manage"),
             allowedHosts: ["merchant.example"], verifiedIntegration: true, verifiedTerms: true)
         XCTAssertNil(config.checkout(source: nil)?.query)
         XCTAssertEqual(URLComponents(url: try XCTUnwrap(config.checkout(source: entry)), resolvingAgainstBaseURL: false)?.queryItems,

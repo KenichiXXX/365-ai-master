@@ -121,6 +121,7 @@ final class LicenseTests: XCTestCase {
     }
 
     private func containsText(_ text: String, in value: Any) -> Bool {
+        if let options = value as? PurchaseOptionsView { return containsText(text, in: options.body) }
         if let candidate = value as? Text { return String(reflecting: candidate).contains(text) }
         return Mirror(reflecting: value).children.contains { containsText(text, in: $0.value) }
     }

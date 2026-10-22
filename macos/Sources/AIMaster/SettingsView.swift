@@ -58,6 +58,12 @@ struct SettingsView: View {
                                 .disabled(store.snapshot == nil)
                         }
                         group("Pro") {
+                            if let days = store.oneTimeRenewalDays {
+                                Button(OneTimeRenewal.message(days: days, zh: zh)) {
+                                    store.selectedPurchaseOption = .oneTimeAnnual
+                                    showPro = true
+                                }.buttonStyle(ThemeButtonStyle())
+                            }
                             HStack {
                                 Text(store.isPro ? (zh ? "Pro 已开启" : "Pro is active") : (zh ? "免费版" : "Free"))
                                 Spacer()
@@ -202,23 +208,20 @@ struct ProSettingsSection: View {
                         .disabled(store.licenseRefreshTask != nil)
                 }
                 if store.signedLicense != nil || store.renewalState == .pending {
-                    Text(t(store.renewalState.messageKey)).foregroundStyle(Theme.secondary)
+                    Text(store.signedLicense?.isOneTimeAnnual == true && store.renewalState != .revoked
+                         ? (zh ? "一次付一年，不自动续费。到期后需主动购买。" : "One year, no auto-renewal. Purchase again after expiry.")
+                         : t(store.renewalState.messageKey)).foregroundStyle(Theme.secondary)
                 }
-                if store.purchaseConfiguration.checkout(source: store.checkoutSource) != nil {
-                    PurchaseTermsView(zh: zh)
-                    Button(t("Buy")) {
-                        if store.purchaseConfiguration.openCheckout(termsPresented: true, source: store.checkoutSource,
-                            open: { NSWorkspace.shared.open($0) }) { store.checkoutReturned() }
-                    }.accessibilityIdentifier("pro-checkout")
-                } else {
-                    Text(zh ? "付款通道开通中" : "Payments coming soon")
-                        .font(Theme.label).foregroundStyle(Theme.secondary)
+                if let days = store.oneTimeRenewalDays {
+                    Button(OneTimeRenewal.message(days: days, zh: zh)) { store.openOneTimeRenewal() }
+                        .buttonStyle(ThemeButtonStyle())
                 }
+                PurchaseOptionsView(store: store, zh: zh)
                 if let url = store.purchaseConfiguration.managementURL {
                     Button(t("Manage or cancel subscription")) { NSWorkspace.shared.open(url) }
                 }
-                DisclosureGroup(zh ? "订阅条款与设置" : "Subscription terms and settings") {
-                    PurchaseTermsView(zh: zh)
+                DisclosureGroup(zh ? "购买条款与设置" : "Purchase terms and settings") {
+                    PurchaseTermsView(zh: zh, option: store.selectedPurchaseOption ?? PurchaseOption.ordered(zh: zh)[0])
                     CourseSourceSection(store: store, zh: zh)
                     Toggle(t("Refresh license automatically"), isOn: $store.autoRefreshLicense)
                     Text(t("Automatic key refresh sends your license ID and signed activation key to the license service, never usage records"))
@@ -240,10 +243,11 @@ struct ProSettingsSection: View {
 
 struct PurchaseTermsView: View {
     let zh: Bool
+    var option: PurchaseOption = .subscription
     var body: some View {
         Group {
             VStack(alignment: .leading, spacing: Theme.grid) {
-                ForEach(PurchaseTerms.lines(locale: zh ? "zh" : "en"), id: \.self) { line in
+                ForEach(PurchaseTerms.lines(locale: zh ? "zh" : "en", option: option), id: \.self) { line in
                     Text(verbatim: line).fixedSize(horizontal: false, vertical: true)
                 }
             }.font(Theme.body)
@@ -334,5 +338,70 @@ struct ProTrialSection: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+struct PurchaseOptionsView: View {
+    @ObservedObject var store: SnapshotStore
+    let zh: Bool
+    private var selected: PurchaseOption { store.selectedPurchaseOption ?? PurchaseOption.ordered(zh: zh)[0] }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.grid) {
+            ForEach(PurchaseOption.ordered(zh: zh)) { option in
+                PurchaseOptionRow(store: store, zh: zh, option: option, selected: selected == option)
+            }
+            if PurchaseOption.allCases.contains(where: { store.purchaseConfiguration.checkout(option: $0, source: nil) == nil }) {
+                Text(zh ? "付款通道开通中" : "Payments coming soon")
+                    .font(Theme.label).foregroundStyle(Theme.secondary)
+            }
+        }
+    }
+}
+
+struct PurchaseOptionRow: View {
+    @ObservedObject var store: SnapshotStore
+    let zh: Bool
+    let option: PurchaseOption
+    let selected: Bool
+    @State private var showTerms = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.grid) {
+            Text(option.title(zh: zh)).font(Theme.label)
+                .fixedSize(horizontal: false, vertical: true)
+            if option == .oneTimeAnnual {
+                Text(zh ? "不自动续费 · 到期前 7 天提醒你续费" : "No auto-renewal · reminder 7 days before expiry")
+                    .font(Theme.label).foregroundStyle(Theme.secondary)
+            }
+            if store.purchaseConfiguration.checkout(option: option, source: store.checkoutSource) != nil {
+                Button(zh ? "购买 · $12 / 年" : "Buy · $12 / year") {
+                    store.selectedPurchaseOption = option
+                    showTerms = true
+                }.buttonStyle(ThemeButtonStyle())
+                    .accessibilityIdentifier("pro-checkout-" + option.rawValue)
+                    .sheet(isPresented: $showTerms) {
+                        VStack(alignment: .leading, spacing: Theme.sectionGap) {
+                            Text(option.title(zh: zh)).font(Theme.sectionTitle)
+                            PurchaseTermsView(zh: zh, option: option)
+                            Button(zh ? "同意条款，前往付款" : "Agree to terms and continue to payment") {
+                                if store.purchaseConfiguration.openCheckout(option: option, termsPresented: true,
+                                    source: store.checkoutSource, open: { NSWorkspace.shared.open($0) }) {
+                                    store.checkoutReturned()
+                                    showTerms = false
+                                }
+                            }.buttonStyle(ThemeButtonStyle())
+                            Button(zh ? "返回" : "Back") { showTerms = false }
+                        }.padding(Theme.pagePadding).frame(width: 400)
+                            .background(MasterWindowBackground()).bauhausTheme()
+                    }
+            }
+        }
+        .padding(Theme.grid)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(selected ? Theme.accentSurface : Color.clear,
+                    in: RoundedRectangle(cornerRadius: Theme.cornerRadius))
+        .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius)
+            .stroke(selected ? Theme.accent : Theme.hairline, lineWidth: 1))
     }
 }

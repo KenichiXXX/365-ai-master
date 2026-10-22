@@ -46,6 +46,46 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testRenderTask63ProSheetInBothLanguages() throws {
+        guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
+        try FileManager.default.createDirectory(atPath: out, withIntermediateDirectories: true)
+        let signer = Curve25519.Signing.PrivateKey()
+        let bytes = try JSONSerialization.data(withJSONObject: ["v": 1, "lic": "abcdefghijklmnop", "plan": "pro",
+            "iat": "2026-01-01", "exp": "2026-12-31", "product": "one_time_annual"])
+        func b64(_ data: Data) -> String { data.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "") }
+        let key = "AIM1.\(b64(bytes)).\(b64(try signer.signature(for: bytes)))"
+        let clock = ISO8601DateFormatter().date(from: "2026-12-24T12:00:00Z")!
+        let ready = PurchaseConfiguration(subscriptionCheckout: URL(string: "https://merchant.test/subscription"),
+            oneTimeCheckout: URL(string: "https://merchant.test/wallet"), management: URL(string: "https://merchant.test/manage"),
+            allowedHosts: ["merchant.test"], verifiedIntegration: true, verifiedTerms: true)
+        for zh in [true, false] {
+            for phase in ["placeholder", "ready", "renewal"] {
+                let defaults = UserDefaults(suiteName: UUID().uuidString)!
+                if phase == "renewal" { defaults.set(key, forKey: "licenseKey") }
+                let store = SnapshotStore(defaults: defaults,
+                    licensePublicKeyBase64: signer.publicKey.rawRepresentation.base64EncodedString(), licenseClock: { clock },
+                    purchaseConfiguration: phase == "placeholder" ? .unavailable : ready)
+                if phase == "renewal" {
+                    XCTAssertEqual(store.oneTimeRenewalDays, 7)
+                    store.openOneTimeRenewal()
+                    XCTAssertEqual(store.selectedPurchaseOption, .oneTimeAnnual)
+                }
+                for (name, scheme) in [("light", ColorScheme.light), ("dark", .dark)] {
+                    let hosting = NSHostingView(rootView: ProSheet(store: store, zh: zh, close: {})
+                        .environment(\.locale, Locale(identifier: zh ? "zh" : "en"))
+                        .environment(\.colorScheme, scheme))
+                    hosting.frame = NSRect(x: 0, y: 0, width: 440, height: 660)
+                    hosting.layoutSubtreeIfNeeded()
+                    let rep = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                    hosting.cacheDisplay(in: hosting.bounds, to: rep)
+                    XCTAssertEqual(hosting.bounds.size, NSSize(width: 440, height: 660))
+                    try XCTUnwrap(rep.representation(using: .png, properties: [:])).write(to:
+                        URL(fileURLWithPath: out).appendingPathComponent("pro-" + phase + "-" + (zh ? "zh" : "en") + "-" + name + ".png"))
+                }
+            }
+        }
+    }
+
     func testRenderSubscriptionPaywallStatesInBothLanguages() async throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         let signer = Curve25519.Signing.PrivateKey()

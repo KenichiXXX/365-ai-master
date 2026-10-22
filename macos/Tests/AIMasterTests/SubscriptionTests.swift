@@ -236,12 +236,12 @@ final class SubscriptionTests: XCTestCase {
     func testCheckoutRequiresVerifiedConfigTermsAndSeparateSourceConsent() throws {
         XCTAssertNil(PurchaseConfiguration.unavailable.checkout(source: nil))
         XCTAssertNil(PurchaseConfiguration.unavailable.managementURL)
-        let bad = PurchaseConfiguration(checkout: URL(string: "https://attacker.example/pay"),
+        let bad = PurchaseConfiguration(subscriptionCheckout: URL(string: "https://attacker.example/pay"),
             management: URL(string: "https://attacker.example/manage"), allowedHosts: ["merchant.example"],
             verifiedIntegration: true, verifiedTerms: true)
         XCTAssertNil(bad.checkout(source: nil))
         XCTAssertNil(bad.managementURL)
-        let config = PurchaseConfiguration(checkout: URL(string: "https://merchant.example/pay"),
+        let config = PurchaseConfiguration(subscriptionCheckout: URL(string: "https://merchant.example/pay"),
             management: URL(string: "https://merchant.example/manage"), allowedHosts: ["merchant.example"],
             verifiedIntegration: true, verifiedTerms: true)
         var opened: [URL] = []
