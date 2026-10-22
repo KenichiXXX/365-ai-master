@@ -132,22 +132,6 @@ final class ScoreReporterTests: XCTestCase {
         }
     }
 
-    @MainActor func testDimensionRingsRenderRankingOnlyForPro() throws {
-        let ranking = try JSONDecoder().decode(AppScoreOut.self, from: Data(#"{"score_version":"1","total":25,"rank":13,"percentile":50,"small_sample":false,"dims":{"routing":{"rank":5,"percentile":80},"timing":{"rank":13,"percentile":50},"context":{"rank":1,"percentile":100},"leverage":{"rank":25,"percentile":0}}}"#.utf8))
-        for locale in ["zh", "en"] {
-            let dimensions = [Dimension(key: "routing", label: locale == "zh" ? "模型调度" : "Routing", score: 80)]
-            func image(pro: Bool, ranking: AppScoreOut?) throws -> NSImage {
-                let renderer = ImageRenderer(content: DimensionRings(dimensions: dimensions, ranking: ranking,
-                    features: ProFeatures(isPro: pro), locale: locale).frame(width: 408))
-                return try XCTUnwrap(renderer.nsImage)
-            }
-            let free = try image(pro: false, ranking: ranking)
-            let pro = try image(pro: true, ranking: ranking)
-            XCTAssertGreaterThan(pro.size.height, free.size.height)
-            XCTAssertEqual(try image(pro: true, ranking: nil).size.height, free.size.height)
-        }
-    }
-
     @MainActor func testInvalidCoverageHidesPreviousRankAndDoesNotReport() async throws {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         defaults.set(true, forKey: "shareAnonymousScore")

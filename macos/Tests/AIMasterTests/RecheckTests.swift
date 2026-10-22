@@ -29,17 +29,6 @@ final class RecheckTests: XCTestCase {
         XCTAssertEqual(RecheckScan.Line.score.title(locale: "en"), "Calculating four scores…")
     }
 
-    func testScoreCountUpFinishesWithinEightTenthsAndSkipsReducedMotion() {
-        let start = Date(timeIntervalSince1970: 100)
-        let animation = ScoreCountUp(score: 69, startedAt: start)
-        XCTAssertEqual(animation.value(at: start, reduceMotion: false), 0)
-        XCTAssertTrue((34...35).contains(animation.value(at: start.addingTimeInterval(0.35), reduceMotion: false)!))
-        XCTAssertEqual(animation.value(at: start.addingTimeInterval(0.8), reduceMotion: false), 69)
-        XCTAssertEqual(animation.value(at: start, reduceMotion: true), 69)
-        XCTAssertNil(ScoreCountUp(score: nil, startedAt: start).value(at: start, reduceMotion: false))
-        XCTAssertEqual(ScoreCountUp(score: 69, startedAt: nil).value(at: start, reduceMotion: false), 69)
-    }
-
     func testCancelledRecheckKeepsScoreAndClearsScan() async throws {
         let first = try result()
         let next = try result(score: 72)

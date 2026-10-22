@@ -15,7 +15,6 @@ final class ScoreConsentTests: XCTestCase {
         XCTAssertFalse(store.shareAnonymousScore)
         XCTAssertEqual(store.publicDownloads, true)
         XCTAssertFalse(store.notificationsEnabled)
-        XCTAssertNotNil(ImageRenderer(content: FirstPracticeView(store: store).frame(width: 408)).nsImage)
     }
 
     @MainActor func testAllowOptsInWithoutDismissingPracticeAndReportsExactlyOnce() async throws {

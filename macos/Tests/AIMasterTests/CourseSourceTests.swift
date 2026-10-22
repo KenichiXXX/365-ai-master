@@ -52,7 +52,7 @@ final class CourseSourceTests: XCTestCase {
         XCTAssertNil(config.checkout(source: nil)?.query)
         XCTAssertEqual(URLComponents(url: try XCTUnwrap(config.checkout(source: entry)), resolvingAgainstBaseURL: false)?.queryItems,
                        [URLQueryItem(name: "source", value: "SYNTHETIC_1")])
-        let card = SkillCard(id: "web_search", title: "Search", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
+        let card = SkillCard(id: "web_search", title: "Search", why: "Why", prompt: "Prompt", level: 2, lit: false, how: nil)
         XCTAssertTrue(ProFeatures(isPro: false, coursePracticeID: entry.practiceID).canLearn(card, todayID: "other"))
         XCTAssertFalse(ProFeatures(isPro: false).canLearn(card, todayID: "other"))
     }

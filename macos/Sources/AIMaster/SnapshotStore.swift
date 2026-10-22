@@ -355,14 +355,6 @@ final class SnapshotStore: ObservableObject {
         runActionCommand(["reset-action-preferences"])
     }
 
-    @discardableResult
-    func checkIn() -> Task<Void, Never>? { runActionCommand(["checkin"]) }
-
-    @discardableResult
-    func markCardRead(_ id: String) -> Task<Void, Never>? {
-        runActionCommand(["mark-card-read", id])
-    }
-
     @Published private(set) var isPerformingAction = false
     private var snapshotRefreshTask: Task<Void, Never>?
     private var actionTask: Task<Void, Never>?
@@ -371,11 +363,10 @@ final class SnapshotStore: ObservableObject {
         guard !isPerformingAction else { return nil }
         let pendingRefresh = snapshotRefreshTask
         let pendingAction = actionTask
-        let userAction = args.first != "mark-card-read"
-        if userAction { isPerformingAction = true }
+        isPerformingAction = true
         let command = actionCommand
         let task = Task {
-            var ownsAction = userAction
+            var ownsAction = true
             defer { if ownsAction { isPerformingAction = false } }
             await pendingAction?.value
             await pendingRefresh?.value
@@ -383,7 +374,7 @@ final class SnapshotStore: ObservableObject {
             do {
                 let accepted = try await Task.detached { try command(args) }.value
                 guard accepted else { throw EngineError.badJSON }
-                if userAction { isPerformingAction = false }
+                isPerformingAction = false
                 ownsAction = false
                 isRefreshing = false
                 await refresh()?.value
@@ -521,38 +512,7 @@ final class SnapshotStore: ObservableObject {
             updateWeeklyNotifications(requestPermission: notificationsEnabled && !oldValue)
         }
     }
-    @Published private(set) var onboardingStep: OnboardingStep
-    @Published private(set) var obstacle: PracticeObstacle
-    @Published private(set) var practiceStatus: FirstPracticeStatus
     @Published private(set) var firstPracticeBranch: FirstPracticeBranch
-
-    func advanceOnboarding() {
-        onboardingStep = .obstacle
-        defaults.set(onboardingStep.rawValue, forKey: "onboardingStep")
-    }
-
-    func chooseObstacle(_ choice: PracticeObstacle) {
-        if choice != obstacle { recordFirstPractice(.ready) }
-        obstacle = choice
-        defaults.set(choice.rawValue, forKey: "practiceObstacle")
-        onboardingStep = .practice
-        defaults.set(onboardingStep.rawValue, forKey: "onboardingStep")
-    }
-
-    func recordFirstPractice(_ status: FirstPracticeStatus) {
-        practiceStatus = status
-        defaults.set(status.rawValue, forKey: "firstPracticeStatus")
-    }
-
-    func firstPracticePrompt(locale: String) -> String {
-        if let practice = snapshot?.firstPractice, snapshot?.locale == locale {
-            return obstacle == .noProject ? practice.noProjectPrompt : practice.prompt
-        }
-        let key = obstacle == .noProject ? "First planning prompt" : "First project prompt"
-        let language = locale == "zh" ? "zh-Hans" : "en"
-        let bundle = Bundle.module.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .module
-        return NSLocalizedString(key, bundle: bundle, comment: "")
-    }
 
     func cancelRefresh() {
         guard let activeScan else { return }
@@ -562,8 +522,6 @@ final class SnapshotStore: ObservableObject {
 
     func dismissOnboarding() {
         onboarded = true
-        onboardingStep = .done
-        defaults.set(OnboardingStep.done.rawValue, forKey: "onboardingStep")
         defaults.set(true, forKey: "onboarded")
     }
 
@@ -626,9 +584,6 @@ final class SnapshotStore: ObservableObject {
         self.load = load
         self.tryCard = tryCard
         onboarded = defaults.bool(forKey: "onboarded")
-        onboardingStep = defaults.bool(forKey: "onboarded") ? .done : OnboardingStep(rawValue: defaults.string(forKey: "onboardingStep") ?? "") ?? .sources
-        obstacle = PracticeObstacle(rawValue: defaults.string(forKey: "practiceObstacle") ?? "") ?? .skipped
-        practiceStatus = FirstPracticeStatus(rawValue: defaults.string(forKey: "firstPracticeStatus") ?? "") ?? .ready
         firstPracticeBranch = FirstPracticeBranch(rawValue: defaults.string(forKey: "firstPracticeBranch") ?? "") ?? .noLogs
         publicDownloads = defaults.object(forKey: "publicDownloads") as? Bool ?? true
         notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")

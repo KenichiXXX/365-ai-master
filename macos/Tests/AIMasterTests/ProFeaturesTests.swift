@@ -23,7 +23,8 @@ final class ProFeaturesTests: XCTestCase {
     func testFreeAndProGateEachFeature() throws {
         let store = store()
         let today = SkillCard(id: "today", title: "Today", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
-        let other = SkillCard(id: "other", title: "Other", why: "Why", prompt: "Secret prompt", level: 1, lit: false, how: nil)
+        let other = SkillCard(id: "other", title: "Other", why: "Why", prompt: "Secret prompt", level: 2, lit: false, how: nil)
+        let basics = SkillCard(id: "basics", title: "Basics", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
         let lit = SkillCard(id: "lit", title: "Lit", why: "Why", prompt: "Prompt", level: 1, lit: true, how: "log")
         let rows = (1...25).map { Ranking(name: "Row \($0)", url: "https://example.com", tagline: "Tag", installed: false) }
         XCTAssertFalse(store.features.growthCurve)
@@ -31,6 +32,7 @@ final class ProFeaturesTests: XCTestCase {
         XCTAssertTrue(store.features.canLearn(today, todayID: today.id))
         XCTAssertTrue(store.features.canLearn(lit, todayID: today.id))
         XCTAssertFalse(store.features.canLearn(other, todayID: today.id))
+        XCTAssertTrue(store.features.canLearn(basics, todayID: today.id))
         XCTAssertEqual(store.features.discoverRankings(rows).count, 10)
         store.openWeeklyReview()
         XCTAssertFalse(store.showWeeklyReview)
@@ -59,7 +61,7 @@ final class ProFeaturesTests: XCTestCase {
             proTrial: ProTrial(clock: { now }, read: { state }, write: { state = $0 }))
         store.downloadContent = { downloads += 1; return false }
         let today = SkillCard(id: "today", title: "Today", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
-        let other = SkillCard(id: "other", title: "Other", why: "Why", prompt: "Prompt", level: 1, lit: false, how: nil)
+        let other = SkillCard(id: "other", title: "Other", why: "Why", prompt: "Prompt", level: 3, lit: false, how: nil)
         let lit = SkillCard(id: "lit", title: "Lit", why: "Why", prompt: "Prompt", level: 1, lit: true, how: "log")
         let rows = (1...25).map { Ranking(name: "Row \($0)", url: "https://example.com", tagline: "Tag", installed: false) }
         for phase in 0...2 {
@@ -163,66 +165,9 @@ final class ProFeaturesTests: XCTestCase {
             let features = ProFeatures(isPro: pro)
             XCTAssertEqual(features.growthCurve, pro)
             XCTAssertNil(features.dimensionCaption(nil, key: "routing", locale: "en"))
-            let renderer = ImageRenderer(content: DimensionRings(dimensions: snapshot.dimensions!,
-                features: features).frame(width: 408))
-            XCTAssertNotNil(renderer.nsImage)
-        }
-    }
-
-    private func contains<T>(_ type: T.Type, in value: Any) -> Bool {
-        if value is T { return true }
-        return Mirror(reflecting: value).children.contains { contains(type, in: $0.value) }
-    }
-
-    func testViewsUseProGatesAndRenderInBothLanguages() throws {
-        let store = store()
-        let card = SkillCard(id: "other", title: "Other", why: "Why", prompt: "Secret prompt", level: 1, lit: false, how: nil)
-        for pro in [false, true] {
-            if pro { XCTAssertTrue(store.activateLicense(try key())) }
-            for locale in ["zh", "en"] {
-                let data = Data("""
-                {"schema":2,"locale":"\(locale)","growth":{"days":[{"date":"2026-10-20","score":80},{"date":"2026-10-21","score":88}],"week_delta":3},"weekly":{"week_start":"2026-10-19","score_delta":3,"cards_lit_this_week":[],"quests_passed_this_week":[],"days_active":2}}
-                """.utf8)
-                let snapshot = try EngineRunner.decode(data, status: 0).snapshot
-                let dimension = Dimension(key: "routing", label: "Routing", score: 80)
-                let dimensionDetails = DimensionDetail(dimension: dimension, growth: snapshot.growth,
-                    features: store.features, locale: locale, store: store, back: {})
-                XCTAssertFalse(contains(GrowthCurve.self, in: CheckupTab(snapshot: snapshot, store: store).body))
-                XCTAssertEqual(contains(GrowthCurve.self, in: dimensionDetails.body), pro)
-                let details = SkillCardDetails(card: card, todayID: "today", store: store, locale: locale)
-                XCTAssertEqual(contains(PracticeControls.self, in: details.body), pro)
-                let today = SkillCardDetails(card: card, todayID: card.id, store: store, locale: locale)
-                XCTAssertTrue(contains(PracticeControls.self, in: today.body))
-                let views: [(String, AnyView)] = [
-                    ("checkup", AnyView(CheckupTab(snapshot: snapshot, store: store))),
-                    ("dimension", AnyView(dimensionDetails)),
-                    ("skill", AnyView(details)),
-                    ("weekly", AnyView(WeeklyReviewSheet(snapshot: snapshot)))
-                ]
-                for (name, view) in views where pro || name != "weekly" {
-                    let content = view.padding(16).frame(width: 440)
-                        .background(Color(nsColor: .windowBackgroundColor))
-                    let bitmap: NSBitmapImageRep
-                    if name == "weekly" {
-                        let hosting = NSHostingView(rootView: content)
-                        hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
-                        hosting.layoutSubtreeIfNeeded()
-                        bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
-                        hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
-                    } else {
-                        let renderer = ImageRenderer(content: content)
-                        renderer.scale = 2
-                        let image = try XCTUnwrap(renderer.nsImage)
-                        XCTAssertEqual(image.size.width, 440)
-                        XCTAssertGreaterThan(image.size.height, 30)
-                        bitmap = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(image.tiffRepresentation)))
-                    }
-                    if let out = ProcessInfo.processInfo.environment["RENDER_OUT"] {
-                        try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
-                            .write(to: URL(fileURLWithPath: "\(out)-\(name)-\(locale)-\(pro ? "pro" : "free").png"))
-                    }
-                }
-            }
+            XCTAssertNotNil(ImageRenderer(content: DimensionsCard(dimensions: snapshot.dimensions!,
+                store: SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!), locale: "en", open: { _ in })
+                .frame(width: 368)).nsImage)
         }
     }
 

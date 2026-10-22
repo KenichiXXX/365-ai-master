@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 struct RecheckScan {
     enum Line: Equatable {
@@ -35,68 +35,5 @@ struct ScoreChange {
     func caption(locale: String) -> String {
         let number = delta > 0 ? "+\(delta)" : "−\(-delta)"
         return locale == "zh" ? "比上次 \(number)" : "\(number) since last check"
-    }
-}
-
-struct ScoreCountUp {
-    let score: Int?
-    let startedAt: Date?
-
-    func value(at now: Date, reduceMotion: Bool) -> Int? {
-        guard !reduceMotion, let startedAt, let score else { return score }
-        let progress = min(1, max(0, now.timeIntervalSince(startedAt) / 0.7))
-        return Int((Double(score) * progress).rounded())
-    }
-}
-
-struct RecheckScoreView: View {
-    let snapshot: Snapshot
-    @ObservedObject var store: SnapshotStore
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var settled = false
-
-    var body: some View {
-        Group {
-            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !needsFrames)) { context in
-                VStack(spacing: Theme.grid) {
-                    if let scan = store.recheckScan {
-                        Circle().trim(from: 0, to: 0.7)
-                            .stroke(Theme.accent, style: StrokeStyle(lineWidth: 12, lineCap: .butt))
-                            .frame(width: 125, height: 125)
-                            .rotationEffect(.degrees(-90))
-                            .accessibilityLabel(snapshot.locale == "zh" ? "正在体检…" : "Checking…")
-                        Text("Checking…", bundle: .module).font(Theme.label)
-                        VStack(alignment: .leading, spacing: Theme.grid) {
-                            ForEach(scan.lines.indices, id: \.self) { index in
-                                Label(scan.lines[index].title(locale: snapshot.locale ?? store.locale),
-                                      systemImage: index < scan.completed ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(index < scan.completed ? Theme.ink : Theme.secondary)
-                            }
-                        }.font(Theme.body)
-                        Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
-                    } else {
-                        RingView(score: ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
-                            .value(at: context.date, reduceMotion: reduceMotion), size: 128)
-                        if !settled, let change = store.scoreChange, change.isVisible(at: context.date) {
-                            Text(change.caption(locale: snapshot.locale ?? store.locale))
-                                .font(Theme.body).foregroundStyle(Theme.secondary)
-                        }
-                    }
-                }
-            }
-            .task(id: store.recheckCompletedAt) {
-                settled = false
-                guard let date = store.recheckCompletedAt else { return }
-                let remaining = max(0, 5 - Date().timeIntervalSince(date))
-                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
-                guard !Task.isCancelled else { return }
-                settled = true
-            }
-        }.bauhausTheme()
-    }
-
-    private var needsFrames: Bool {
-        if store.recheckScan != nil { return false }
-        return store.recheckCompletedAt != nil && !settled
     }
 }

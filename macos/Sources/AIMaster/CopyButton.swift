@@ -24,21 +24,30 @@ struct CopyButton: View {
 
     var body: some View {
         Group {
-            Button(copied ? (copiedTitle ?? (locale == "zh" ? "已复制 ✓" : "Copied ✓")) : title) {
-                NSPasteboard.general.clearContents()
-                if NSPasteboard.general.setString(prompt, forType: .string) {
-                    feedback.markCopied()
-                    copied = true
-                    onCopied?()
-                }
+            if primary {
+                button.buttonStyle(PrimaryButtonStyle())
+            } else {
+                button.buttonStyle(SecondaryButtonStyle())
             }
-            .buttonStyle(ThemeButtonStyle(primary: primary))
-            .task(id: feedback.copiedAt) {
-                guard feedback.copiedAt != nil else { return }
-                do { try await Task.sleep(nanoseconds: 1_500_000_000) }
-                catch { return }
-                copied = feedback.isCopied()
+        }
+        .task(id: feedback.copiedAt) {
+            guard feedback.copiedAt != nil else { return }
+            do { try await Task.sleep(nanoseconds: 1_500_000_000) } catch { return }
+            copied = feedback.isCopied()
+        }
+    }
+
+    private var button: some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            if NSPasteboard.general.setString(prompt, forType: .string) {
+                feedback.markCopied()
+                copied = true
+                onCopied?()
             }
-        }.bauhausTheme()
+        } label: {
+            Label(copied ? (copiedTitle ?? tr(locale, "已复制", "Copied")) : title,
+                  systemImage: copied ? "checkmark" : "doc.on.doc")
+        }
     }
 }

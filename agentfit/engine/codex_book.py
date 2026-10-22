@@ -190,6 +190,10 @@ def practice_command(card_id: str, operation: str, progress_path: Path, now: dat
 
 def today_skill(cards: list[dict], today: date, yesterday_id: str | None = None) -> dict:
     unlit = [card for card in cards if not card["lit"]]
+    if unlit:
+        # Follow the path: finish the lowest unfinished level before moving up.
+        lowest = min(card.get("level", 1) for card in unlit)
+        unlit = [card for card in unlit if card.get("level", 1) == lowest]
     candidates = unlit or cards
     if not candidates:
         return {}

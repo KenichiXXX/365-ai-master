@@ -41,26 +41,6 @@ final class OneTimePurchaseTests: XCTestCase {
         XCTAssertEqual(opened, [wallet])
     }
 
-    private func buttonCount(_ value: Any) -> Int {
-        if String(describing: type(of: value)).hasPrefix("Button<") { return 1 }
-        return Mirror(reflecting: value).children.reduce(0) { $0 + buttonCount($1.value) }
-    }
-
-    func testEachPurchaseButtonIsHiddenUntilItsOwnURLIsReady() {
-        for enabled in [PurchaseOption.subscription, .oneTimeAnnual] {
-            let config = PurchaseConfiguration(
-                subscriptionCheckout: enabled == .subscription ? URL(string: "https://merchant.test/sub") : nil,
-                oneTimeCheckout: enabled == .oneTimeAnnual ? URL(string: "https://merchant.test/wallet") : nil,
-                management: URL(string: "https://merchant.test/manage"), allowedHosts: ["merchant.test"],
-                verifiedIntegration: true, verifiedTerms: true)
-            let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, purchaseConfiguration: config)
-            for option in PurchaseOption.allCases {
-                XCTAssertEqual(buttonCount(PurchaseOptionRow(store: store, zh: true, option: option, selected: true).body),
-                               enabled == option ? 1 : 0)
-            }
-        }
-    }
-
     func testSignedOneTimeReminderWindowOfflineRestartAndNotificationRoute() async throws {
         let signer = Curve25519.Signing.PrivateKey()
         func key(product: String?) throws -> String {

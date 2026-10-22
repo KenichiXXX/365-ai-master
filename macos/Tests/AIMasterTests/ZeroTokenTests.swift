@@ -52,15 +52,4 @@ final class ZeroTokenTests: XCTestCase {
         }
     }
 
-    @MainActor
-    func testPromiseSheetRendersInBothLanguages() throws {
-        for locale in ["zh", "en"] {
-            let host = NSHostingView(rootView: AnalysisPromiseSheet(locale: locale))
-            host.frame = NSRect(origin: .zero, size: host.fittingSize)
-            host.layoutSubtreeIfNeeded()
-            XCTAssertEqual(host.bounds.width, 380)
-            XCTAssertGreaterThan(host.bounds.height, 100)
-        }
-    }
-
 }

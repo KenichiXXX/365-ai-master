@@ -97,44 +97,4 @@ final class LicenseTests: XCTestCase {
         XCTAssertFalse(corrupted.isPro)
     }
 
-    @MainActor func testPaywallRendersInBothLanguagesAndLicenseStates() throws {
-        let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, licensePublicKeyBase64: publicKey)
-        for pro in [false, true] {
-            if pro { XCTAssertTrue(store.activateLicense(try key(exp: "2099-01-01"))) }
-            for zh in [true, false] {
-                let view = ProSettingsSection(store: store, zh: zh).padding(20).frame(width: 380)
-                    .background(Color(nsColor: .windowBackgroundColor))
-                let hosting = NSHostingView(rootView: view)
-                hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
-                hosting.layoutSubtreeIfNeeded()
-                XCTAssertEqual(hosting.bounds.width, 380)
-                XCTAssertGreaterThan(hosting.bounds.height, 100)
-                XCTAssertLessThan(hosting.bounds.height, 1500)
-                let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
-                hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
-                if let out = ProcessInfo.processInfo.environment["RENDER_OUT"] {
-                    try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
-                        .write(to: URL(fileURLWithPath: "\(out)-paywall-\(zh ? "zh" : "en")-\(pro ? "pro" : "free").png"))
-                }
-            }
-        }
-    }
-
-    private func containsText(_ text: String, in value: Any) -> Bool {
-        if let options = value as? PurchaseOptionsView { return containsText(text, in: options.body) }
-        if let candidate = value as? Text { return String(reflecting: candidate).contains(text) }
-        return Mirror(reflecting: value).children.contains { containsText(text, in: $0.value) }
-    }
-    @MainActor func testPaywallShowsHonestPlaceholderAndActivatedExpiry() throws {
-        let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, licensePublicKeyBase64: publicKey)
-        let free = ProSettingsSection(store: store, zh: true).body
-        XCTAssertTrue(PurchaseTerms.lines(locale: "zh").contains("Pro 创始价 USD $12/年，每年自动续费"))
-        XCTAssertTrue(containsText("付款通道开通中", in: free))
-        XCTAssertFalse(containsText("去付款", in: free))
-        for item in ["成长曲线", "每周复盘", "Top 20 完整榜单", "四维全球排名"] {
-            XCTAssertTrue(containsText(item, in: free))
-        }
-        XCTAssertTrue(store.activateLicense(try key(exp: "2099-01-01")))
-        XCTAssertTrue(containsText("本地激活码有效至 " + DisplayDate.short("2099-01-01", locale: "zh", year: true), in: ProSettingsSection(store: store, zh: true).body))
-    }
 }

@@ -89,7 +89,6 @@ struct FeedbackDraft {
 struct LocalValidationView: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
-    @Environment(\.dismiss) private var dismiss
     @State private var feedback: FeedbackDraft
     init(snapshot: Snapshot, store: SnapshotStore) {
         self.snapshot = snapshot
@@ -97,8 +96,7 @@ struct LocalValidationView: View {
         _feedback = State(initialValue: FeedbackDraft.from(snapshot))
     }
     private var locale: String { snapshot.locale ?? "en" }
-    private var zh: Bool { locale == "zh" }
-    private func text(_ en: String, _ chinese: String) -> String { zh ? chinese : en }
+    private func text(_ en: String, _ chinese: String) -> String { tr(locale, chinese, en) }
     private func status(_ value: String) -> String {
         let copy = ["new_installation": ["新安装观察组", "New installation cohort"],
             "post_upgrade": ["升级后测量组，安装日期未知", "Post-upgrade measurement cohort; installation date unknown"],
@@ -109,68 +107,71 @@ struct LocalValidationView: View {
             "revoked": ["授权已撤销", "Authorization revoked"],
             "pending": ["待核验", "Pending verification"], "unavailable": ["未知或不可用", "Unknown or unavailable"]]
         if value == "not_yet" { return shareCopy("Observation date has not arrived", locale) }
-        return copy[value]?[zh ? 0 : 1] ?? value
+        return copy[value]?[locale == "zh" ? 0 : 1] ?? value
     }
+
     var body: some View {
-        Group {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Theme.grid) {
-                    Text(shareCopy("Local validation", locale)).font(Theme.title)
-                    Text(shareCopy("This installation only. Nothing is reported", locale)).font(Theme.label)
-                    if store.localEventError {
-                        Text(text("Some local events could not be recorded. Counts may be incomplete.", "部分本机事件未能记录，计数可能不完整。"))
-                    }
-                    if let data = snapshot.localValidation {
-                        Text(status(data.cohort))
-                        if data.measurementReset {
-                            Text(text("Local diagnostics were unreadable. Measurement restarted; installation date is unknown.",
-                                      "本机诊断记录不可读，已重新开始测量；安装日期未知。"))
-                        }
-                        Text(text("Measurement started: ", "测量开始：") + DisplayDate.short(data.measurementStart, locale: locale))
-                        Text(text("Observation window: ", "观察窗口：") + DisplayDate.short(data.windowStart, locale: locale) + " → " + DisplayDate.short(data.windowEnd, locale: locale)).font(Theme.label)
-                        Text(text("Retains up to 90 days. Daily event counts are deduplicated.", "最多保留 90 天。交互事件按日去重计数。"))
-                            .font(Theme.label)
-                        if data.truncated {
-                            Text(text("Older or excess rows were aggregated. Retained window only.", "较早或超量记录已汇总，以下仅计保留窗口。"))
-                        }
-                        Text(text("First-practice funnel / measurement cohort", "首次练习路径 / 本次测量组")).font(Theme.title)
-                        Text(text("Started / this installation: ", "已开始 / 本次安装：") + "\(data.firstPracticeFunnel.started)/1")
-                        Text(text("Observed / this installation: ", "已观察 / 本次安装：") + "\(data.firstPracticeFunnel.observed)/1")
-                        Text(text("Self-reported / this installation: ", "自报 / 本次安装：") + "\(data.firstPracticeFunnel.selfReported)/1")
-                        Text(text("Reused / this installation: ", "已复用 / 本次安装：") + "\(data.firstPracticeFunnel.reused)/1")
-                        Text(text("Attempts / observed / self-reported / reused skills", "尝试 / 已观察 / 自报 / 跨日复用技能"))
-                        Text("\(data.funnel.attempts) / \(data.funnel.observed) / \(data.funnel.selfReported) / \(data.funnel.reused)")
-                        Text(text("Observed attempts / all attempts: ", "有新观察的尝试 / 全部尝试：") +
-                             "\(data.observationRate.numerator)/\(data.observationRate.denominator)")
-                        ForEach([("D1", data.d1), ("D7", data.d7)], id: \.0) { name, value in
-                            if value.status == "observed" {
-                                Text(name + text(" foreground return / eligible installation: ", " 前台返回 / 可观察安装：") + "\(value.foreground)/\(value.denominator)")
-                                Text(name + text(" observed practice / eligible installation: ", " 日志练习 / 可观察安装：") + "\(value.practice)/\(value.denominator)")
-                            } else { Text(name + " · " + status(value.status)) }
-                        }
-                        Text(text("Unavailable coverage / selected sources: ", "覆盖不可用 / 已选来源：") +
-                             "\(data.unsupportedSources)/\(data.sourceDenominator)")
-                        Text(text("Reused skills / observed skills: ", "跨日复用技能 / 有观察技能：") +
-                             "\(data.reuseRate.numerator)/\(data.reuseRate.denominator)")
-                        Text(text("Recorded trial starts since measurement / this installation: ", "测量起记录的体验开始 / 本次安装：") + "\(data.trialStarts)/1")
-                        Text(text("Imported activation: ", "导入激活：") + status(data.activationStatus))
-                        Text(text("Local renewal: ", "本地续订：") + status(data.renewalStatus))
-                        Text(text("New purchases unknown. Browser opens are not payments. This is not a population retention rate or causal lift.",
-                                  "新购买未知，打开浏览器不计为付款。这里不代表群体留存率或因果提升。"))
-                            .font(Theme.label).foregroundStyle(Theme.secondary)
-                    } else { Text(text("No local measurement available", "暂无本机测量记录")) }
-                    ThemeRule()
-                    ThemeMenu(title: text("Stuck reason (optional)", "卡住原因（可选）"), selection: $feedback.reason,
-                              options: FeedbackReason.allCases, label: { $0.title(locale) })
-                    Button(shareCopy("Preview", locale)) { feedback.preview() }
-                    if let copy = feedback.copyText {
-                        Text(copy).font(Theme.label.monospaced()).textSelection(.enabled)
-                        CopyButton(prompt: copy, title: shareCopy("Copy sanitized feedback", locale), locale: locale,
-                                   copiedTitle: shareCopy("Copied, not published", locale)) { store.recordLocalEvent(.feedbackCopy) }
-                    }
-                    Button(shareCopy("Done", locale)) { dismiss() }
-                }.padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-            }.frame(width: 460, height: 640)
-        }.bauhausTheme()
+        VStack(spacing: Theme.gap) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(text("Stuck somewhere? Pick a reason, preview what would be shared, then copy it into an email or issue. Nothing is sent automatically.",
+                          "卡住了？选一个原因，预览要分享的内容，再复制到邮件或 issue 里。不会自动发送任何东西。"))
+                    .font(Theme.body).fixedSize(horizontal: false, vertical: true)
+                Picker(text("Reason", "原因"), selection: $feedback.reason) {
+                    ForEach(FeedbackReason.allCases, id: \.self) { Text($0.title(locale)).tag($0) }
+                }.font(Theme.body)
+                Button(shareCopy("Preview", locale)) { feedback.preview() }.buttonStyle(SecondaryButtonStyle())
+                if let copy = feedback.copyText {
+                    Text(copy).font(.system(size: 10, design: .monospaced)).textSelection(.enabled)
+                        .padding(8).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.inset, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    CopyButton(prompt: copy, title: shareCopy("Copy sanitized feedback", locale), locale: locale,
+                               copiedTitle: shareCopy("Copied, not published", locale),
+                               onCopied: { store.recordLocalEvent(.feedbackCopy) }, primary: true)
+                }
+            }.card()
+            DisclosureGroup {
+                diagnostics.padding(.top, 8)
+            } label: {
+                Text(shareCopy("Local validation", locale)).font(Theme.caption).foregroundStyle(Theme.secondary)
+            }.padding(.horizontal, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var diagnostics: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(shareCopy("This installation only. Nothing is reported", locale))
+            if store.localEventError {
+                Text(text("Some local events could not be recorded. Counts may be incomplete.", "部分本机事件未能记录，计数可能不完整。"))
+            }
+            if let data = snapshot.localValidation {
+                Text(status(data.cohort))
+                if data.measurementReset {
+                    Text(text("Local diagnostics were unreadable. Measurement restarted; installation date is unknown.",
+                              "本机诊断记录不可读，已重新开始测量；安装日期未知。"))
+                }
+                Text(text("Measurement started: ", "测量开始：") + DisplayDate.short(data.measurementStart, locale: locale))
+                Text(text("Observation window: ", "观察窗口：") + DisplayDate.short(data.windowStart, locale: locale) + " → " + DisplayDate.short(data.windowEnd, locale: locale))
+                if data.truncated {
+                    Text(text("Older or excess rows were aggregated. Retained window only.", "较早或超量记录已汇总，以下仅计保留窗口。"))
+                }
+                Text(text("Attempts / observed / self-reported / reused skills: ", "尝试 / 已观察 / 自报 / 跨日复用技能：")
+                     + "\(data.funnel.attempts) / \(data.funnel.observed) / \(data.funnel.selfReported) / \(data.funnel.reused)")
+                Text(text("Observed attempts / all attempts: ", "有新观察的尝试 / 全部尝试：") +
+                     "\(data.observationRate.numerator)/\(data.observationRate.denominator)")
+                ForEach([("D1", data.d1), ("D7", data.d7)], id: \.0) { name, value in
+                    if value.status == "observed" {
+                        Text(name + text(" foreground return / eligible installation: ", " 前台返回 / 可观察安装：") + "\(value.foreground)/\(value.denominator)")
+                    } else { Text(name + " · " + status(value.status)) }
+                }
+                Text(text("Unavailable coverage / selected sources: ", "覆盖不可用 / 已选来源：") + "\(data.unsupportedSources)/\(data.sourceDenominator)")
+                Text(text("Imported activation: ", "导入激活：") + status(data.activationStatus))
+                Text(text("Local renewal: ", "本地续订：") + status(data.renewalStatus))
+                Text(text("New purchases unknown. Browser opens are not payments. This is not a population retention rate or causal lift.",
+                          "新购买未知，打开浏览器不计为付款。这里不代表群体留存率或因果提升。"))
+            } else { Text(text("No local measurement available", "暂无本机测量记录")) }
+        }
+        .font(Theme.caption).foregroundStyle(Theme.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

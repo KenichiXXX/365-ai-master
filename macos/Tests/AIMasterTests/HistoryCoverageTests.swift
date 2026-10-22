@@ -47,7 +47,7 @@ final class HistoryCoverageTests: XCTestCase {
         let snapshot = try snapshot()
         for locale in ["zh", "en"] {
             let view = VStack(alignment: .leading) {
-                GrowthCurve(growth: snapshot.growth!, zh: locale == "zh")
+                TrendChart(growth: snapshot.growth!).frame(height: 120)
                 Text(snapshot.weekly!.summary(locale: locale))
                 Text(snapshot.weekly!.observedChange!.text)
                 Text(snapshot.weekly!.nextPractice!.text)

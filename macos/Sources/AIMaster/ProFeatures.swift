@@ -18,7 +18,7 @@ struct ProFeatures {
     }
 
     func canLearn(_ card: SkillCard, todayID: String?) -> Bool {
-        isPro || card.lit || card.id == todayID || card.id == coursePracticeID
+        isPro || card.level == 1 || card.lit || card.id == todayID || card.id == coursePracticeID
     }
 
     func discoverRankings<T>(_ rows: [T]) -> [T] {

@@ -112,33 +112,70 @@ struct ShareCardInput: Encodable {
 struct ShareCardGraphic: View {
     let input: ShareCardInput
     let locale: String
+
+    private let night = Theme.color(0x0F131A)
+    private let card = Theme.color(0x181D26)
+    private let gold = Theme.color(0xF0BE5A)
+    private let ink = Theme.color(0xF2EEE6)
+    private let muted = Theme.color(0xA8A397)
+
     var body: some View {
-        Group {
-            VStack(alignment: .leading, spacing: Theme.grid) {
-                Text(shareCopy("Share my practice", locale)).font(Theme.title)
-                Text(DisplayDate.short(input.period.start, locale: locale, year: true) + " – " + DisplayDate.short(input.period.end, locale: locale, year: true)).font(Theme.body)
-                ForEach(Array(input.capabilities.enumerated()), id: \.offset) { _, entry in
-                    VStack(alignment: .leading, spacing: Theme.grid) {
-                        Text(entry.capability.title(locale: locale)).font(Theme.title)
-                        Text(entry.evidence.title(locale: locale)).font(Theme.body).foregroundStyle(Theme.secondary)
-                    }.fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 22) {
+            HStack(spacing: 10) {
+                AppMark(size: 30)
+                Text("365 AI Master").font(.system(size: 17, weight: .semibold)).foregroundStyle(ink)
+                Spacer()
+                Text(DisplayDate.short(input.period.end, locale: locale, year: true))
+                    .font(.system(size: 13)).foregroundStyle(muted)
+            }
+            HStack(alignment: .center, spacing: 22) {
+                if let score = input.score {
+                    ZStack {
+                        Circle().stroke(Color.white.opacity(0.1), lineWidth: 12)
+                        Circle().trim(from: 0, to: Double(score.value) / 100)
+                            .stroke(gold, style: StrokeStyle(lineWidth: 12, lineCap: .round)).rotationEffect(.degrees(-90))
+                        Text("\(score.value)").font(.system(size: 46, weight: .bold, design: .rounded)).foregroundStyle(ink)
+                    }.frame(width: 128, height: 128)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(input.score.map { tr(locale, "AI \(Rank.of($0.value).title(locale))", "AI \(Rank.of($0.value).title(locale))") }
+                         ?? tr(locale, "我的 AI 修炼", "My AI practice"))
+                        .font(.system(size: 34, weight: .bold)).foregroundStyle(gold)
+                    Text(tr(locale, "已点亮 \(input.capabilities.count) 招", "\(input.capabilities.count) skills lit"))
+                        .font(.system(size: 18, weight: .semibold)).foregroundStyle(ink)
+                }
+            }
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(input.capabilities.prefix(8).enumerated()), id: \.offset) { _, entry in
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(gold)
+                        Text(entry.capability.title(locale: locale)).font(.system(size: 15)).foregroundStyle(ink)
+                        Spacer()
+                        Text(entry.evidence.title(locale: locale)).font(.system(size: 12)).foregroundStyle(muted)
+                    }
+                }
+                if input.capabilities.count > 8 {
+                    Text(tr(locale, "还有 \(input.capabilities.count - 8) 招…", "+\(input.capabilities.count - 8) more…"))
+                        .font(.system(size: 13)).foregroundStyle(muted)
                 }
                 if input.capabilities.isEmpty {
-                    Text(locale == "zh" ? "等待练习记录" : "Waiting for practice records")
+                    Text(tr(locale, "第一招正在路上", "First skill on the way")).font(.system(size: 15)).foregroundStyle(muted)
                 }
-                if let score = input.score {
-                    Text((locale == "zh" ? "已知分数 " : "Known score ") + String(score.value) + "/100")
-                    Text(DisplayDate.short(score.coverage.start, locale: locale, year: true) + " – " + DisplayDate.short(score.coverage.end, locale: locale, year: true)).font(Theme.label)
-                }
-                ThemeRule()
-                Text(shareCopy("Local practice record, not a certification of ability", locale))
-                    .font(Theme.label).fixedSize(horizontal: false, vertical: true)
             }
-            .foregroundStyle(Theme.ink)
-            .padding(Theme.grid * 2).frame(width: 560, alignment: .leading).background(Theme.surface)
-            .environment(\.colorScheme, .light)
-            .environment(\.locale, Locale(identifier: locale))
-        }.bauhausTheme()
+            .padding(18).frame(maxWidth: .infinity, alignment: .leading)
+            .background(card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(tr(locale, "每天一招，365 天成为 AI 大师", "One AI skill a day. Master AI in 365 days."))
+                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(ink)
+                Text(shareCopy("Local practice record, not a certification of ability", locale))
+                    .font(.system(size: 11)).foregroundStyle(muted)
+            }
+        }
+        .padding(32)
+        .frame(width: 560, alignment: .leading)
+        .background(night)
+        .environment(\.colorScheme, .dark)
+        .environment(\.locale, Locale(identifier: locale))
     }
 }
 
@@ -186,57 +223,4 @@ func shareCopy(_ key: String, _ locale: String) -> String {
     let language = locale == "zh" ? "zh-Hans" : "en"
     let bundle = Bundle.module.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .module
     return NSLocalizedString(key, bundle: bundle, comment: "")
-}
-
-struct ShareCard: View {
-    let snapshot: Snapshot
-    @ObservedObject var store: SnapshotStore
-    @Environment(\.dismiss) private var dismiss
-    @State private var includeScore = false
-    @State private var preview: Data?
-    @State private var message: String?
-    private var locale: String { snapshot.locale ?? "en" }
-
-    var body: some View {
-        Group {
-            VStack(alignment: .leading, spacing: Theme.grid) {
-                Text(shareCopy("Share my practice", locale)).font(Theme.title)
-                Toggle(shareCopy("Include score and coverage period", locale), isOn: $includeScore)
-                    .disabled(!snapshot.hasEvaluableScores)
-                    .onChange(of: includeScore) { _ in preview = nil; message = nil }
-                Button(shareCopy("Preview", locale)) {
-                    do {
-                        guard let input = ShareCardInput.from(snapshot, includeScore: includeScore) else { throw EngineError.badJSON }
-                        preview = try ShareCardRenderer.png(input, locale: locale)
-                        message = nil
-                        store.recordLocalEvent(.sharePreview)
-                    } catch { message = shareCopy("Refresh failed", locale) }
-                }
-                if let preview, let image = NSImage(data: preview) {
-                    ScrollView { Image(nsImage: image).resizable().scaledToFit() }.frame(maxHeight: 460)
-                    HStack {
-                        Button(shareCopy("Copy image", locale)) {
-                            NSPasteboard.general.clearContents()
-                            if NSPasteboard.general.setData(preview, forType: .png) {
-                                store.recordLocalEvent(.shareCopy)
-                                message = shareCopy("Copied, not published", locale)
-                            }
-                        }
-                        Button(shareCopy("Save image", locale)) {
-                            do {
-                                if try ShareCardRenderer.save(preview, chooseURL: {
-                                    let panel = NSSavePanel()
-                                    panel.allowedContentTypes = [.png]
-                                    panel.nameFieldStringValue = "practice.png"
-                                    return panel.runModal() == .OK ? panel.url : nil
-                                }) { store.recordLocalEvent(.shareSave) }
-                            } catch { message = shareCopy("Refresh failed", locale) }
-                        }
-                    }
-                }
-                if let message { Text(message).font(Theme.label) }
-                Button(shareCopy("Done", locale)) { dismiss() }
-            }.padding(Theme.grid * 2).frame(width: 420)
-        }.bauhausTheme()
-    }
 }

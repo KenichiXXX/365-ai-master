@@ -82,6 +82,15 @@ def test_today_skill():
     assert today_skill([], TODAY) == {}
 
 
+def test_today_skill_follows_the_path_from_the_lowest_unfinished_level():
+    cards = [{"id": "advanced", "lit": False, "level": 3}, {"id": "basic-a", "lit": False, "level": 1},
+             {"id": "basic-done", "lit": True, "level": 1}, {"id": "basic-b", "lit": False, "level": 1}]
+    for offset in range(4):
+        assert today_skill(cards, TODAY + timedelta(days=offset))["id"] in {"basic-a", "basic-b"}
+    finished = [{**card, "lit": card["level"] == 1} for card in cards]
+    assert today_skill(finished, TODAY)["id"] == "advanced"
+
+
 def test_rankings_and_tip():
     content = load_content(None)
     entries = [{"name": str(i), "url": "https://example.org", "tagline": {"zh": "中文", "en": "English"},

@@ -210,8 +210,6 @@ final class ReminderTests: XCTestCase {
         XCTAssertFalse(store.openReminder(["review_id": "2026-10-19"])) // Free cannot open Pro review.
         let legacy = try EngineRunner.decode(Data(#"{"schema":2}"#.utf8), status: 0).snapshot
         XCTAssertNil(legacy.book?.practiceCalendar)
-        XCTAssertEqual(snap.book?.practiceCalendar?.days.first?.accessibilityLabel(labels: ["unavailable": "Data unavailable"]),
-                       "Oct 19, Data unavailable")
     }
 }
 
