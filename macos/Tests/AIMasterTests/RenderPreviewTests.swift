@@ -157,67 +157,51 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testPhase5RenderCoverageIncludesDetailAndEveryRanking() throws {
+        let fixture = try XCTUnwrap(Bundle.module.url(forResource: "snapshot", withExtension: "json", subdirectory: "Fixtures"))
+        let snapshot = try EngineRunner.decode(Data(contentsOf: fixture), status: 0).snapshot
+        let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        XCTAssertEqual(Set(phase5Sections(snapshot: snapshot, store: store).map(\.0)),
+                       Set(["checkup", "training", "settings", "dimension-routing",
+                            "discover-skill", "discover-agent", "discover-learnable", "discover-product"]))
+    }
+
     func testRenderPopoverSections() async throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
-        let store = SnapshotStore(defaults: UserDefaults(suiteName: "render-preview")!) { locale, tools in
-            let process = Process()
-            process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
-            // Use bundled content and isolated progress; optionally a synthetic home.
-            let content = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-                .appendingPathComponent("../../../content/daily.json").standardizedFileURL
-            process.arguments = EngineRunner.snapshotArguments(locale: locale, tools: tools, content: content)
-                + ["--state-dir", URL(fileURLWithPath: out).deletingLastPathComponent()
-                    .appendingPathComponent("render-state").path]
-            if let home = ProcessInfo.processInfo.environment["AIMASTER_PREVIEW_HOME"] {
-                process.arguments! += ["--home", URL(fileURLWithPath: home).standardizedFileURL.path, "--state-dir", out + ".state"]
+        XCTAssertNil(ProcessInfo.processInfo.environment["AIMASTER_PREVIEW_HOME"],
+                     "This acceptance check uses real logs; use the synthetic matrix for fixtures")
+        for language in ["zh", "en"] {
+            let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!) { _, tools in
+                let process = Process()
+                process.executableURL = try XCTUnwrap(EngineRunner.engineURL())
+                let content = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+                    .appendingPathComponent("../../../content/daily.json").standardizedFileURL
+                process.arguments = EngineRunner.snapshotArguments(locale: language, tools: tools, content: content)
+                    + ["--state-dir", out + "-real-state-" + language]
+                let pipe = Pipe()
+                process.standardOutput = pipe
+                process.standardError = FileHandle.nullDevice
+                try process.run()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                process.waitUntilExit()
+                return try EngineRunner.decode(data, status: process.terminationStatus)
             }
-            let pipe = Pipe(); process.standardOutput = pipe
-            process.standardError = FileHandle.nullDevice
-            try process.run()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            process.waitUntilExit()
-            return try EngineRunner.decode(data, status: process.terminationStatus)
+            store.actionCommand = { _ in true }
+            await store.refresh()?.value
+            let snap = try XCTUnwrap(store.snapshot, store.lastError ?? "no snapshot")
+            XCTAssertEqual(snap.schema, 3, "Rebuild dist/365engine before rendering")
+            XCTAssertNotNil(snap.trainingGame, "The bundled engine must include Phase 5")
+            XCTAssertEqual(snap.book?.groups?.map(\.total), [8, 10, 6])
+            store.dismissOnboarding()
+            try renderPhase5(snapshot: snap, store: store, output: out + "-real-" + language)
+            let popover = ImageRenderer(content: PopoverView(store: store))
+            popover.scale = 2
+            let image = try XCTUnwrap(popover.nsImage)
+            XCTAssertEqual(image.size.width, 440)
+            XCTAssertLessThanOrEqual(image.size.height, 720)
         }
-        await store.refresh()?.value
-        let snap = try XCTUnwrap(store.snapshot, store.lastError ?? "no snapshot")
-        XCTAssertEqual(snap.schema, 3, "Rebuild dist/365engine before rendering")
-        let views: [(String, AnyView)] = [
-            ("checkup", AnyView(CheckupTab(snapshot: snap, store: store))),
-            ("today", AnyView(TodaySkillTab(snapshot: snap, store: store))),
-            ("training", AnyView(TrainingTab(snapshot: snap, store: store))),
-            ("settings", AnyView(SettingsView(store: store)))
-        ]
-        for (name, tab) in views {
-            let view = tab.padding(name == "settings" ? 0 : 16).frame(width: 440)
-                .background(Color(nsColor: .windowBackgroundColor))
-            // NSHostingView renders native menu controls that ImageRenderer cannot draw.
-            let hosting = NSHostingView(rootView: view)
-            hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
-            hosting.layoutSubtreeIfNeeded()
-            XCTAssertEqual(hosting.bounds.width, 440)
-            if name == "settings" {
-                XCTAssertLessThanOrEqual(hosting.bounds.height, 600)
-                print("Settings preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")
-            }
-            if name == "today" {
-                XCTAssertLessThanOrEqual(hosting.bounds.height, 1500)
-                print("Today preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")
-            }
-            if name == "training" {
-                XCTAssertLessThanOrEqual(hosting.bounds.height, 1100)
-                XCTAssertEqual(snap.book?.groups?.map(\.total), [8, 10, 6])
-                print("Training preview: \(hosting.bounds.width) x \(hosting.bounds.height) pt")
-            }
-            let rep = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
-            hosting.cacheDisplay(in: hosting.bounds, to: rep)
-            try XCTUnwrap(rep.representation(using: .png, properties: [:]))
-                .write(to: URL(fileURLWithPath: out + "-" + name + ".png"))
-        }
-        let popover = ImageRenderer(content: PopoverView(store: store)); popover.scale = 2
-        let image = try XCTUnwrap(popover.nsImage)
-        XCTAssertEqual(image.size.width, 440)
-        XCTAssertLessThanOrEqual(image.size.height, 720)
     }
+
     func testRenderActionCoverageStates() async throws {
         guard let out = ProcessInfo.processInfo.environment["RENDER_OUT"] else { throw XCTSkip("set RENDER_OUT") }
         let root = URL(fileURLWithPath: out + "-fixtures-" + UUID().uuidString).standardizedFileURL
