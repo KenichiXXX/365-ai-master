@@ -27,8 +27,8 @@ struct PracticeCalendar: View {
     @Environment(\.locale) private var locale
     var body: some View {
         Group {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(data.labels["title"] ?? "").font(Theme.title)
+            VStack(alignment: .leading, spacing: Theme.grid * 3) {
+                Text(data.labels["title"] ?? "").font(Theme.sectionTitle)
                 if let first = data.days.first, let last = data.days.last {
                     Text("\(DisplayDate.short(first.date, locale: locale.identifier)) – \(DisplayDate.short(last.date, locale: locale.identifier))").font(Theme.label).foregroundStyle(Theme.secondary)
                 }
@@ -36,9 +36,12 @@ struct PracticeCalendar: View {
                     ForEach(data.days) { day in
                         VStack(spacing: Theme.grid) {
                             Image(systemName: day.symbol)
+                                .foregroundStyle(day.state == "observed" ? Theme.accent : Theme.secondary)
+                                .frame(width: 28, height: 28)
+                                .background(day.state == "observed" ? Theme.accentSurface : Theme.hairline, in: Circle())
                             Text(String(day.date.suffix(2))).font(Theme.label)
                         }.frame(maxWidth: .infinity)
-                            .foregroundStyle(day.state == "observed" ? Theme.ink : Theme.secondary)
+                            .foregroundStyle(Theme.secondary)
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
                             .help(day.accessibilityLabel(labels: data.labels, locale: locale.identifier))
@@ -47,7 +50,7 @@ struct PracticeCalendar: View {
                 Text(["observed", "self_reported", "usage_only", "unavailable"].compactMap { data.labels[$0] }.joined(separator: " · "))
                     .font(Theme.label).foregroundStyle(Theme.secondary)
                 Text(data.labels["rest"] ?? "").font(Theme.label).foregroundStyle(Theme.secondary)
-            }
+            }.padding(Theme.cardPadding).bauhausPanel()
         }.bauhausTheme()
     }
 }

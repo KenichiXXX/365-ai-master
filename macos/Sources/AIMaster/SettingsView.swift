@@ -26,71 +26,75 @@ struct SettingsView: View {
 
     var body: some View {
         Group {
-            VStack(alignment: .leading, spacing: Theme.grid) {
+            VStack(alignment: .leading, spacing: Theme.sectionGap) {
                 HStack {
                     Text(zh ? "设置" : "Settings").font(Theme.title)
                     Spacer()
                     Button(zh ? "完成" : "Done") { dismiss() }
                 }
-                group(zh ? "通用" : "General") {
-                    Toggle(zh ? "开机启动" : "Launch at login", isOn: Binding(get: { launchAtLogin }, set: setLaunchAtLogin))
-                    if loginError {
-                        Text("Login item unavailable", bundle: .module).font(Theme.label).foregroundStyle(Theme.ink)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Theme.sectionGap) {
+                        group(zh ? "通用" : "General") {
+                            Toggle(zh ? "开机启动" : "Launch at login", isOn: Binding(get: { launchAtLogin }, set: setLaunchAtLogin))
+                            if loginError {
+                                Text("Login item unavailable", bundle: .module).font(Theme.label).foregroundStyle(Theme.ink)
+                            }
+                            ThemeRule()
+                            ThemeMenu(title: zh ? "刷新频率" : "Refresh interval", selection: $store.refreshSeconds,
+                                      options: SnapshotStore.refreshIntervals,
+                                      label: { Self.intervalLabel($0, locale: zh ? "zh" : "en") })
+                        }
+                        group(zh ? "隐私" : "Privacy") {
+                            Toggle(zh ? "匿名排名" : "Anonymous ranking", isOn: Binding(
+                                get: { store.shareAnonymousScore },
+                                set: { if $0 { showConsent = true } else { store.shareAnonymousScore = false } }
+                            ))
+                            ThemeRule()
+                            Toggle(zh ? "每日榜单更新" : "Daily ranking updates", isOn: Binding(
+                                get: { store.publicDownloads == true }, set: { store.publicDownloads = $0 }
+                            ))
+                            ThemeRule()
+                            Button(zh ? "查看我的数据" : "View my data") { showSnapshot = true }
+                                .disabled(store.snapshot == nil)
+                        }
+                        group("Pro") {
+                            HStack {
+                                Text(store.isPro ? (zh ? "Pro 已开启" : "Pro is active") : (zh ? "免费版" : "Free"))
+                                Spacer()
+                                Button(zh ? "输入激活码" : "Enter activation key") { showPro = true }
+                                Button(store.license != nil ? (zh ? "管理" : "Manage") : (zh ? "查看 Pro" : "Explore Pro")) { showPro = true }
+                            }
+                        }
+                        group(zh ? "关于" : "About") {
+                            HStack {
+                                Text(Self.versionLabel(locale: zh ? "zh" : "en"))
+                                Spacer()
+                                Button(zh ? "反馈" : "Feedback") { showLocalValidation = true }.disabled(store.snapshot == nil)
+                                Button(zh ? "退出" : "Quit") { NSApp.terminate(nil) }
+                            }
+                        }
+                        DisclosureGroup(zh ? "高级" : "Advanced") {
+                            ScrollView {
+                                advanced.padding(.top, 8)
+                            }.frame(height: 130)
+                        }
                     }
-                    ThemeMenu(title: zh ? "刷新频率" : "Refresh interval", selection: $store.refreshSeconds,
-                              options: SnapshotStore.refreshIntervals,
-                              label: { Self.intervalLabel($0, locale: zh ? "zh" : "en") })
-                }
-                group(zh ? "隐私" : "Privacy") {
-                    Toggle(zh ? "匿名排名" : "Anonymous ranking", isOn: Binding(
-                        get: { store.shareAnonymousScore },
-                        set: { if $0 { showConsent = true } else { store.shareAnonymousScore = false } }
-                    ))
-                    Toggle(zh ? "每日榜单更新" : "Daily ranking updates", isOn: Binding(
-                        get: { store.publicDownloads == true }, set: { store.publicDownloads = $0 }
-                    ))
-                    Button(zh ? "查看我的数据" : "View my data") { showSnapshot = true }
-                        .disabled(store.snapshot == nil)
-                }
-                group("Pro") {
-                    HStack {
-                        Text(store.isPro ? (zh ? "Pro 已开启" : "Pro is active") : (zh ? "免费版" : "Free"))
-                        Spacer()
-                        Button(zh ? "输入激活码" : "Enter activation key") { showPro = true }
-                        Button(store.license != nil ? (zh ? "管理" : "Manage") : (zh ? "查看 Pro" : "Explore Pro")) { showPro = true }
-                    }
-                }
-                group(zh ? "关于" : "About") {
-                    HStack {
-                        Text(Self.versionLabel(locale: zh ? "zh" : "en"))
-                        Spacer()
-                        Button(zh ? "反馈" : "Feedback") { showLocalValidation = true }.disabled(store.snapshot == nil)
-                        Button(zh ? "退出" : "Quit") { NSApp.terminate(nil) }
-                    }
-                }
-                DisclosureGroup(zh ? "高级" : "Advanced") {
-                    ScrollView {
-                        advanced.padding(.top, 8)
-                    }.frame(height: 130)
                 }
             }
             .font(Theme.body)
-            .padding(Theme.grid * 2)
-            .frame(width: 440)
-            .fixedSize(horizontal: false, vertical: true)
+            .padding(Theme.pagePadding)
+            .frame(width: 440, height: 600)
             .sheet(isPresented: $showConsent) {
                 VStack(alignment: .leading, spacing: Theme.grid) {
                     ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false })
                     Text(zh ? "关闭后停止上报，已有的排名记录仍会保留。"
                          : "Turning sharing off stops reporting. Existing ranking records are kept.")
                         .font(Theme.label).foregroundStyle(Theme.secondary)
-                }.padding(Theme.grid * 2).frame(width: 400).bauhausTheme()
+                }.padding(Theme.pagePadding).frame(width: 400)
+                    .background(MasterWindowBackground()).bauhausTheme()
             }
             .sheet(isPresented: $showPro) {
-                VStack {
-                    ScrollView { ProSettingsSection(store: store, zh: zh).padding(Theme.grid * 2) }
-                    Button(zh ? "完成" : "Done") { showPro = false }.padding()
-                }.frame(width: 440, height: 580).bauhausTheme()
+                ProSheet(store: store, zh: zh) { showPro = false }
             }
             .sheet(isPresented: $showLocalValidation) {
                 if let snapshot = store.snapshot { LocalValidationView(snapshot: snapshot, store: store) }
@@ -104,15 +108,15 @@ struct SettingsView: View {
                     Button(action: { showSnapshot = false }) { Text("Done", bundle: .module) }
                 }.padding().frame(width: 600, height: 450).bauhausTheme()
             }
-        }.bauhausTheme()
+        }.background(MasterWindowBackground()).bauhausTheme()
     }
 
     private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(Theme.title)
+        VStack(alignment: .leading, spacing: Theme.grid * 3) {
+            Text(title).font(Theme.sectionTitle)
             content()
         }
-        .padding(Theme.grid)
+        .padding(Theme.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
         .bauhausPanel()
     }
@@ -162,12 +166,12 @@ struct ProSettingsSection: View {
 
     var body: some View {
         Group {
-            VStack(alignment: .leading, spacing: Theme.grid) {
+            VStack(alignment: .leading, spacing: Theme.sectionGap) {
                 Text("365 AI MASTER PRO").font(Theme.title)
                 Text(zh ? "$12 / 年 · 创始价" : "$12 / year · Founding price")
                     .font(Theme.title).foregroundStyle(Theme.ink)
-                    .padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Theme.accentSurface)
+                    .padding(Theme.cardPadding).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.accentSurface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius))
                 VStack(alignment: .leading, spacing: Theme.grid) {
                     benefit(zh ? "成长曲线" : "Growth curve")
                     benefit(zh ? "每周复盘" : "Weekly review")
@@ -176,6 +180,7 @@ struct ProSettingsSection: View {
                 }
                 if !store.isPro { ProTrialSection(store: store, zh: zh) }
                 Button(zh ? "输入激活码" : "Enter activation key") { showActivation.toggle() }
+                    .buttonStyle(ThemeButtonStyle())
                     .accessibilityIdentifier("pro-enter-key")
                 if showActivation {
                     TextField(zh ? "输入激活码" : "Enter activation key", text: $activationKey)
@@ -184,7 +189,7 @@ struct ProSettingsSection: View {
                         if store.activateLicense(activationKey) { activationKey = "" }
                     }
                     if let error = store.licenseError {
-                        Text(error.message(locale: zh ? "zh" : "en")).foregroundStyle(Theme.ink)
+                        Text("⚠︎ " + error.message(locale: zh ? "zh" : "en")).foregroundStyle(Theme.secondary)
                     }
                 }
                 ThemeRule()
@@ -304,12 +309,11 @@ struct ProTrialSection: View {
                 case .eligible:
                     Text(zh ? "无需银行卡，不自动扣款。体验到期后回到免费版，历史记录保留。"
                          : "No card required and no automatic charge. After the trial, return to Free and keep your history.")
+                        .font(Theme.label).foregroundStyle(Theme.secondary)
                     Button { store.startProTrial() } label: {
                         Text(zh ? "开始 14 天免费试用" : "Start 14-day free trial")
-                            .font(Theme.title).foregroundStyle(Theme.onAccent)
-                            .padding(Theme.grid * 2).frame(maxWidth: .infinity)
-                            .background(Theme.accent)
-                    }.buttonStyle(.plain).accessibilityIdentifier("pro-start-trial")
+                            .frame(maxWidth: .infinity)
+                    }.buttonStyle(ThemeButtonStyle(primary: true)).accessibilityIdentifier("pro-start-trial")
                 case .active(let end):
                     Text(verbatim: (zh ? "体验至 " : "Trial until ") + formatted(end))
                     Text(zh ? "无需银行卡，不自动扣款。体验到期后回到免费版，历史记录保留。"
@@ -321,7 +325,7 @@ struct ProTrialSection: View {
                     Text(zh ? "体验已结束，历史记录已保留" : "Trial ended. Your history is preserved.")
                 }
             }
-        }.bauhausTheme()
+        }
     }
 
     private func formatted(_ date: Date) -> String {

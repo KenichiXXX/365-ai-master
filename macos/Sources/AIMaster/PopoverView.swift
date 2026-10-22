@@ -83,10 +83,7 @@ struct PopoverView: View {
                 }
             }
             .sheet(isPresented: $store.showProSettings) {
-                VStack {
-                    ScrollView { ProSettingsSection(store: store, zh: store.locale == "zh").padding(Theme.grid * 2) }
-                    Button(store.locale == "zh" ? "完成" : "Done") { store.showProSettings = false }.padding()
-                }.frame(width: 380, height: 660).bauhausTheme()
+                ProSheet(store: store, zh: store.locale == "zh") { store.showProSettings = false }
             }
             .sheet(item: $store.reminderCard) { card in
                 ScrollView {
