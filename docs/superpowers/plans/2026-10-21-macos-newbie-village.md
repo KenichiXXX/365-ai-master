@@ -1793,3 +1793,14 @@ Kenichi switched from C to option A (night blue + gold: rank / trophy feel). Sam
 - onAccent **dark text on gold**: `#1E1A14` / `#12161F` (gold is too light for white text). Primary buttons and the PRO pill = gold fill + onAccent.
 - Four dimension colors: gold `#A87518`/`#F0BE5A`, coral `#C8553A`/`#F08A6A`, teal `#2E8C7C`/`#4FC7B2`, indigo `#5566D6`/`#8C9BFF`.
 Contrast test: ink/secondary on paper ≥ 4.5:1; onAccent on accent ≥ 4.5:1 (both modes). If the gold accent as small text on paper is < 3:1, use ink for small accent text and keep gold for the score number, ring, fills, and pills. Remove palette C hex from Sources. Real-data renders zh light + dark (me, picks, training, Pro). Commit `style(macos): palette A night blue + gold`.
+
+---
+
+### Task 67: Brighter light-mode gold (Kenichi, 2026-10-22)
+
+Kenichi: 「浅色模式的金色调亮一点，别那么棕」. Light mode `#A87518` reads brown. Dark mode unchanged.
+- Split the light accent into two tokens: `accent` (bright gold `#D9A12E`, used for the score ring, score number, gold dimension bar, PRO pill fill, primary button fill, selected/progress fills, header dot) and `accentText` (deep gold `#8A5F0E`, used only where gold is small text or a small glyph on paper/surface, e.g. ▲ trend markers, inline links). Dark mode: both = `#F0BE5A`.
+- Light gold dimension color → `#D9A12E` (other three dims unchanged).
+- onAccent on the bright gold stays dark (`#19150F`); test ≥ 4.5:1.
+- Contrast rules: accentText on paper/surface ≥ 4.5:1. The 64pt score number in bright gold is exempt from 3:1 (decorative large numeral with an accessibility label) but must be ≥ 2.3:1 on surface; if not, deepen minimally and report.
+- Real-data renders zh light (me, picks, training, Pro) + one dark me to confirm dark unchanged. Commit `style(macos): brighter light-mode gold`.
