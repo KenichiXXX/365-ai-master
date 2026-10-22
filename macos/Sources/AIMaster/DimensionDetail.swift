@@ -15,9 +15,9 @@ struct DimensionDetail: View {
                 Label(zh ? "返回我" : "Back to Me", systemImage: "chevron.left")
             }.buttonStyle(.plain).foregroundStyle(Theme.secondary)
             HStack(spacing: Theme.cardPadding) {
-                RingView(score: dimension.score, size: 100)
+                RingView(score: dimension.score, size: 100, color: Theme.dimension(dimension.key))
                 VStack(alignment: .leading, spacing: Theme.grid * 2) {
-                    Text(dimension.label).font(Theme.title)
+                    Text(dimension.label).font(Theme.title).foregroundStyle(Theme.dimension(dimension.key))
                     Text(zh ? "你的 AI 掌握度" : "Your AI proficiency")
                         .font(Theme.label).foregroundStyle(Theme.secondary)
                 }

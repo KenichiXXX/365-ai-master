@@ -34,7 +34,7 @@ struct DimensionRings: View {
 
     private func dimensionRing(_ dimension: Dimension) -> some View {
         VStack(alignment: .leading, spacing: Theme.grid) {
-            RingView(score: dimension.score, size: 64)
+            RingView(score: dimension.score, size: 64, color: Theme.dimension(dimension.key))
             Text(dimension.label).font(Theme.label).multilineTextAlignment(.leading)
             if dimension.score != nil, let caption = features.dimensionCaption(ranking, key: dimension.key, locale: locale) {
                 Text(caption).font(Theme.label).foregroundStyle(Theme.secondary)

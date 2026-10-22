@@ -18,7 +18,7 @@ final class DirectionCPicksTests: XCTestCase {
     }
 
     private func accentArea(_ bitmap: NSBitmapImageRep, scheme: ColorScheme) throws -> Double {
-        let expected = scheme == .light ? [0.0, 127, 117] : [101.0, 220, 198]
+        let expected = scheme == .light ? [193.0, 87, 35] : [240.0, 138, 85]
         var pixels = 0
         for y in 0..<bitmap.pixelsHigh {
             for x in 0..<bitmap.pixelsWide {
@@ -65,7 +65,7 @@ final class DirectionCPicksTests: XCTestCase {
                 XCTAssertEqual(bitmap.size.width, 400)
                 XCTAssertLessThanOrEqual(bitmap.size.height, 640, "Five reference rows must fit the popover content area")
                 let area = try accentArea(bitmap, scheme: scheme)
-                XCTAssertGreaterThan(area, 1500, "The primary copy action and square must be teal")
+                XCTAssertGreaterThan(area, 1500, "The primary copy action and square must use the accent")
                 XCTAssertLessThan(area / (bitmap.size.width * bitmap.size.height), 0.08, "Accent must remain restrained")
                 let request = VNRecognizeTextRequest()
                 request.usesCPUOnly = true

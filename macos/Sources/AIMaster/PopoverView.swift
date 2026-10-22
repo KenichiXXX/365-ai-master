@@ -22,8 +22,8 @@ struct PopoverView: View {
                     Button(Theme.proTitle(isPro: store.isPro)) { store.showProSettings = true }
                         .font(Theme.label)
                         .padding(.horizontal, 10).padding(.vertical, 5)
-                        .foregroundStyle(Theme.ink)
-                        .overlay(RoundedRectangle(cornerRadius: Theme.buttonRadius).strokeBorder(Theme.hairline, lineWidth: 1))
+                        .foregroundStyle(Theme.onAccent)
+                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("header-pro")
                 }

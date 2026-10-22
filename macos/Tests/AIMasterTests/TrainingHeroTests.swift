@@ -23,8 +23,10 @@ final class TrainingHeroTests: XCTestCase {
         return try EngineRunner.decode(data, status: 0).snapshot
     }
 
-    func text<V: View>(_ view: V) throws -> String {
-        let renderer = ImageRenderer(content: view.frame(width: 408).bauhausTheme())
+    func text<V: View>(_ view: V, scheme: ColorScheme = .light) throws -> String {
+        let renderer = ImageRenderer(content: view.frame(width: 408).bauhausTheme()
+            .background(Theme.paper).background(scheme == .dark ? Color.black : Color.white)
+            .environment(\.colorScheme, scheme))
         renderer.scale = 2
         let request = VNRecognizeTextRequest()
         request.usesCPUOnly = true
@@ -119,7 +121,7 @@ final class TrainingHeroTests: XCTestCase {
                         .frame(width: 408).bauhausTheme().environment(\.colorScheme, scheme)
                     XCTAssertNotNil(ImageRenderer(content: view).cgImage)
                     XCTAssertLessThanOrEqual(NSHostingView(rootView: view).fittingSize.height, 300)
-                    let visible = try text(view)
+                    let visible = try text(view, scheme: scheme)
                     XCTAssertTrue(visible.localizedCaseInsensitiveContains("Lv.3"), visible)
                     XCTAssertTrue(visible.contains("20 / 100 XP"), visible)
                     if locale == "en" {

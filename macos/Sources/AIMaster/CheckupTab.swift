@@ -283,7 +283,7 @@ struct DimensionBars: View {
                         GeometryReader { proxy in
                             Capsule().fill(Theme.hairline)
                                 .overlay(alignment: .leading) {
-                                    Capsule().fill(Theme.accent)
+                                    Capsule().fill(Theme.dimension(dimension.key))
                                         .frame(width: proxy.size.width * Double(min(100, max(0, dimension.score ?? 0))) / 100)
                                 }
                         }.frame(height: Theme.grid)

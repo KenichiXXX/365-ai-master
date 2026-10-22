@@ -13,18 +13,33 @@ enum Theme {
     static let feedbackDuration: Double = 0.14
 
     static func background(for scheme: ColorScheme) -> Color {
-        color(scheme == .dark ? 0x242E39 : 0xEDF2F5).opacity(scheme == .dark ? 0.91 : 0.86)
+        color(scheme == .dark ? 0x1C1916 : 0xF4EEE6).opacity(scheme == .dark ? 0.92 : 0.88)
     }
-    static func foreground(for scheme: ColorScheme) -> Color { color(scheme == .dark ? 0xF0F4F8 : 0x1D2933) }
-    static let paper = adaptive(light: 0xEDF2F5, dark: 0x242E39, lightAlpha: 0.86, darkAlpha: 0.91)
-    static let surface = adaptive(light: 0xFFFFFF, dark: 0x3A4858, lightAlpha: 0.67, darkAlpha: 0.69)
-    static let ink = adaptive(light: 0x1D2933, dark: 0xF0F4F8)
-    static let secondary = adaptive(light: 0x596773, dark: 0xB4C0CC)
-    static let hairline = adaptive(light: 0x41566C, dark: 0xC4D7EC, lightAlpha: 0.15, darkAlpha: 0.17)
-    static let accent = adaptive(light: 0x007F75, dark: 0x65DCC6)
+    static func foreground(for scheme: ColorScheme) -> Color { color(scheme == .dark ? 0xF2EBE2 : 0x2A211B) }
+    static let paper = adaptive(light: 0xF4EEE6, dark: 0x1C1916, lightAlpha: 0.88, darkAlpha: 0.92)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x2A2521, lightAlpha: 0.72, darkAlpha: 0.72)
+    static let ink = adaptive(light: 0x2A211B, dark: 0xF2EBE2)
+    static let secondary = adaptive(light: 0x6E6259, dark: 0xBFB3A6)
+    static let hairline = adaptive(light: 0x5A4636, dark: 0xE8D5C2, lightAlpha: 0.15, darkAlpha: 0.17)
+    // White on the requested C95A24 is 4.224:1; this slightly darker clay reaches 4.511:1.
+    static let accent = adaptive(light: 0xC15723, dark: 0xF08A55)
     static let accentSurface = accent.opacity(0.12)
-    static let primaryButtonText = color(0xFFFFFF)
-    static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x242E39)
+    static let onAccent = adaptive(light: 0xFFFFFF, dark: 0x1C1916)
+    static let primaryButtonText = onAccent
+
+    // Match the engine's fixed routing, timing, context, leverage order, even in partial lists.
+    static func dimension(_ index: Int) -> Color {
+        switch index {
+        case 0: return adaptive(light: 0xC95A24, dark: 0xF08A55)
+        case 1: return adaptive(light: 0x6E8B3D, dark: 0x9DBB64)
+        case 2: return adaptive(light: 0x3A73C9, dark: 0x78A6EE)
+        case 3: return adaptive(light: 0x9A4D8C, dark: 0xD489C6)
+        default: return accent
+        }
+    }
+    static func dimension(_ key: String) -> Color {
+        dimension(["routing", "timing", "context", "leverage"].firstIndex(of: key) ?? -1)
+    }
 
     static let body = Font.system(size: 13)
     static let title = Font.system(size: 20, weight: .semibold)

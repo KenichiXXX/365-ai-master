@@ -3,6 +3,7 @@ import SwiftUI
 struct RingView: View {
     let score: Int?
     var size: CGFloat = 96
+    var color: Color = Theme.accent
 
     var scoreText: String { score.map(String.init) ?? "—" }
 
@@ -12,10 +13,10 @@ struct RingView: View {
                 Circle().stroke(Theme.hairline, lineWidth: size * 9 / 128)
                 if let score {
                     Circle().trim(from: 0, to: CGFloat(min(100, max(0, score))) / 100)
-                        .stroke(Theme.accent, style: StrokeStyle(lineWidth: size * 9 / 128, lineCap: .butt))
+                        .stroke(color, style: StrokeStyle(lineWidth: size * 9 / 128, lineCap: .butt))
                         .rotationEffect(.degrees(-90))
                 }
-                Text(scoreText).font(size >= 128 ? Theme.score : size >= 96 ? Theme.stat : Theme.title).monospacedDigit()
+                Text(scoreText).foregroundStyle(score == nil ? Theme.ink : Theme.accent).font(size >= 128 ? Theme.score : size >= 96 ? Theme.stat : Theme.title).monospacedDigit()
             }
             .padding(size * 9 / 256)
             .frame(width: size, height: size)

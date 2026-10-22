@@ -17,7 +17,7 @@ final class DirectionCMeTests: XCTestCase {
     }
 
     private func accentPixels(_ bitmap: NSBitmapImageRep, scheme: ColorScheme) throws -> Int {
-        let expected = scheme == .light ? [0.0, 127, 117] : [101.0, 220, 198]
+        let expected = scheme == .light ? [193.0, 87, 35] : [240.0, 138, 85]
         var count = 0
         for y in 0..<bitmap.pixelsHigh {
             for x in 0..<bitmap.pixelsWide {
@@ -29,7 +29,7 @@ final class DirectionCMeTests: XCTestCase {
         return Int(Double(count) / pow(Double(bitmap.pixelsWide) / bitmap.size.width, 2))
     }
 
-    func testScoreIsTealRingRatherThanSolidDiskInBothAppearances() throws {
+    func testScoreIsAccentRingRatherThanSolidDiskInBothAppearances() throws {
         let snapshot = try EngineRunner.decode(Data(#"{"schema":3,"overall":{"score":69}}"#.utf8), status: 0).snapshot
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         for scheme in [ColorScheme.light, .dark] {
@@ -42,14 +42,13 @@ final class DirectionCMeTests: XCTestCase {
         }
     }
 
-    func testEveryDimensionUsesThinTealProgressAndStillFits() throws {
+    func testFourDimensionBarsStillFit() throws {
         let dimensions = zip(["routing", "timing", "context", "leverage"], [35, 70, 95, 75]).map {
             Dimension(key: $0, label: $0, score: $1)
         }
         for scheme in [ColorScheme.light, .dark] {
             let bitmap = try render(DimensionBars(dimensions: dimensions, ranking: nil,
                 features: ProFeatures(isPro: false), locale: "zh", onSelect: { _ in }), scheme: scheme)
-            XCTAssertGreaterThan(try accentPixels(bitmap, scheme: scheme), 600)
             XCTAssertLessThanOrEqual(bitmap.size.height, 220)
         }
     }

@@ -100,6 +100,11 @@ extension RenderPreviewTests {
                     .environment(\.colorScheme, scheme))
                 hosting.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
                 hosting.frame = NSRect(origin: .zero, size: hosting.fittingSize)
+                // Attach to an unordered test window so SwiftUI lays out scroll content.
+                let window = NSWindow(contentRect: hosting.frame, styleMask: [.borderless],
+                    backing: .buffered, defer: false)
+                window.contentView = hosting
+                defer { window.contentView = nil }
                 hosting.layoutSubtreeIfNeeded()
                 let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
                 hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
@@ -113,6 +118,28 @@ extension RenderPreviewTests {
                     let footer = try XCTUnwrap(image.cropping(to: CGRect(x: 0, y: image.height * 3 / 4,
                         width: image.width, height: image.height - image.height * 3 / 4)))
                     text += try phase7Text(footer)
+                }
+                // These fixed-height screens scroll. Validate below-fold copy by scrolling
+                // the actual view, while preserving the initial viewport PNG below.
+                if name == "settings" || (name == "me" && snapshot.progressMe?.personalBest != nil) {
+                    func scrollViews(_ view: NSView) -> [NSScrollView] {
+                        (view as? NSScrollView).map { [$0] } ?? view.subviews.flatMap(scrollViews)
+                    }
+                    for scroll in scrollViews(hosting) {
+                        // SwiftUI owns its scroll offset; its AppKit documentView is empty.
+                        let event = try XCTUnwrap(CGEvent(scrollWheelEvent2Source: nil, units: .pixel,
+                            wheelCount: 1, wheel1: -1200, wheel2: 0, wheel3: 0))
+                        scroll.scrollWheel(with: try XCTUnwrap(NSEvent(cgEvent: event)))
+                    }
+                    try await Task.sleep(nanoseconds: 50_000_000)
+                    hosting.layoutSubtreeIfNeeded()
+                    let scrolled = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+                    hosting.cacheDisplay(in: hosting.bounds, to: scrolled)
+                    text += try phase7Text(XCTUnwrap(scrolled.cgImage))
+                    if let output {
+                        try XCTUnwrap(scrolled.representation(using: .png, properties: [:]))
+                            .write(to: URL(fileURLWithPath: output + "-\(locale)-\(name)-\(scheme)-scrolled.png"))
+                    }
                 }
                 for marker in try XCTUnwrap(markers[name]) {
                     XCTAssertTrue(text.contains(marker), "\(context): missing \(marker): \(text)")
@@ -147,6 +174,20 @@ extension RenderPreviewTests {
             object["locale"] = locale
             try await renderPhase7(JSONSerialization.data(withJSONObject: object), output: nil)
         }
+    }
+
+    func testRenderTask65WarmPaletteRealData() async throws {
+        guard let directory = ProcessInfo.processInfo.environment["TASK65_SNAPSHOT_DIR"],
+              let output = ProcessInfo.processInfo.environment["TASK65_RENDER_OUT"] else {
+            throw XCTSkip("set TASK65_SNAPSHOT_DIR and TASK65_RENDER_OUT for real-data acceptance")
+        }
+        let data = try Data(contentsOf: URL(fileURLWithPath: directory).appendingPathComponent("zh.json"))
+        let snapshot = try EngineRunner.decode(data, status: 0).snapshot
+        XCTAssertEqual(snapshot.locale, "zh")
+        XCTAssertNotNil(snapshot.overall?.score)
+        XCTAssertGreaterThan(snapshot.usageSummary?.tokens7d ?? 0, 0)
+        XCTAssertEqual(snapshot.dimensions?.count, 4)
+        try await renderPhase7(data, output: output)
     }
 
     // Real snapshots and PNGs stay in an ignored worktree directory, never in test fixtures.

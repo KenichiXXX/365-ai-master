@@ -33,21 +33,23 @@ extension RenderPreviewTests {
             $0.topCandidates(1).first?.string.replacingOccurrences(of: " ", with: "").contains(title) == true
         }, title, file: file, line: line)
         let box = label.boundingBox
-        var whitePixels = 0
+        var textPixels = 0
+        let expectedText = scheme == .light ? [1.0, 1, 1] : [28.0 / 255, 25.0 / 255, 22.0 / 255]
         for y in Int((1 - box.maxY) * Double(bitmap.pixelsHigh))..<Int((1 - box.minY) * Double(bitmap.pixelsHigh)) {
             for x in Int(box.minX * Double(bitmap.pixelsWide))..<Int(box.maxX * Double(bitmap.pixelsWide)) {
-                if let pixel = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB),
-                   min(pixel.redComponent, pixel.greenComponent, pixel.blueComponent) > 0.97 {
-                    whitePixels += 1
+                if let pixel = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB) {
+                    let distance = zip([pixel.redComponent, pixel.greenComponent, pixel.blueComponent], expectedText)
+                        .map { abs($0 - $1) }.max() ?? 1
+                    if distance < 0.06 { textPixels += 1 }
                 }
             }
         }
-        XCTAssertGreaterThan(whitePixels, 5, "Actionable primary text must be white", file: file, line: line)
+        XCTAssertGreaterThan(textPixels, 5, "Actionable primary text must use onAccent (allowing glyph antialiasing)", file: file, line: line)
         let x = Int(box.midX * Double(bitmap.pixelsWide))
         // Sample the fill just below the glyphs, inside the button's vertical padding.
         let y = Int((1 - box.minY) * Double(bitmap.pixelsHigh)) + 4
         let color = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
-        let expected = scheme == .light ? [0.0, 127.0, 117.0] : [101.0, 220.0, 198.0]
+        let expected = scheme == .light ? [193.0, 87.0, 35.0] : [240.0, 138.0, 85.0]
         for (actual, byte) in zip([color.redComponent, color.greenComponent, color.blueComponent], expected) {
             XCTAssertEqual(actual, byte / 255, accuracy: 0.015, title, file: file, line: line)
         }
