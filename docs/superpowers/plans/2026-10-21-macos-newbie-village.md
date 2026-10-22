@@ -1510,3 +1510,28 @@ Snapshot changes start with schema 3 in Task 26, with additive optional blocks a
 **Acceptance:** Python `test_phase4_flow.py` verifies the local sequence and privacy/packaging regressions; Swift store/preview/trial/subscription/reminder suites verify user-visible states and entitlement transitions; worker score/license/subscription suites verify isolated cohorts and idempotent renewal. `docs/testing/phase4-acceptance.md` records command results, synthetic artefact paths, request allowlist and each unverified release item separately. A local build or a full fake-backed test pass is not evidence of a live payment integration, adoption, retention or paid demand.
 
 **Network:** Automated acceptance uses fake transports and local worker/D1. Actual public downloads and merchant sandbox tests need network and the corresponding test access; record unavailable access rather than substituting real payments. Production deploy/publish remains reviewer-controlled and outside this plan.
+
+---
+
+# Phase 4.1 — fix the real-data regression and declutter (reviewer, 2026-10-22)
+
+Real-home check after Phase 4 (reviewer ran the packaged engine on Kenichi's actual logs): `overall.score = null`, all four dimensions null, check-up shows "尚无可评估记录", even though coverage reports `claude_code.valid_usage_count = 25195` and Codex data too. Every coverage signal (`usage`, `tool_calls`, `skill_calls`, `turn_start`, `compacted`, `hook_success`, `sidechain`) is reported `"unknown"`. Before Phase 4 the same logs scored 69. The UI also regressed against Kenichi's explicit request ("清爽、每天想点开、少而精"): a practice card shows 7 buttons, every ranking row carries 4 extra grey lines, disclaimers repeat on every card, and the quota line prints raw ISO timestamps.
+
+### Task 38: Real data must score again
+
+- Root-cause why signals stay `"unknown"` for real Claude Code / Codex logs (see `agentfit/engine/collectors/*`, coverage/evaluability code). A signal is `observed` when at least one event of that kind was parsed in the window; `supported` when the adapter can parse it even if zero occurred; `unknown` only when the adapter genuinely cannot tell. `usage` with >0 valid usage events must never be unknown.
+- With observed/supported signals the overall score and the four dimensions are computed as before Phase 4 (same formulas); a dimension is null only when its specific inputs are truly unsupported, and then the overall score is the weighted mean of the available dimensions with weights renormalised (label the ring "基于 N/4 项 / Based on N of 4").
+- Regression tests: (a) a fixture home built from realistic Claude Code + Codex lines (reuse/extend tests/engine/fixtures) must produce non-null overall and four non-null dims; (b) opt-in smoke `RUN_REAL_HOME_SMOKE=1 .venv/bin/python -m pytest tests/engine/test_real_home_smoke.py` runs the engine on the real `$HOME` with a temp state dir and asserts: if `~/.claude/projects` has ≥100 usage lines, `overall.score` is not null. (Skipped by default; never commit its output.)
+- Commit `fix(engine): real logs score again — observed vs supported vs unknown signals`.
+
+### Task 39: Declutter — less, cleaner, one obvious action
+
+Hard UI rules (Swift; add tests that enforce them where practical):
+1. **Every card shows at most 2 visible buttons.** Practice / tip / skill cards: primary `复制给 Claude 的指令 / Copy prompt`, secondary `做完了，帮我检查 / Check now`. Everything else (`开始实践`, `已尝试（自报）`, `稍后`, `不适合`, `不再推荐`, `换一个`) goes into one `⋯` menu button on the card.
+2. **Ranking rows are three lines max**: name; tagline; `★ 29.8万 · 本周 +9,302` (or `★ 29.8万` when no weekly data) plus an `已装` pill only when installed. Remove the per-row `兼容性未知`, raw URL, `精选内容`, `安装前请核对权限与来源` lines. Each list ends with ONE grey footnote: `数据：The Skill Leaderboard · GitHub · 安装前请自行核对权限` (or `内置精选` when the bundled list is used). The row itself opens the URL on click.
+3. **At most one short grey caveat line per card**, ≤ 40 Chinese characters / 80 English characters. Longer explanations live behind an `ⓘ` disclosure (popover or inline expand), collapsed by default. Remove duplicated caveats (e.g. the three-line self-report / shell-test disclaimer on the skill card becomes one `ⓘ`).
+4. **Usage summary is one line**: `本周 2,957 万 tokens · 折算 $735 · Codex 周额度 27%（10月27日重置）` / `This week 29.6M tokens · ≈$735 API-equivalent · Codex weekly 27% (resets Oct 27)`. Cost caveats and record timestamps move into its `ⓘ`. All user-visible dates/times use localized short formats (`10月27日 15:49` / `Oct 27, 3:49 PM`) — never ISO strings.
+5. Check-up keeps the order: ring + rank + ranking caption → four dimension rings → ONE "今天先改这一处" card. "为什么推荐 / 手动练习" disclosures collapse into that card's `ⓘ`.
+6. Today tab order: today's skill card → Skill 榜 Top 5 → Agent 榜 Top 5 → 大师一句话. "与你的工具有关的更新" shows only when there is at least one update (no empty-state section).
+- Render the three tabs with real data via `RenderPreviewTests/testRenderPopoverSections` (no `AIMASTER_PREVIEW_HOME`) and with the synthetic matrix; the Today tab must render ≤ 1500 pt tall at 440 wide with Top 5 lists.
+- Commit `feat(macos): declutter — two buttons per card, three-line ranking rows, one-line usage`.
