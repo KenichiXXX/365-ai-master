@@ -1761,3 +1761,21 @@ Source: Granola 2026-10-22 「AI evaluation model insights」 — (1) selling a 
 3. **jev in the harvester (public data only)**: in `scripts/harvest/harvest.py`, when the `jev` CLI exists AND a key is configured (`jev auth status` exit 0), run one `jev run` spec over each candidate ranking item's public `name + description` (batch with `-l --json`) to (a) drop marketing/course-selling/spam repos (`noul`, `--true "推广、卖课、引流、无实质功能" --false "真实的开源工具或技能"`), (b) pick a category (`choice`: coding/automation/memory/browser/data/design/research/other), (c) score beginner-friendliness 1–5. Store `category` and `beginner` on each item; drop items with spam P ≥ 0.8. Spec file `scripts/harvest/jev-ranking.json`. If jev is unavailable, skip silently (current behaviour) and log one line. Tests use a fake jev runner; no network.
 4. **App use of the new fields**: 「为你推荐」 prefers items whose `category` matches the user's weakest dimension map and `beginner ≥ 3`; ranking rows may show a small `新手友好` tag when `beginner ≥ 4`.
 Commit `feat: zero-token how-it-works, jev-filtered rankings`.
+
+---
+
+### Task 65: Palette C 暖陶橙 — warmer, less plain (Kenichi, 2026-10-22)
+
+Kenichi: 「配色有点素，换个」, picked option C (warm paper + clay orange) from three mockups. Layout, radii, fonts, spacing stay exactly as direction C; only colors change.
+
+1. **Theme tokens** (`macos/Sources/AIMaster/Theme.swift`), light / dark:
+   - paper `#F4EEE6` α0.88 / `#1C1916` α0.92
+   - surface `#FFFFFF` α0.72 / `#2A2521` α0.72
+   - ink `#2A211B` / `#F2EBE2`; secondary `#6E6259` / `#BFB3A6`
+   - hairline `#5A4636` α0.15 / `#E8D5C2` α0.17
+   - accent `#C95A24` / `#F08A55`; accentSurface = accent α0.12; onAccent `#FFFFFF` / `#1C1916`
+2. **Four dimension colors** (new `Theme.dimension(_ index:)` or per-dimension token, light / dark): clay `#C95A24`/`#F08A55`, olive `#6E8B3D`/`#9DBB64`, blue `#3A73C9`/`#78A6EE`, plum `#9A4D8C`/`#D489C6`. Use them for the four dimension bars/rings and their detail headers, in a fixed order matching the dimension order. Everything else that is accent stays accent (primary buttons, score number, PRO pill, selected states, ▲ trend).
+3. **Pro entry**: the PRO ↗ pill becomes a solid accent fill with onAccent text (more visible).
+4. Remove any remaining hard-coded old palette hex (`007F75`, `65DCC6`, `EDF2F5`, `242E39`, `3A4858`, `1D2933`, `596773`) from Sources; tests updated accordingly (ThemeTests etc.).
+5. Contrast check in a test: ink/secondary on paper ≥ 4.5:1, onAccent on accent ≥ 4.5:1 for white-on-`#C95A24` light (if it fails, darken accent minimally and note it in the report).
+6. Real-data renders zh light + dark via RenderPreviewTests (me, picks, training, Pro sheet). Commit `style(macos): palette C warm paper + clay accent, four dimension colors`.
