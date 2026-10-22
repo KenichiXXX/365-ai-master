@@ -52,7 +52,7 @@
 "This log format is not supported yet" = "此日志格式暂不支持";
 "Retry or practice manually; broad disk access is not required" = "可重试或手动练习，无需授予广泛磁盘访问权限";
 "Return to check-up" = "返回检查";
-"Scanning allowed sources" = "正在扫描允许的来源";
+"Checking…" = "正在体检…";
 "Download public content" = "下载公开内容";
 "Public download explanation" = "仅在开启后下载公开技能和榜单；关闭仍可本地练习。";
 "Join ranking" = "参与匿名排名";

@@ -101,7 +101,7 @@ struct FirstPracticeView: View {
                     }
                 }
                 if store.isRefreshing {
-                    ProgressView { Text("Scanning allowed sources", bundle: .module) }
+                    ProgressView { Text("Checking…", bundle: .module) }
                 }
                 if !store.onboarded && store.onboardingStep != .practice && store.onboardingStep != .done {
                     Menu { scanOptions } label: { Text("⋯") }

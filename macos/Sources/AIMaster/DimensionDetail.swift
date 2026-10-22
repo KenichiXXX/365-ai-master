@@ -56,9 +56,6 @@ struct DimensionDetail: View {
                         .accessibilityLabel(zh ? "重新扫描" : "Refresh")
                         .disabled(store.isRefreshing)
                 }
-                if store.isRefreshing {
-                    ProgressView(zh ? "正在扫描…" : "Checking…")
-                }
                 if features.growthCurve {
                     Text(zh ? "30 天趋势" : "30-day trend").font(Theme.title)
                     if let growth {

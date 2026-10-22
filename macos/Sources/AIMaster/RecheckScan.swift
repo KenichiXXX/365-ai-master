@@ -64,7 +64,8 @@ struct RecheckScoreView: View {
                             .stroke(Theme.blue, style: StrokeStyle(lineWidth: 12, lineCap: .butt))
                             .frame(width: 125, height: 125)
                             .rotationEffect(.degrees(reduceMotion ? -90 : context.date.timeIntervalSinceReferenceDate * 240))
-                            .accessibilityLabel(snapshot.locale == "zh" ? "正在扫描" : "Checking")
+                            .accessibilityLabel(snapshot.locale == "zh" ? "正在体检…" : "Checking…")
+                        Text("Checking…", bundle: .module).font(Theme.label)
                         VStack(alignment: .leading, spacing: Theme.grid) {
                             ForEach(scan.lines.indices, id: \.self) { index in
                                 Label(scan.lines[index].title(locale: snapshot.locale ?? store.locale),
@@ -72,6 +73,7 @@ struct RecheckScoreView: View {
                                     .foregroundStyle(index < scan.completed ? Theme.ink : Theme.secondary)
                             }
                         }.font(Theme.body)
+                        Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
                     } else {
                         Circle().fill(Theme.blue).frame(width: 128, height: 128)
                             .overlay {

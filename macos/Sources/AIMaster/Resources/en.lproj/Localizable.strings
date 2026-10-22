@@ -52,7 +52,7 @@
 "This log format is not supported yet" = "This log format is not supported yet";
 "Retry or practice manually; broad disk access is not required" = "Retry or practice manually; broad disk access is not required";
 "Return to check-up" = "Return to check-up";
-"Scanning allowed sources" = "Scanning allowed sources";
+"Checking…" = "Checking…";
 "Download public content" = "Download public content";
 "Public download explanation" = "Download public skills and rankings only when enabled. Local practice works with downloads off.";
 "Join ranking" = "Join ranking";

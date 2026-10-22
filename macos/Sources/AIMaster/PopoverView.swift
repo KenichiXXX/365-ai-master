@@ -29,7 +29,7 @@ struct PopoverView: View {
                         } else if let snapshot = store.snapshot {
                             if snapshot.notices?.contains("no_tools") == true {
                                 Text(snapshot.labels?.noTools ?? "").font(Theme.label).foregroundStyle(Theme.secondary)
-                                Button(action: { store.refresh() }) { Text("Check now", bundle: .module) }
+                                Button(action: { store.recheck() }) { Text("Check now", bundle: .module) }
                             }
                             switch selectedTab {
                             case 1:
@@ -51,10 +51,6 @@ struct PopoverView: View {
                         }
                     }.frame(maxWidth: .infinity, alignment: .leading)
                 }.id(selectedTab)
-                if store.onboarded && store.isRefreshing {
-                    ProgressView { Text("Scanning allowed sources", bundle: .module) }
-                    Button(action: store.cancelRefresh) { Text("Cancel scan", bundle: .module) }
-                }
                 ThemeRule()
                 HStack {
                     VStack(alignment: .leading) {
