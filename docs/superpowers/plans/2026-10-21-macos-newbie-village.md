@@ -1695,3 +1695,34 @@ Commit `fix(macos): phase 6 polish — solid trial button, distinct picks, full-
 ### Task 56: Background refresh must never replace content (2026-10-22)
 
 Full-popover real render of ■ 大师推荐 caught a background refresh: the list was cut after row 1 and replaced by 「正在扫描允许的来源 ↻ 取消扫描」. Rules: (1) timer/automatic refreshes are silent — keep showing the last snapshot; at most a 6 pt spinning ↻ in the header. (2) The scan block (with the per-tool lines from Task 41) appears ONLY after the user presses ↻ / 立即体检, and only on the ● 我 tab in place of the score circle. (3) Remove the engineering wording 「允许的来源」 everywhere in the main UI (use 「正在体检…」/「Checking…」). (4) Test: a store refresh triggered by the timer leaves the rendered Picks/Training lists intact. Commit `fix(macos): silent background refresh; scan view only for manual re-check`.
+
+---
+
+# Phase 7 — Direction C: native macOS premium (Kenichi chose C, 2026-10-22)
+
+Reference: `docs/design/directions.html` (section C) + `docs/design/direction-C.png` + `docs/design/research.md`. This replaces the Phase 6 Bauhaus palette (red/blue/yellow blocks, paper background). Principle: restraint and consistency — neutral material ≈94% of the visible area, ONE accent (teal) ≈6%, used only for primary actions, selection and progress.
+
+**Tokens (single source in `Theme.swift`; no other colors anywhere):**
+- Light: window material = `NSVisualEffectView` `.popover`/`.hudWindow`-like vibrancy over background `#EDF2F5` (86%); surface (cards) white at 67% opacity; text `#1D2933`; secondary `#596773`; hairline `#41566C` at 15%; accent teal `#007F75`.
+- Dark: background `#242E39` (91%); surface `#3A4858` (69%); text `#F0F4F8`; secondary `#B4C0CC`; hairline `#C4D7EC` at 17%; accent `#65DCC6`.
+- Semantic: up-trend ▲ uses accent; down-trend uses secondary; warnings use secondary text + "⚠︎" (no red/yellow fills).
+- Type: system font (SF Pro / PingFang SC). Sizes 11 (captions) / 13 (body) / 17–21 (titles) / 36–40 (stat numbers) / 64 (score). Weights: 400 body, 500 numbers, 600 titles. All numbers `monospacedDigit()`.
+- Layout: 4 pt grid; popover padding 20; section gaps 16–20; card padding 16. Corners: outer 22, card 16, list 12, button 9, segmented 9.
+- Surfaces: cards are rounded rects in the surface color, no borders; lists inside a card use 1 pt hairlines between rows only; at most one shadow level (the selected segment); no nested cards.
+- Controls: header = green dot + 「365 AI Master」 · `↻` (plain icon) · `PRO ↗` small outlined pill. Tabs = native-looking segmented control (`● 我 / ■ 大师推荐 / ▲ 修炼`) with the selected segment as a white pill with a subtle shadow. Primary buttons = filled teal, white text, radius 9; secondary = surface pill with text color. Feedback animations 140 ms; no looping animations; respect Reduce Motion.
+- Score: Fitness-style ring (accent stroke, track = hairline color) with the number inside, title + 「你的 AI 掌握度」 to the right.
+
+### Task 57: Theme + chrome + ● 我 (sequential, first)
+Implement the tokens, material background, header, segmented tabs, and restyle the ● 我 tab exactly as in direction C (score ring card; global ranking card with `加入 ↗` pill; 「能力维度 · 满分 100」 card with four rows each `name … number` + thin accent progress bar; 个人最佳 row; one-line usage footer). Remove every red/yellow/blue Bauhaus color and the paper background from the codebase (grep must find none of `#D7282F`, `#F2C230`, `#1F4E9E`, `#F4F0E6` outside docs). Commit `feat(macos): direction C theme, chrome and Me tab`.
+
+### Task 58: ■ 大师推荐 in direction C (parallel after 57)
+Today's pick card tinted with accent at ~12% + small accent square + filled teal `复制试一下 ↗`; 「为你推荐」 two rows with `Skill`/`Agent` tags and `↗`; segmented `Skill / Agent / 技能 / 产品`; list card with rows `01  name / one-line tagline  ▲ 8,990` (rank as two-digit secondary text, growth in accent); 「第 11–20 名 · PRO 解锁 ↗」 as the last row. Commit `feat(macos): direction C master's picks`.
+
+### Task 59: ▲ 修炼 in direction C (parallel after 57)
+Card 1: 「今日修炼」 + big `1 / 3` + 「连签 0 天」 + three-segment accent progress. Card 2: `Lv.3` large + `130 / 150 XP` + accent bar + full-width filled teal `打卡 +5 XP`. Card 3: three stats `新手村 2/9 · 图鉴 12/24 · 徽章 6` separated by hairlines. Card 4: 「本周挑战 · 打卡 5 天 0/5」 with a week strip of seven day circles (一…日). Detail pages and the celebration banner restyled with the same tokens (celebration = accent-tinted card, not yellow). Commit `feat(macos): direction C training`.
+
+### Task 60: Detail pages, Settings, Pro sheet in direction C (parallel after 57)
+Dimension detail, village/skill-book/badges/calendar details, Settings, Pro sheet: same tokens; Pro sheet price block = accent-tinted card; primary = filled teal 「开始 14 天免费试用」; secondary 「输入激活码」 surface pill. Commit `feat(macos): direction C details, settings and Pro`.
+
+### Task 61: Render check (after merge)
+Real-data renders (light and dark) of the full popover for all three tabs, a dimension detail, Training detail, Settings, Pro sheet. Assert no Bauhaus hex values remain in Sources. Commit `test: phase 7 renders`.
