@@ -1614,3 +1614,19 @@ Render all tabs + a dimension detail + settings + Discover's four rankings with 
 4. 「每日榜单更新 / Daily rankings update」 must default to ON (Kenichi approved on 2026-10-21 that the app downloads one public content file per day, uploading nothing). Users can still turn it off. With it off, Discover shows the bundled list labelled 「内置精选」. Update tests and the privacy test expectations accordingly (the GET still carries no user data).
 5. Discover ranking rows must show `★ 29.8万 · 本周 +9,302` whenever the content item has `stars`/`stars7d` (the downloaded daily file has them); verify with a fixture built from the live `content/daily.json` shape.
 Commit `fix(macos): version, friendly intervals, whole-dollar costs, daily rankings on by default`.
+
+### Task 48: Say less — action-first copy and airy layout (Kenichi, 2026-10-22)
+
+Kenichi: 「字太密，描述性的文字太多。要让用户一下子就知道：要做什么、需要什么、怎么做。」
+
+Hard rules (enforce with tests where possible):
+1. **Every card = title + at most ONE short line + buttons.** Title is a verb phrase telling the user what to do, ≤ 14 汉字 / 32 English chars (e.g. 「切到轻量模型」「装上 Plan 模式」「今天打卡」). The one line says the benefit or the "how" in ≤ 18 汉字 / 40 chars (e.g. 「简单活更快、更省额度」). Delete every other explanatory sentence from the main UI; if something truly must stay, put it behind ⓘ.
+2. **Steps are commands, max 3, each ≤ 12 汉字** (e.g. 「输入 /model」「选最轻的一档」「复杂任务再切回」). No numbered paragraphs.
+3. **Numbers over words**: dimension details show evidence as compact chips — `旗舰占比 74%（≤60%）` `轻量 0%（≥5%）` — and deductions as `−40` next to a ≤ 10-汉字 reason. Remove the duplicated verdict line.
+4. **Discover**: 为你推荐 cards = name + 「能帮你：<≤12 汉字>」 + one button; no 推荐理由 paragraph. Ranking rows = rank · name · one-line tagline (UI `lineLimit(1)`, truncate with …) · `★ 29.8万 · 本周 +9,302`. 大师推荐 = title + one line.
+5. **Training**: remove helper sentences (shield rules, chest rules, weekly reward text) from the main view — show them as a tooltip / ⓘ. 今日三件事 rows are 2–4 汉字 each (「打卡」「看一张卡」「练一次」).
+6. **Check-up**: under the ring only the title and the ranking card; the usage line stays one line.
+7. **Air**: increase vertical spacing between sections (≥ 20 pt), body font one step larger than captions, no more than 2 font sizes per card. Remove repeated small grey captions.
+8. **Content rewrite** (engine `content.py`, `content_pool.json` + `content/daily.json` skill cards, dimension details, tips, badge/quest copy): rewrite zh+en to the limits above. Harvester translation prompt: ask for a Chinese tagline ≤ 16 汉字 (verb-first), and truncate longer ones at a sentence/phrase boundary.
+9. **Tests**: a copy-lint test that walks every user-facing zh/en string in content.py and content_pool.json and asserts the limits (titles ≤ 14 汉字/32 chars, one-liners ≤ 18/40, steps ≤ 12 汉字, ≤ 3 steps); a Swift render test that the Check-up, Discover and Training tabs at 440 pt wide contain no Text longer than 40 汉字 in the main (non-ⓘ) view.
+Render real data afterwards (RenderPreviewTests/testRenderPopoverSections). Commit `feat: action-first copy — less text, clearer actions, more air`.
