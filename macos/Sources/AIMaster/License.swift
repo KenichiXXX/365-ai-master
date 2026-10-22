@@ -15,7 +15,7 @@ enum ProEntitlement {
 }
 
 enum License {
-    static let publicKeyBase64 = "REPLACE_PUBLIC_KEY"
+    static let publicKeyBase64 = "ma3DOZwYfJgnZVV9fpMY5Za0SEZV8/3/SdKzSf0ttVs="
 
     struct Payload: Decodable {
         let v: Int
