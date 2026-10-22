@@ -1605,3 +1605,12 @@ All local, nothing uploaded.
 ### Task 46: Integrated render check
 
 Render all tabs + a dimension detail + settings + Discover's four rankings with real data (`RenderPreviewTests/testRenderPopoverSections`, no preview home) and with the synthetic matrix; assert: menu-bar title shows the score; no `今天先改这一处` on Check-up; settings ≤ 600 pt; Discover main UI contains none of the engineering words listed above. Commit `test: phase 5 integrated render checks`.
+
+### Task 47: Phase 5 polish from the real-data review (2026-10-22)
+
+1. Settings shows 「版本 16.0」 — read `CFBundleShortVersionString` from the app bundle (0.4.0); in tests/SwiftPM runs show `开发版 / Dev build`.
+2. Refresh interval picker shows `300 s` — show `1 分钟 / 5 分钟 / 15 分钟` (`1 min / 5 min / 15 min`).
+3. Money in the usage line: whole dollars (`$1,049`), never cents.
+4. 「每日榜单更新 / Daily rankings update」 must default to ON (Kenichi approved on 2026-10-21 that the app downloads one public content file per day, uploading nothing). Users can still turn it off. With it off, Discover shows the bundled list labelled 「内置精选」. Update tests and the privacy test expectations accordingly (the GET still carries no user data).
+5. Discover ranking rows must show `★ 29.8万 · 本周 +9,302` whenever the content item has `stars`/`stars7d` (the downloaded daily file has them); verify with a fixture built from the live `content/daily.json` shape.
+Commit `fix(macos): version, friendly intervals, whole-dollar costs, daily rankings on by default`.
