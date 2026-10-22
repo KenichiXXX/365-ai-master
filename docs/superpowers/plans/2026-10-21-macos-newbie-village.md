@@ -1630,3 +1630,56 @@ Hard rules (enforce with tests where possible):
 8. **Content rewrite** (engine `content.py`, `content_pool.json` + `content/daily.json` skill cards, dimension details, tips, badge/quest copy): rewrite zh+en to the limits above. Harvester translation prompt: ask for a Chinese tagline ≤ 16 汉字 (verb-first), and truncate longer ones at a sentence/phrase boundary.
 9. **Tests**: a copy-lint test that walks every user-facing zh/en string in content.py and content_pool.json and asserts the limits (titles ≤ 14 汉字/32 chars, one-liners ≤ 18/40, steps ≤ 12 汉字, ≤ 3 steps); a Swift render test that the Check-up, Discover and Training tabs at 440 pt wide contain no Text longer than 40 汉字 in the main (non-ⓘ) view.
 Render real data afterwards (RenderPreviewTests/testRenderPopoverSections). Commit `feat: action-first copy — less text, clearer actions, more air`.
+
+---
+
+# Phase 6 — Bauhaus redesign, Master's picks, achievement psychology, visible Pro (Kenichi, 2026-10-22)
+
+Kenichi: the layout still looks clumsy ("多了一个体检这两个字"); lead with 大师推荐 — the second page is the rankings, styled premium; Training spreads everything out and looks dumb — present it in a premium way that makes people want to come back daily; tap into the psychology of 要强、爱学习、每天进步一点点、看到自己的能力和成果、比别人强、比昨天的自己强 — every design choice should foreground this; fonts and colours must look premium and grand — look at Bauhaus; make the paid entry more visible. A reviewer mock (three phones: ● 我 / ■ 大师推荐 / ▲ 修炼) was shown to Kenichi; implement that direction.
+
+### Task 49: Bauhaus design system
+
+- `Theme.swift` (single source): paper `#F4F0E6` / ink `#111111` in light; ink `#111111` background / paper text in dark. Accents used as solid geometric blocks only: Bauhaus red `#D7282F`, blue `#1F4E9E`, yellow `#F2C230`. Body text only ink/paper (+ 60% for secondary). No gradients, no shadows, square corners (radius 0–2), 1 pt ink rules as separators, 8 pt grid, left-aligned asymmetric layout.
+- Type: numbers in SF Pro Display/Rounded heavy (score 44–56 pt); titles PingFang SC Semibold 15–17 pt; small section labels in uppercase Latin with 2 pt tracking (`LEVEL`, `GLOBAL`, `TODAY'S PICK`, `TODAY`) at 10 pt; max three sizes per screen.
+- Geometry as meaning: ● circle = you/score, ■ square = rankings, ▲ triangle = progress/up. Up-trend ▲ in red, down-trend ▼ in ink at 60%.
+- Tab bar: replace the segmented control with three text tabs `● 我  ■ 大师推荐  ▲ 修炼` (en `● Me  ■ Master's picks  ▲ Training`), active = ink with 2 pt underline. Header right: a yellow `PRO` block button (free) / `PRO ✓` (Pro) that opens the Pro sheet. Remove every remaining occurrence of the word 「体检」 as a page label (the action stays as `↻`).
+- Restyle every existing view with the theme (Settings, detail pages, sheets). Snapshot/accessibility: keep contrast ≥ 4.5:1 for text.
+- Commit `feat(macos): Bauhaus design system and tab bar`.
+
+### Task 50: ● 我 — you vs yesterday, you vs everyone
+
+- Hero row: blue solid circle with the score (white heavy digits); right side `LEVEL` + title (AI 探索者/熟练者/大师/宗师 by score) + `▲ 比昨天 +2` / `▼ 比昨天 −1` / `= 与昨天持平` (from engine history: latest score of the previous local day; hidden if none).
+- Black `GLOBAL` block: opted in & total ≥ 20 → 「超过全球 63% 的 AI 用户」 + yellow `本周排名 ▲3` (rank change vs the stored rank 7 days ago; hidden if unknown); small sample → 「早期排名 · N 人中第 K 名」; not opted in → 「看看你超过了多少 AI 用户」 + `加入` button (inline consent as before).
+- Four dimensions as horizontal solid bars (label · number · bar), lowest dimension's bar in red, highest in blue, others ink; tap → existing detail page (restyled).
+- One line under the bars: `个人最佳 74 · 本周 +5` (engine: best score in history; this week's change).
+- Engine: snapshot adds `progress_me`: `{"vs_yesterday": int|null, "personal_best": int|null, "week_delta": int|null}`; app stores last known global rank with date to compute `rank_change_7d` locally.
+- Commit `feat: Me page — score vs yesterday, vs everyone, personal best`.
+
+### Task 51: ■ 大师推荐 — premium rankings
+
+- Top: yellow `TODAY'S PICK` block = today's recommended skill/tool (title ≤ 14 汉字, one line, one button).
+- Below: text tabs `Skill  Agent  技能  产品` (active underlined). Rows: rank in a 20 pt solid square (1 red, 2 blue, 3 ink, others outline), bold short name (strip `owner/` when the repo name is unique in the list), one-line tagline (lineLimit 1), right side `▲ 8,990` weekly growth in red or `★ 22万` when no weekly data; `已装` as a small ink outline tag. 
+- Free: Top 10; rows 11–20 shown as one locked row 「第 11–20 名 · PRO 解锁」 with a lock square → opens Pro sheet. Pro: Top 20.
+- 「为你推荐」 becomes at most two compact rows under TODAY'S PICK with `能帮你：…`.
+- Source footnote one line at the bottom in 60% ink.
+- Commit `feat: Master's picks — premium rankings with locked Pro rows`.
+
+### Task 52: ▲ 修炼 — one hero, details on demand
+
+- Black hero block: yellow progress ring `2/3` (today's 3) · `TODAY` · 「今日修炼」 · `连签 12 天 · Lv.3`. Tap the ring → today's 3 list sheet.
+- Full-width red button `打卡 +5 XP` (after check-in: `已打卡 ✓ 明天见` in ink outline, plus a brief stamp animation; respect Reduce Motion).
+- Three white tiles: `新手村 2/9`, `图鉴 12/24`, `徽章 6` → each opens its detail page (village path / grouped skill book / badges wall), nothing else spread on the main view.
+- One white row: `本周挑战 · 打卡 5 天 3/5` → challenge detail.
+- Achievement moments: when a level, badge, quest or personal best is reached, show a full-width celebration block (yellow, ▲, one line 「新纪录！个人最佳 74」/「升到 Lv.4」) once, then it collapses.
+- Calendar, XP ledger, shields move into the detail pages.
+- Commit `feat: Training — one hero, tiles to details, achievement moments`.
+
+### Task 53: Visible, honest Pro
+
+- Pro sheet redesigned in the theme: title `365 AI MASTER PRO`, price block `$12 / 年 · 创始价` (yellow), four benefit rows with ▲ icons (成长曲线 · 每周复盘 · Top 20 完整榜单 · 四维全球排名), primary button `开始 14 天免费试用` (local trial) and secondary `输入激活码`; purchase button only when checkout is verified (unchanged rule) — otherwise the line 「付款通道开通中」.
+- Entry points: header `PRO` block; locked ranking rows; Pro-only items on detail pages show a small lock square `PRO`.
+- Commit `feat: visible Pro entry points and sheet`.
+
+### Task 54: Render & copy check
+
+Real-data renders of all three tabs, a dimension detail, a Training detail, the Pro sheet, light and dark. Assert: no page label 「体检」; tab bar shows ● ■ ▲; free renders show the `PRO` header block and the locked ranking row. Commit `test: phase 6 renders`.
