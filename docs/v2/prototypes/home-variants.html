@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>365 v2 home variants</title>
+<style>
+:root{--bg:#F7F5F0;--card:#fff;--ink:#1B1916;--sec:#6E695F;--ter:#A29C91;--line:rgba(27,25,22,.08);--gold:#D9A12E;--goldDeep:#8A5F0E;--goldSoft:#FBF1DC;--good:#2E9C84;--low:#E0674A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#E9E6DF;font-family:-apple-system,"PingFang SC",sans-serif;color:var(--ink);padding:24px;display:flex;gap:24px;align-items:flex-start}
+.frame{width:400px;height:680px;background:var(--bg);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.18);padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;position:relative}
+.tag{position:absolute;top:-22px;left:0;font:600 13px -apple-system;color:#555}
+.wrap{position:relative;margin-top:22px}
+.hdr{display:flex;align-items:center;gap:8px}
+.logo{width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#E8B54A,#B98419);display:grid;place-items:center;color:#fff;font:700 9px -apple-system}
+.name{font:600 13px -apple-system}
+.sp{flex:1}
+.icon{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--sec);font-size:14px}
+.pro{background:var(--gold);color:#1B1305;font:700 11px -apple-system;padding:5px 10px;border-radius:8px;letter-spacing:.3px}
+.card{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 0 0 .5px var(--line)}
+.label{font:600 11px -apple-system;color:var(--sec);letter-spacing:.2px}
+.num{font-family:"SF Pro Rounded",ui-rounded,-apple-system;font-variant-numeric:tabular-nums}
+.ring{position:relative;width:76px;height:76px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .v{position:absolute;inset:0;display:grid;place-items:center;font:600 28px "SF Pro Rounded",-apple-system}
+.title{font:600 20px -apple-system}
+.sub{font:13px -apple-system;color:var(--sec)}
+.cap{font:11px -apple-system;color:var(--ter)}
+.bar{height:6px;border-radius:3px;background:rgba(27,25,22,.08);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px}
+.btn{background:var(--gold);color:#1B1305;font:600 13px -apple-system;border-radius:10px;padding:9px 14px;text-align:center}
+.btn2{color:var(--goldDeep);font:600 13px -apple-system;padding:9px 6px}
+.chip{font:600 10px -apple-system;padding:2px 6px;border-radius:6px}
+.row{display:flex;align-items:center;gap:10px}
+.today{background:linear-gradient(180deg,#FFF7E6,#FFFFFF);box-shadow:0 0 0 1px rgba(217,161,46,.35)}
+.steps{display:flex;flex-direction:column;gap:4px;margin:8px 0 10px}
+.steps div{font:12px -apple-system;color:var(--sec);display:flex;gap:6px}
+.steps b{width:16px;height:16px;border-radius:8px;background:var(--goldSoft);color:var(--goldDeep);font:600 10px -apple-system;display:grid;place-items:center;flex:none}
+.stat{flex:1}
+.stat .n{font:600 20px "SF Pro Rounded",-apple-system}
+.dim{display:grid;grid-template-columns:1fr auto 28px;gap:6px 8px;align-items:center}
+.dim .l{font:13px -apple-system}
+.dim .s{font:600 13px -apple-system;text-align:right}
+.dim .bar{grid-column:1/4}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 2px;border-top:.5px solid var(--line)}
+.nav:first-child{border-top:0}
+.nav .t{font:13px -apple-system;flex:1}
+.chev{color:var(--ter)}
+.foot{margin-top:auto;display:flex;align-items:center;font:11px -apple-system;color:var(--ter)}
+.seg{display:flex;background:rgba(27,25,22,.06);border-radius:9px;padding:2px}
+.seg span{flex:1;text-align:center;font:13px -apple-system;padding:6px 0;border-radius:7px;color:var(--sec)}
+.seg span.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.node{display:flex;align-items:center;gap:12px;padding:7px 0}
+.dot{width:30px;height:30px;border-radius:15px;display:grid;place-items:center;font:600 13px -apple-system;flex:none}
+.dot.lit{background:var(--gold);color:#fff}
+.dot.todo{background:#fff;box-shadow:0 0 0 1.5px rgba(27,25,22,.15);color:var(--ter)}
+.path{position:relative}
+.path:before{content:"";position:absolute;left:15px;top:10px;bottom:10px;width:2px;background:rgba(27,25,22,.08)}
+.lock{color:var(--ter)}
+</style>
+</head>
+<body>
+
+<div class="wrap"><div class="tag">V1 今天仪表盘（无页签，点进看详情）</div>
+<div class="frame">
+  <div class="hdr"><div class="logo">365</div><div class="name">365 AI Master</div><div class="sp"></div><div class="icon">↻</div><div class="pro">PRO</div></div>
+  <div class="card row" style="gap:14px">
+    <div class="ring"><svg width="76" height="76"><circle cx="38" cy="38" r="33" fill="none" stroke="rgba(27,25,22,.08)" stroke-width="7"/><circle cx="38" cy="38" r="33" fill="none" stroke="#D9A12E" stroke-width="7" stroke-linecap="round" stroke-dasharray="143 207"/></svg><div class="v num">69</div></div>
+    <div style="flex:1">
+      <div class="title">熟练者</div>
+      <div class="sub" style="margin:2px 0 8px">击败全球 72% 的 AI 用户</div>
+      <div class="bar"><i style="width:60%;background:var(--gold)"></i></div>
+      <div class="cap" style="margin-top:5px">再提 6 分升到「专家」</div>
+    </div>
+  </div>
+  <div class="card today">
+    <div class="row"><div class="label" style="color:var(--goldDeep)">今日一招</div><div class="sp"></div><div class="cap">第 13 / 24 招</div></div>
+    <div style="font:600 17px -apple-system;margin-top:6px">添加常用斜杠命令</div>
+    <div class="sub" style="margin-top:2px">把常做的检查变成一句 /命令</div>
+    <div class="steps"><div><b>1</b>复制提示词</div><div><b>2</b>在 Claude Code 里发出去</div><div><b>3</b>以后输入 /check 一句话调用</div></div>
+    <div class="row"><div class="btn" style="flex:1">复制提示词</div><div class="btn2">我学会了</div></div>
+  </div>
+  <div class="card row" style="gap:6px">
+    <div class="stat"><div class="n num">$1,310</div><div class="cap">本周用量 · 按 API 价折算</div></div>
+    <div class="stat"><div class="n num">46%</div><div class="cap">Codex 剩余 · 4 天后重置</div></div>
+    <div class="stat"><div class="n num">30 天</div><div class="cap">连续在用 AI</div></div>
+  </div>
+  <div class="card" style="padding:4px 14px">
+    <div class="nav"><div class="t">四项能力</div><span class="chip" style="background:#FDE7E1;color:#B4432A">用对模型 35</span><span class="chev">›</span></div>
+    <div class="nav"><div class="t">修炼路线</div><span class="cap">12 / 24</span><span class="chev">›</span></div>
+    <div class="nav"><div class="t">今日新榜</div><span class="cap">anatomy +8,990★</span><span class="chev">›</span></div>
+  </div>
+  <div class="foot"><span>更新于 00:20 · 0 token</span><div class="sp"></div><span>设置</span></div>
+</div></div>
+
+<div class="wrap"><div class="tag">V2 路线优先（像 Duolingo）</div>
+<div class="frame">
+  <div class="hdr"><div class="logo">365</div><span class="chip num" style="background:var(--goldSoft);color:var(--goldDeep);font-size:12px;padding:4px 8px">◯ 69 熟练者</span><span class="chip" style="background:#FDEBDD;color:#B4532A;font-size:12px;padding:4px 8px">🔥 30 天</span><div class="sp"></div><div class="pro">PRO</div></div>
+  <div class="row"><div class="label">入门 · 4 / 8</div><div class="sp"></div><div class="cap">进阶、高手需 Pro</div></div>
+  <div class="path">
+    <div class="node"><div class="dot lit">✓</div><div class="sub">写一份 CLAUDE.md</div></div>
+    <div class="node"><div class="dot lit">✓</div><div class="sub">让 AI 联网搜索</div></div>
+    <div class="card today" style="margin:4px 0 4px 0;position:relative">
+      <div class="label" style="color:var(--goldDeep)">今天</div>
+      <div style="font:600 17px -apple-system;margin-top:4px">用 @ 引用文件</div>
+      <div class="sub">只给 AI 看相关文件，答得更准</div>
+      <div class="row" style="margin-top:10px"><div class="btn" style="flex:1">复制提示词</div><div class="btn2">我学会了</div></div>
+    </div>
+    <div class="node"><div class="dot todo">5</div><div class="sub">贴截图让 AI 看</div></div>
+    <div class="node"><div class="dot todo">6</div><div class="sub">/init 自动生成说明书</div></div>
+    <div class="node"><div class="dot todo">7</div><div class="sub">开启新会话</div></div>
+    <div class="node"><div class="dot todo lock">🔒</div><div class="sub" style="color:var(--ter)">进阶 10 招</div></div>
+  </div>
+  <div class="card row" style="gap:6px;margin-top:auto"><div class="stat"><div class="n num" style="font-size:16px">$1,310</div><div class="cap">本周折算</div></div><div class="stat"><div class="n num" style="font-size:16px">46%</div><div class="cap">Codex 剩余</div></div><div class="stat"><div class="n" style="font-size:16px">数据 · 发现</div><div class="cap">更多</div></div></div>
+</div></div>
+
+<div class="wrap"><div class="tag">V3 状态头 + 三个页签</div>
+<div class="frame">
+  <div class="hdr"><div class="logo">365</div><div class="name">365 AI Master</div><div class="sp"></div><div class="icon">↻</div><div class="pro">PRO</div></div>
+  <div class="card row" style="gap:12px;padding:12px">
+    <div class="ring" style="width:56px;height:56px"><svg width="56" height="56"><circle cx="28" cy="28" r="24" fill="none" stroke="rgba(27,25,22,.08)" stroke-width="6"/><circle cx="28" cy="28" r="24" fill="none" stroke="#D9A12E" stroke-width="6" stroke-linecap="round" stroke-dasharray="104 151"/></svg><div class="v num" style="font-size:20px">69</div></div>
+    <div style="flex:1"><div style="font:600 15px -apple-system">熟练者</div><div class="cap">击败全球 72%</div></div>
+    <div style="text-align:right"><div class="num" style="font:600 15px -apple-system">$1,310</div><div class="cap">Codex 剩 46%</div></div>
+  </div>
+  <div class="seg"><span class="on">今天</span><span>修炼</span><span>发现</span></div>
+  <div class="card today">
+    <div class="label" style="color:var(--goldDeep)">今日一招</div>
+    <div style="font:600 17px -apple-system;margin-top:6px">添加常用斜杠命令</div>
+    <div class="sub" style="margin-top:2px">把常做的检查变成一句 /命令</div>
+    <div class="row" style="margin-top:12px"><div class="btn" style="flex:1">复制提示词</div><div class="btn2">我学会了</div></div>
+  </div>
+  <div class="card">
+    <div class="label" style="margin-bottom:10px">四项能力</div>
+    <div class="dim"><div class="l">用对模型</div><span class="chip" style="background:#FDE7E1;color:#B4432A">待提升</span><div class="s num">35</div><div class="bar"><i style="width:35%;background:var(--low)"></i></div></div>
+    <div class="dim" style="margin-top:8px"><div class="l">专注节奏</div><span class="chip" style="background:var(--goldSoft);color:var(--goldDeep)">良好</span><div class="s num">70</div><div class="bar"><i style="width:70%;background:var(--gold)"></i></div></div>
+    <div class="dim" style="margin-top:8px"><div class="l">上下文管理</div><span class="chip" style="background:#DDF2EC;color:#1F6E5D">优秀</span><div class="s num">95</div><div class="bar"><i style="width:95%;background:var(--good)"></i></div></div>
+    <div class="dim" style="margin-top:8px"><div class="l">能力复用</div><span class="chip" style="background:var(--goldSoft);color:var(--goldDeep)">良好</span><div class="s num">75</div><div class="bar"><i style="width:75%;background:var(--gold)"></i></div></div>
+  </div>
+  <div class="foot"><span>更新于 00:20 · 0 token</span><div class="sp"></div><span>设置</span></div>
+</div></div>
+
+</body>
+</html>
