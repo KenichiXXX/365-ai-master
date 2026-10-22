@@ -1749,3 +1749,15 @@ Facts (researched 2026-10-22): Waffo lists WeChat Pay and Alipay among its walle
 - **App**: for a one-time licence, 7 days before `exp` show a renewal card in Settings/Pro and (if notifications allowed) one local notification 「Pro 将于 X 天后到期 · 续费」 → opens the Pro sheet with option 2 preselected. Never auto-charge.
 - Tests: worker (one-time issue idempotency, refund revoke, no renewal period); Swift (two options visible/hidden by URL, zh order, renewal reminder timing, copy says which auto-renews).
 - Commit `feat: WeChat Pay and Alipay as one-time yearly purchase alongside auto-renew cards`.
+
+---
+
+### Task 64: Zero-token analysis promise + jev for cheap public-data judgments (2026-10-22)
+
+Source: Granola 2026-10-22 「AI evaluation model insights」 — (1) selling a scorer that spends the user's own tokens risks complaints when their quota is eaten; scoring must be transparent, with a clear "how it works"; (2) for high volume, use a dedicated evaluation-probability model ("J 模型" = `jev`, TypeSafe decisions API: prompt in, calibrated probability out, ms latency, ≈ $0.00002 per decision, no text generation).
+
+1. **Zero-token promise (app)**: our analysis already runs locally with rules and spends none of the user's AI quota. Make that explicit: a 「怎么算的 / How it works」 sheet reachable from ⓘ on the ● 我 tab — 4 short lines: 只读本机日志 · 规则计算，不调用任何 AI · 不消耗你的 token 额度 · 不上传（除非你开启排名/榜单下载）. Add a small `0 token` caption under the score ring. Test that no code path in agentfit/engine calls an LLM or the network (extend test_privacy).
+2. **Analysis stays local and cheap**: never send prompts/logs to any model for scoring. If a future feature needs semantic judgement of user content, it must run as `jev` over aggregated numbers only, opt-in, and is out of scope now. Document this rule in the spec §12.
+3. **jev in the harvester (public data only)**: in `scripts/harvest/harvest.py`, when the `jev` CLI exists AND a key is configured (`jev auth status` exit 0), run one `jev run` spec over each candidate ranking item's public `name + description` (batch with `-l --json`) to (a) drop marketing/course-selling/spam repos (`noul`, `--true "推广、卖课、引流、无实质功能" --false "真实的开源工具或技能"`), (b) pick a category (`choice`: coding/automation/memory/browser/data/design/research/other), (c) score beginner-friendliness 1–5. Store `category` and `beginner` on each item; drop items with spam P ≥ 0.8. Spec file `scripts/harvest/jev-ranking.json`. If jev is unavailable, skip silently (current behaviour) and log one line. Tests use a fake jev runner; no network.
+4. **App use of the new fields**: 「为你推荐」 prefers items whose `category` matches the user's weakest dimension map and `beginner ≥ 3`; ranking rows may show a small `新手友好` tag when `beginner ≥ 4`.
+Commit `feat: zero-token how-it-works, jev-filtered rankings`.
