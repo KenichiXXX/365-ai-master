@@ -57,7 +57,7 @@ struct SettingsView: View {
                         Text(store.isPro ? (zh ? "Pro 已开启" : "Pro is active") : (zh ? "免费版" : "Free"))
                         Spacer()
                         Button(zh ? "输入激活码" : "Enter activation key") { showPro = true }
-                        Button(store.license != nil ? (zh ? "管理" : "Manage") : (zh ? "购买" : "Buy")) { showPro = true }
+                        Button(store.license != nil ? (zh ? "管理" : "Manage") : (zh ? "查看 Pro" : "Explore Pro")) { showPro = true }
                     }
                 }
                 group(zh ? "关于" : "About") {
@@ -158,12 +158,36 @@ struct ProSettingsSection: View {
     @ObservedObject var store: SnapshotStore
     let zh: Bool
     @State private var activationKey = ""
+    @State private var showActivation = false
 
     var body: some View {
         Group {
             VStack(alignment: .leading, spacing: Theme.grid) {
+                Text("365 AI MASTER PRO").font(Theme.title)
+                Text(zh ? "$12 / 年 · 创始价" : "$12 / year · Founding price")
+                    .font(Theme.title).foregroundStyle(Theme.fixedInk)
+                    .padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.yellow)
+                VStack(alignment: .leading, spacing: Theme.grid) {
+                    benefit(zh ? "成长曲线" : "Growth curve")
+                    benefit(zh ? "每周复盘" : "Weekly review")
+                    benefit(zh ? "Top 20 完整榜单" : "Full Top 20 rankings")
+                    benefit(zh ? "四维全球排名" : "Global rankings in four dimensions")
+                }
+                if !store.isPro { ProTrialSection(store: store, zh: zh) }
+                Button(zh ? "输入激活码" : "Enter activation key") { showActivation.toggle() }
+                    .accessibilityIdentifier("pro-enter-key")
+                if showActivation {
+                    TextField(zh ? "输入激活码" : "Enter activation key", text: $activationKey)
+                        .textFieldStyle(.plain).padding(Theme.grid).bauhausPanel()
+                    Button(zh ? "激活" : "Activate") {
+                        if store.activateLicense(activationKey) { activationKey = "" }
+                    }
+                    if let error = store.licenseError {
+                        Text(error.message(locale: zh ? "zh" : "en")).foregroundStyle(Theme.ink)
+                    }
+                }
                 ThemeRule()
-                Text("365 AI Master Pro").font(Theme.title)
                 if let license = store.signedLicense {
                     Text(verbatim: t("Local activation key valid through {date}").replacingOccurrences(of: "{date}", with: DisplayDate.short(license.exp, locale: zh ? "zh" : "en", year: true)))
                     if case .active(_, let end) = store.renewalState {
@@ -175,36 +199,35 @@ struct ProSettingsSection: View {
                 if store.signedLicense != nil || store.renewalState == .pending {
                     Text(t(store.renewalState.messageKey)).foregroundStyle(Theme.secondary)
                 }
-                if !store.isPro {
-                    ProTrialSection(store: store, zh: zh)
-                    Text(zh ? "成长曲线：30 天分数走势、本周比上周" : "Growth curve: 30-day scores and week-over-week change")
-                    Text(zh ? "每周复盘：本地生成一页周报，可选开启提醒" : "Weekly review: a local report with optional reminders")
-                    Text(zh ? "技能图鉴随时选学、完整榜单 Top 20" : "Learn any skill anytime, full Top 20 ranking")
-                    Text(zh ? "四维分别排名" : "Rankings for each of the four dimensions")
+                if store.purchaseConfiguration.checkout(source: store.checkoutSource) != nil {
+                    PurchaseTermsView(zh: zh)
+                    Button(t("Buy")) {
+                        if store.purchaseConfiguration.openCheckout(termsPresented: true, source: store.checkoutSource,
+                            open: { NSWorkspace.shared.open($0) }) { store.checkoutReturned() }
+                    }.accessibilityIdentifier("pro-checkout")
+                } else {
+                    Text(zh ? "付款通道开通中" : "Payments coming soon")
+                        .font(Theme.label).foregroundStyle(Theme.secondary)
                 }
-                PurchaseTermsView(zh: zh)
-                Text(t("Payment integration is not verified. Checkout is unavailable")).foregroundStyle(Theme.secondary)
-                CourseSourceSection(store: store, zh: zh)
-                Button(t("Buy")) {
-                    if store.purchaseConfiguration.openCheckout(termsPresented: true, source: store.checkoutSource,
-                        open: { NSWorkspace.shared.open($0) }) { store.checkoutReturned() }
-                }.disabled(store.purchaseConfiguration.checkout(source: store.checkoutSource) == nil)
-                Button(t("Manage or cancel subscription")) {
-                    if let url = store.purchaseConfiguration.managementURL { NSWorkspace.shared.open(url) }
-                }.disabled(store.purchaseConfiguration.managementURL == nil)
-                Toggle(t("Refresh license automatically"), isOn: $store.autoRefreshLicense)
-                Text(t("Automatic key refresh sends your license ID and signed activation key to the license service, never usage records"))
-                    .font(Theme.label).foregroundStyle(Theme.secondary)
-                TextField(zh ? "输入激活码" : "Enter activation key", text: $activationKey)
-                    .textFieldStyle(.plain).padding(Theme.grid).bauhausPanel()
-                Button(zh ? "激活" : "Activate") {
-                    if store.activateLicense(activationKey) { activationKey = "" }
+                if let url = store.purchaseConfiguration.managementURL {
+                    Button(t("Manage or cancel subscription")) { NSWorkspace.shared.open(url) }
                 }
-                if let error = store.licenseError {
-                    Text(error.message(locale: zh ? "zh" : "en")).foregroundStyle(Theme.ink)
+                DisclosureGroup(zh ? "订阅条款与设置" : "Subscription terms and settings") {
+                    PurchaseTermsView(zh: zh)
+                    CourseSourceSection(store: store, zh: zh)
+                    Toggle(t("Refresh license automatically"), isOn: $store.autoRefreshLicense)
+                    Text(t("Automatic key refresh sends your license ID and signed activation key to the license service, never usage records"))
+                        .font(Theme.label).foregroundStyle(Theme.secondary)
                 }
             }.font(Theme.body)
         }.bauhausTheme()
+    }
+
+    private func benefit(_ title: String) -> some View {
+        HStack(spacing: Theme.grid) {
+            Text("▲").font(Theme.label)
+            Text(title).font(Theme.body)
+        }
     }
 
     private func t(_ key: String) -> String { PurchaseTerms.localized(key, locale: zh ? "zh" : "en") }
@@ -279,10 +302,14 @@ struct ProTrialSection: View {
             VStack(alignment: .leading, spacing: 8) {
                 switch store.trialStatus {
                 case .eligible:
-                    Text(zh ? "免费体验 Pro 14 天" : "Try Pro free for 14 days").font(Theme.title)
                     Text(zh ? "无需银行卡，不自动扣款。体验到期后回到免费版，历史记录保留。"
                          : "No card required and no automatic charge. After the trial, return to Free and keep your history.")
-                    Button(zh ? "开始体验" : "Start trial") { store.startProTrial() }
+                    Button { store.startProTrial() } label: {
+                        Text(zh ? "开始 14 天免费试用" : "Start 14-day free trial")
+                            .font(Theme.title).foregroundStyle(Theme.fixedPaper)
+                            .padding(Theme.grid * 2).frame(maxWidth: .infinity)
+                            .background(Theme.fixedInk)
+                    }.buttonStyle(.plain).accessibilityIdentifier("pro-start-trial")
                 case .active(let end):
                     Text(verbatim: (zh ? "体验至 " : "Trial until ") + formatted(end))
                     Text(zh ? "无需银行卡，不自动扣款。体验到期后回到免费版，历史记录保留。"

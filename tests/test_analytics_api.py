@@ -3,7 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import date, timedelta
+from datetime import datetime, timedelta, timezone
 
 from cloud.database import DatabaseEngine, Base
 from cloud.models import AggregatedScore
@@ -18,7 +18,7 @@ def _create_test_app_with_data():
     test_db.init_db()
 
     # Populate with test data
-    base_date = date(2026, 7, 28)
+    base_date = datetime.now(timezone.utc).date() - timedelta(days=27)
     scores = [60, 62, 65, 70, 72, 75, 75, 78, 80, 80, 80, 85, 85, 85, 82, 82, 80, 78, 75, 75, 72, 70, 68, 65, 65, 62, 60, 60]
 
     for i, score in enumerate(scores):

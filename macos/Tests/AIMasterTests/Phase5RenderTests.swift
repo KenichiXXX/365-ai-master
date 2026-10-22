@@ -76,7 +76,7 @@ extension RenderPreviewTests {
                 } else if name == "checkup" {
                     XCTAssertFalse(normalized.contains("今天先改这一处"), text)
                 } else {
-                    XCTAssertTrue(normalized.contains(locale == "zh" ? "为你推荐" : "foryou"), text)
+                    XCTAssertTrue(normalized.contains("today'spick"), text)
                     for word in ["adapter", "schema", "signals", "coverage", "兼容性未知", "API-equivalent"] {
                         XCTAssertFalse(normalized.contains(word.lowercased()), "\(name): \(word)\n\(text)")
                     }

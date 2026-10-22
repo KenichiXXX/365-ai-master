@@ -67,7 +67,14 @@ struct DimensionDetail: View {
                         Text(zh ? "正在积累记录" : "Collecting records").foregroundStyle(Theme.secondary)
                     }
                 } else {
-                    Text(zh ? "Pro 可看 30 天趋势" : "Pro unlocks the 30-day trend").font(Theme.label).foregroundStyle(Theme.secondary)
+                    Button { store.showProSettings = true } label: {
+                        ProLockLabel(title: zh ? "30 天趋势" : "30-day trend")
+                    }.buttonStyle(.plain).accessibilityIdentifier("pro-dimension-trend")
+                }
+                if !features.isPro {
+                    Button { store.showProSettings = true } label: {
+                        ProLockLabel(title: zh ? "四维全球排名" : "Global dimension rankings")
+                    }.buttonStyle(.plain).accessibilityIdentifier("pro-dimension-ranking")
                 }
             }
         }.bauhausTheme()

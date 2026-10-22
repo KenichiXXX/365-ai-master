@@ -181,9 +181,9 @@ struct SkillCardDetails: View {
                     PracticeControls(card: card, store: store, locale: locale)
                 }
             } else {
-                Button(locale == "zh" ? "Pro 可随时选学这张卡" : "Pro: learn any card anytime") {
-                    store.showProSettings = true
-                }.buttonStyle(.plain).foregroundStyle(Theme.ink)
+                Button { store.showProSettings = true } label: {
+                    ProLockLabel(title: locale == "zh" ? "随时选学这张卡" : "Learn this card anytime")
+                }.buttonStyle(.plain).accessibilityIdentifier("pro-skill-detail")
             }
         }.bauhausTheme()
     }

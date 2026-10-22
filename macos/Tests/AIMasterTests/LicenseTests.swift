@@ -120,20 +120,20 @@ final class LicenseTests: XCTestCase {
         }
     }
 
-    private func containsText(_ text: Text, in value: Any) -> Bool {
-        if let candidate = value as? Text { return candidate == text }
+    private func containsText(_ text: String, in value: Any) -> Bool {
+        if let candidate = value as? Text { return String(reflecting: candidate).contains(text) }
         return Mirror(reflecting: value).children.contains { containsText(text, in: $0.value) }
     }
     @MainActor func testPaywallShowsHonestPlaceholderAndActivatedExpiry() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, licensePublicKeyBase64: publicKey)
         let free = ProSettingsSection(store: store, zh: true).body
         XCTAssertTrue(PurchaseTerms.lines(locale: "zh").contains("Pro 创始价 USD $12/年，每年自动续费"))
-        XCTAssertTrue(containsText(Text(verbatim: "支付接入待验证，暂不可购买"), in: free))
-        XCTAssertFalse(containsText(Text("去付款"), in: free))
-        for item in ["成长曲线：30 天分数走势、本周比上周", "每周复盘：本地生成一页周报，可选开启提醒", "技能图鉴随时选学、完整榜单 Top 20", "四维分别排名"] {
-            XCTAssertTrue(containsText(Text(LocalizedStringKey(item)), in: free))
+        XCTAssertTrue(containsText("付款通道开通中", in: free))
+        XCTAssertFalse(containsText("去付款", in: free))
+        for item in ["成长曲线", "每周复盘", "Top 20 完整榜单", "四维全球排名"] {
+            XCTAssertTrue(containsText(item, in: free))
         }
         XCTAssertTrue(store.activateLicense(try key(exp: "2099-01-01")))
-        XCTAssertTrue(containsText(Text(verbatim: "本地激活码有效至 " + DisplayDate.short("2099-01-01", locale: "zh", year: true)), in: ProSettingsSection(store: store, zh: true).body))
+        XCTAssertTrue(containsText("本地激活码有效至 " + DisplayDate.short("2099-01-01", locale: "zh", year: true), in: ProSettingsSection(store: store, zh: true).body))
     }
 }
