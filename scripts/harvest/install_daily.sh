@@ -11,10 +11,9 @@ RUNTIME="$HOME/Library/Application Support/365AIMaster-harvest/runtime"
 ORIGIN="$(git -C "$REPO" remote get-url origin)"
 PYTHON="$(readlink -f "$REPO/.venv/bin/python")"
 rm -rf "$RUNTIME"
-mkdir -p "$RUNTIME/agentfit/engine" "$RUNTIME/scripts/harvest"
-cp "$REPO/agentfit/__init__.py" "$RUNTIME/agentfit/"
-cp "$REPO/agentfit/engine/__init__.py" "$REPO/agentfit/engine/content_pool.py" \
-   "$REPO/agentfit/engine/content_pool.json" "$RUNTIME/agentfit/engine/"
+mkdir -p "$RUNTIME/scripts/harvest"
+# Copy the whole agentfit package: validation imports grow over time (e.g. engine/prices.py).
+rsync -a --exclude '__pycache__' "$REPO/agentfit" "$RUNTIME/"
 cp "$REPO/scripts/harvest/harvest.py" "$REPO/scripts/harvest/run_daily.sh" "$RUNTIME/scripts/harvest/"
 "$PYTHON" - "$RUNTIME" "$HOME" "$PLIST" "$ORIGIN" "$PYTHON" "$REPO" <<'PYTHON'
 from pathlib import Path
