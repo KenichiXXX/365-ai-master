@@ -24,22 +24,33 @@ struct CheckupTab: View {
 
     private var overview: some View {
         VStack(alignment: .leading, spacing: Theme.grid) {
-            VStack(alignment: .leading, spacing: Theme.grid) {
-                ThemeLabel("LEVEL")
+            HStack(alignment: .center, spacing: Theme.grid * 2) {
                 RecheckScoreView(snapshot: snapshot, store: store)
-                if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
-                    Text(title).font(Theme.title)
-                        .help(snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) ?? "")
+                VStack(alignment: .leading, spacing: Theme.grid) {
+                    ThemeLabel("LEVEL")
+                    if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
+                        Text(title).font(Theme.title)
+                            .help(snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) ?? "")
+                    } else {
+                        Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
+                            .font(Theme.body).foregroundStyle(Theme.secondary)
+                    }
+                    if let trend = MePresentation.yesterday(snapshot.progressMe?.vsYesterday, locale: snapshot.locale ?? store.locale) {
+                        HStack(spacing: Theme.grid) {
+                            TrendMarker(delta: Double(snapshot.progressMe?.vsYesterday ?? 0))
+                            Text(String(trend.dropFirst(2))).font(Theme.body)
+                                .foregroundStyle((snapshot.progressMe?.vsYesterday ?? 0) < 0 ? Theme.secondary : Theme.ink)
+                        }.accessibilityElement(children: .ignore).accessibilityLabel(trend)
+                    }
                 }
-                if snapshot.overall?.score == nil {
-                    Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
-                        .font(Theme.body).foregroundStyle(Theme.secondary)
-                }
-                GlobalRankCard(store: store, locale: snapshot.locale ?? store.locale)
-            }.frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
-            DimensionRings(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
-                           features: store.features, locale: snapshot.locale ?? store.locale, showsEvidence: false,
-                           onSelect: { selectedDimension = $0.key })
+            }.frame(maxWidth: .infinity, alignment: .leading).padding(.top, Theme.grid)
+            GlobalRankCard(store: store, locale: snapshot.locale ?? store.locale)
+            DimensionBars(dimensions: snapshot.dimensions ?? [], ranking: store.ranking,
+                          features: store.features, locale: snapshot.locale ?? store.locale,
+                          onSelect: { selectedDimension = $0.key })
+            if let personalBest = snapshot.progressMe?.caption(locale: snapshot.locale ?? store.locale) {
+                Text(personalBest).font(Theme.body)
+            }
             if store.features.weeklyReview {
                 Button(zh ? "本周复盘" : "Weekly review") { store.openWeeklyReview() }
             }
@@ -74,10 +85,13 @@ enum CheckupPresentation {
     }
 
     static func rankCaption(_ ranking: AppScoreOut, locale: String) -> String {
-        if ranking.total < 20 { return ranking.caption(locale: locale) }
+        if ranking.total < 20 {
+            return locale == "zh" ? "早期排名 · \(ranking.total) 人中第 \(ranking.rank) 名"
+                : "Early ranking · #\(ranking.rank) of \(ranking.total)"
+        }
         guard let percentile = ranking.percentile else { return "" }
-        return locale == "zh" ? "打败了全球 \(percentile)% 的 AI 用户"
-            : "You beat \(percentile)% of AI users worldwide"
+        return locale == "zh" ? "超过全球 \(percentile)% 的 AI 用户"
+            : "Ahead of \(percentile)% of AI users worldwide"
     }
 
     static func participants(_ ranking: AppScoreOut, locale: String) -> String {
@@ -93,30 +107,34 @@ struct GlobalRankCard: View {
     private var zh: Bool { locale == "zh" }
 
     var body: some View {
-        Group {
-            VStack(alignment: .leading, spacing: 8) {
-                ThemeLabel("GLOBAL")
-                Text(zh ? "查看全球排名" : "View global ranking").font(Theme.title)
-                if store.shareAnonymousScore {
-                    if let ranking = store.ranking {
-                        Text(CheckupPresentation.rankCaption(ranking, locale: locale))
-                        DisclosureGroup {
-                            Text(CheckupPresentation.participants(ranking, locale: locale)).font(Theme.body)
-                            Text(AppScoreOut.sampleLimitation(locale: locale)).font(Theme.label)
-                        } label: {
-                            Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
-                        }
-                    } else {
-                        Text(store.rankingCaption(locale: locale)).font(Theme.body).foregroundStyle(Theme.secondary)
+        VStack(alignment: .leading, spacing: Theme.grid) {
+            Text("GLOBAL").font(Theme.label).tracking(2)
+            if store.shareAnonymousScore {
+                if let ranking = store.ranking {
+                    Text(CheckupPresentation.rankCaption(ranking, locale: locale)).font(Theme.title)
+                    if ranking.total >= 20, let change = MePresentation.rankChange(store.rankChange7d, locale: locale) {
+                        Text(change).font(Theme.body).foregroundStyle(Theme.yellow)
                     }
+                    DisclosureGroup {
+                        Text(CheckupPresentation.participants(ranking, locale: locale)).font(Theme.body)
+                        Text(AppScoreOut.sampleLimitation(locale: locale)).font(Theme.label)
+                    } label: {
+                        Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")
+                    }.tint(Theme.fixedPaper)
                 } else {
-                    Text(zh ? "看看你打败了全球多少 AI 用户" : "See how many AI users you beat worldwide")
-                    Button(zh ? "加入匿名排名" : "Join anonymous ranking") { showConsent = true }
-                    if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
+                    Text(store.rankingCaption(locale: locale)).font(Theme.body)
                 }
-            }.frame(maxWidth: .infinity, alignment: .leading).padding(Theme.grid * 2)
-                .bauhausPanel()
-        }.bauhausTheme()
+            } else {
+                Text(zh ? "看看你超过了多少 AI 用户" : "See how many AI users you surpass").font(Theme.title)
+                Button(zh ? "加入" : "Join") { showConsent = true }
+                    .buttonStyle(.plain).font(Theme.body)
+                    .padding(Theme.grid)
+                    .overlay(Rectangle().strokeBorder(Theme.fixedPaper, lineWidth: Theme.ruleWidth))
+                if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
+            }
+        }.foregroundStyle(Theme.fixedPaper)
+            .frame(maxWidth: .infinity, alignment: .leading).padding(Theme.grid * 2)
+            .background(Theme.fixedInk)
     }
 }
 
@@ -166,5 +184,78 @@ struct RankingSummary: View {
                 }
             }.font(Theme.label).foregroundStyle(Theme.secondary)
         }.bauhausTheme()
+    }
+}
+
+enum MePresentation {
+    enum BarAccent { case lowest, highest, neutral }
+
+    static func signed(_ value: Int) -> String {
+        value < 0 ? "−\(-value)" : "+\(value)"
+    }
+
+    static func yesterday(_ delta: Int?, locale: String) -> String? {
+        guard let delta else { return nil }
+        if delta == 0 { return locale == "zh" ? "= 与昨天持平" : "= Same as yesterday" }
+        let marker = delta > 0 ? "▲" : "▼"
+        return locale == "zh" ? "\(marker) 比昨天 \(signed(delta))" : "\(marker) \(signed(delta)) vs yesterday"
+    }
+
+    static func rankChange(_ delta: Int?, locale: String) -> String? {
+        guard let delta else { return nil }
+        let change = delta == 0 ? "=" : "\(delta > 0 ? "▲" : "▼")\(abs(delta))"
+        return locale == "zh" ? "本周排名 \(change)" : "Weekly rank \(change)"
+    }
+
+    static func barAccent(_ dimension: Dimension, in dimensions: [Dimension]) -> BarAccent {
+        let scores = dimensions.compactMap(\.score)
+        guard let score = dimension.score, let low = scores.min(), let high = scores.max(), low != high else { return .neutral }
+        if score == low { return .lowest }
+        if score == high { return .highest }
+        return .neutral
+    }
+}
+
+struct DimensionBars: View {
+    let dimensions: [Dimension]
+    let ranking: AppScoreOut?
+    let features: ProFeatures
+    let locale: String
+    let onSelect: (Dimension) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.grid * 2) {
+            ForEach(dimensions) { dimension in
+                Button { onSelect(dimension) } label: {
+                    VStack(alignment: .leading, spacing: Theme.grid) {
+                        HStack(spacing: Theme.grid) {
+                            Text(dimension.label).font(Theme.body)
+                            Text(dimension.score.map(String.init) ?? "—").font(Theme.title).monospacedDigit()
+                            Spacer(minLength: 0)
+                            if let caption = features.dimensionCaption(ranking, key: dimension.key, locale: locale), dimension.score != nil {
+                                Text(caption).font(Theme.label).foregroundStyle(Theme.secondary)
+                            }
+                        }
+                        GeometryReader { proxy in
+                            Rectangle().fill(Theme.ink.opacity(0.1))
+                                .overlay(alignment: .leading) {
+                                    Rectangle().fill(color(dimension))
+                                        .frame(width: proxy.size.width * Double(min(100, max(0, dimension.score ?? 0))) / 100)
+                                }
+                        }.frame(height: Theme.grid)
+                    }.contentShape(Rectangle())
+                }.buttonStyle(.plain)
+                    .accessibilityLabel(dimension.label + (locale == "zh" ? "，查看详情" : ", view details"))
+                    .accessibilityValue(dimension.score.map(String.init) ?? "—")
+            }
+        }
+    }
+
+    private func color(_ dimension: Dimension) -> Color {
+        switch MePresentation.barAccent(dimension, in: dimensions) {
+        case .lowest: return Theme.red
+        case .highest: return Theme.blue
+        case .neutral: return Theme.ink
+        }
     }
 }

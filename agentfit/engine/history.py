@@ -31,6 +31,23 @@ def _comparison(history, today, score_version):
     return round(mean(r["score"] for r in current) - mean(r["score"] for r in previous), 2), result
 
 
+def progress_me(history: dict, now: datetime, score_version=SCORE_VERSION) -> dict:
+    """Daily progress within retained, comparable history; week starts on Monday."""
+    today = now.astimezone().date()
+    cutoff = (today - timedelta(days=89)).isoformat()
+    scores = {day: row["score"] for day, row in history.items()
+              if cutoff <= day <= today.isoformat()
+              and type(row.get("score")) is int and 0 <= row["score"] <= 100
+              and row.get("score_version") == score_version
+              and row.get("rule_version") == RULE_VERSION}
+    current = scores.get(today.isoformat())
+    yesterday = scores.get((today - timedelta(days=1)).isoformat())
+    monday = scores.get((today - timedelta(days=today.weekday())).isoformat())
+    return {"vs_yesterday": current - yesterday if current is not None and yesterday is not None else None,
+            "personal_best": max(scores.values(), default=None),
+            "week_delta": current - monday if current is not None and monday is not None else None}
+
+
 def record_history(progress_path: Path, now: datetime, score: int | None,
                    dims: dict[str, int | None], active_dates: list[str], *, coverage=None,
                    score_version=SCORE_VERSION, price_version="unreviewed-v1", locale="en",

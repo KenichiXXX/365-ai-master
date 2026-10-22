@@ -283,6 +283,11 @@ final class SnapshotStore: ObservableObject {
         return reportedScore
     }
 
+    var rankChange7d: Int? {
+        guard let ranking else { return nil }
+        return scoreReporter.rankChange7d(scoreVersion: ranking.score_version)
+    }
+
     private func refreshRanking(allowFirstReport: Bool = false) async {
         guard shareAnonymousScore, snapshot?.hasEvaluableScores == true,
               let score = snapshot?.overall?.score, let dimensions = snapshot?.dimensions,

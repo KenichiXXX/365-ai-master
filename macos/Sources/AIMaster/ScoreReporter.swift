@@ -111,7 +111,7 @@ final class ScoreReporter {
     }
 
     func report(score: Int, dims: Dims, appVersion: String, scoreVersion: String = "1", now: Date = Date(),
-                allowFirstReport: Bool = false) async -> AppScoreOut? {
+                allowFirstReport: Bool = false, calendar: Calendar = .current) async -> AppScoreOut? {
         guard defaults.bool(forKey: "shareAnonymousScore"),
               !scoreVersion.isEmpty, scoreVersion.count <= 40,
               scoreVersion.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || "-_.".contains($0)) }) else { return nil }
@@ -119,7 +119,7 @@ final class ScoreReporter {
         if reporting { return cached(scoreVersion: scoreVersion, now: now) }
         let firstConsent = allowFirstReport && !defaults.bool(forKey: "scoreEverReported")
         if !firstConsent, let last = defaults.object(forKey: "scoreReportedAt") as? Date,
-           last > now || Calendar.current.isDate(last, inSameDayAs: now) { return cached(scoreVersion: scoreVersion, now: now) }
+           last > now || calendar.isDate(last, inSameDayAs: now) { return cached(scoreVersion: scoreVersion, now: now) }
         guard (0...100).contains(score), [dims.routing, dims.timing, dims.context, dims.leverage]
             .allSatisfy({ (0...100).contains($0) }), appVersion.count <= 20 else { return nil }
         reporting = true
@@ -145,6 +145,7 @@ final class ScoreReporter {
                 defaults.removeObject(forKey: "scoreResultAt")
                 return nil
             }
+            recordRank(result, now: now, calendar: calendar)
             defaults.set(true, forKey: "scoreEverReported")
             defaults.set(data, forKey: "scoreResult")
             defaults.set(now, forKey: "scoreResultAt")
@@ -154,6 +155,41 @@ final class ScoreReporter {
             defaults.removeObject(forKey: "scoreResultAt")
             return nil
         }
+    }
+
+    private struct RankObservation: Codable {
+        let rank: Int
+        let scoreVersion: String
+    }
+
+    private var rankHistory: [String: RankObservation] {
+        guard let data = defaults.data(forKey: "globalRankHistory"),
+              let history = try? JSONDecoder().decode([String: RankObservation].self, from: data) else { return [:] }
+        return history
+    }
+
+    private func rankDay(_ date: Date, calendar: Calendar) -> String {
+        let parts = calendar.dateComponents([.era, .year, .month, .day], from: date)
+        return "\(parts.era ?? 1)-\(parts.year ?? 0)-\(parts.month ?? 0)-\(parts.day ?? 0)"
+    }
+
+    private func recordRank(_ result: AppScoreOut, now: Date, calendar: Calendar) {
+        let days = Set((0...7).compactMap { calendar.date(byAdding: .day, value: -$0, to: now) }
+            .map { rankDay($0, calendar: calendar) })
+        var history = rankHistory.filter { days.contains($0.key) }
+        history[rankDay(now, calendar: calendar)] = RankObservation(rank: result.rank, scoreVersion: result.score_version)
+        if let data = try? JSONEncoder().encode(history) { defaults.set(data, forKey: "globalRankHistory") }
+    }
+
+    func rankChange7d(scoreVersion: String = "1", now: Date = Date(), calendar: Calendar = .current) -> Int? {
+        guard cached(scoreVersion: scoreVersion, now: now) != nil,
+              let previousDate = calendar.date(byAdding: .day, value: -7, to: now) else { return nil }
+        let history = rankHistory
+        guard let current = history[rankDay(now, calendar: calendar)],
+              let previous = history[rankDay(previousDate, calendar: calendar)],
+              current.scoreVersion == scoreVersion, previous.scoreVersion == scoreVersion,
+              current.rank > 0, previous.rank > 0 else { return nil }
+        return previous.rank - current.rank
     }
 
     nonisolated static func send(_ request: URLRequest) async throws -> (Data, Int) {

@@ -22,7 +22,7 @@ from agentfit.engine.collectors.codex import latest_rate_limits
 from agentfit.engine.content import first_practice, label, practice_evidence_label, review_labels, practice_calendar_labels
 from agentfit.engine.content_pool import load_content
 from agentfit.engine.coverage import source_coverage
-from agentfit.engine.history import record_history
+from agentfit.engine.history import record_history, progress_me
 from agentfit.engine.profile import build_profile, dimensions
 from agentfit.engine.dimension_details import dimension_details
 from agentfit.engine.scan_state import ScanState
@@ -173,6 +173,7 @@ def build_snapshot(
         "rankings": daily_rankings(pool, inventories, locale, today, n=20),
         "tool_updates": relevant_updates(pool, coverage, locale),
         "growth": growth, "weekly": weekly,
+        "progress_me": progress_me(persisted.get("history", {}), now),
         "daily_tip": daily_tip(pool, locale, today),
         "streak": {"days": streak_days, "label": practice_calendar_labels(locale)["streak"].format(n=streak_days)},
         "badges": earned_badges,

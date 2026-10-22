@@ -73,8 +73,14 @@ struct RecheckScoreView: View {
                             }
                         }.font(Theme.body)
                     } else {
-                        RingView(score: ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
-                            .value(at: context.date, reduceMotion: reduceMotion), size: 150)
+                        Circle().fill(Theme.blue).frame(width: 128, height: 128)
+                            .overlay {
+                                Text(ScoreCountUp(score: snapshot.overall?.score, startedAt: settled ? nil : store.recheckCompletedAt)
+                                    .value(at: context.date, reduceMotion: reduceMotion).map(String.init) ?? "—")
+                                    .font(Theme.score).foregroundStyle(.white).monospacedDigit()
+                            }
+                            .accessibilityLabel(snapshot.locale == "zh" ? "总分" : "Score")
+                            .accessibilityValue(snapshot.overall?.score.map(String.init) ?? "—")
                         if !settled, let change = store.scoreChange, change.isVisible(at: context.date) {
                             Text(change.caption(locale: snapshot.locale ?? store.locale))
                                 .font(Theme.body).foregroundStyle(Theme.secondary)

@@ -24,6 +24,7 @@ struct Snapshot: Decodable {
     let streak: Streak?
     let badges: [Badge]?
     let usageSummary: UsageSummary?
+    let progressMe: ProgressMe?
     let growth: Growth?
     let weekly: WeeklyReview?
 
@@ -613,4 +614,18 @@ struct PublicToolUpdate: Decodable, Identifiable {
     let summary: String
     let practiceId: String
     let compatibility: PublicCompatibility?
+}
+
+struct ProgressMe: Decodable {
+    let vsYesterday: Int?
+    let personalBest: Int?
+    let weekDelta: Int?
+
+    func caption(locale: String) -> String? {
+        guard let personalBest else { return nil }
+        let best = locale == "zh" ? "个人最佳 \(personalBest)" : "Personal best \(personalBest)"
+        guard let weekDelta else { return best }
+        let delta = MePresentation.signed(weekDelta)
+        return best + (locale == "zh" ? " · 本周 \(delta)" : " · This week \(delta)")
+    }
 }

@@ -37,9 +37,9 @@ final class DimensionDetailTests: XCTestCase {
 
     func testRankingCardKeepsExactSampleAndRank() {
         let ranking = AppScoreOut(total: 20, rank: 4, percentile: 80, small_sample: false)
-        XCTAssertEqual(CheckupPresentation.rankCaption(ranking, locale: "zh"), "打败了全球 80% 的 AI 用户")
+        XCTAssertEqual(CheckupPresentation.rankCaption(ranking, locale: "zh"), "超过全球 80% 的 AI 用户")
         XCTAssertEqual(CheckupPresentation.participants(ranking, locale: "zh"), "20 人参与 · 第 4 名")
-        XCTAssertEqual(CheckupPresentation.rankCaption(AppScoreOut(total: 19, rank: 4, percentile: nil, small_sample: true), locale: "zh"), "早期排名：19 人中第 4 名")
+        XCTAssertEqual(CheckupPresentation.rankCaption(AppScoreOut(total: 19, rank: 4, percentile: nil, small_sample: true), locale: "zh"), "早期排名 · 19 人中第 4 名")
     }
 
     func testRenderRealDimensionDetails() throws {
