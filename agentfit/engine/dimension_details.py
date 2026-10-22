@@ -63,7 +63,7 @@ def dimension_details(profile, dims, locale, coverage=None):
             "key": dim.key, "label": dim.label, "score": dim.score,
             "availability": dim.availability, "base": base, "evidence": rows,
             "deductions": deductions, "verdict": verdict if dim.score is not None else copy["unknown"],
-            "steps": list(dict.fromkeys(steps)) or [copy["keep"] if dim.score is not None else copy["unknown"]],
+            "steps": list(dict.fromkeys(steps))[:3] or [copy["keep"] if dim.score is not None else copy["unknown"]],
             "prompt": dimension_tip(dim.key, locale)["prompt"] if dim.score is not None else "",
         })
     return result

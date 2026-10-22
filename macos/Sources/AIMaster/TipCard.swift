@@ -15,13 +15,13 @@ struct TipCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(tip.title).font(.title2.bold())
+            Text(tip.title).font(.headline)
             Text(tip.why).font(.body).foregroundStyle(.secondary)
             DisclosureGroup {
                 if let evidence = tip.evidenceSummary { Text(evidence).font(.callout) }
                 if let limitation = tip.limitation { Text(limitation).font(.caption) }
-                ForEach(Array(tip.steps.enumerated()), id: \.offset) { index, step in
-                    Text("\(index + 1). \(step)").font(.callout)
+                ForEach(Array(tip.steps.prefix(3).enumerated()), id: \.offset) { index, step in
+                    Text(step).font(.callout)
                 }
                 if !dimensions.isEmpty { DimensionEvidence(dimensions: dimensions) }
                 FirstPracticeView(store: store)

@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import date, timedelta
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -75,7 +76,7 @@ def select_products(items, history: dict, *, today=None) -> list[dict]:
 
 
 def subprocess_claude(texts: list[str]) -> str:
-    prompt = ("Translate these English one-liners faithfully into short Chinese. "
+    prompt = ("Translate faithfully into verb-first Chinese taglines of at most 16 Han characters. "
               "Return only a JSON array of strings in the same order, with no additions.\n"
               + json.dumps(texts, ensure_ascii=False))
     return subprocess.run(["claude", "-p", "--model", "haiku", prompt],
@@ -166,6 +167,24 @@ def fetch_tool_updates(reviews: list[dict], fetch=official_fetch, today=None) ->
     return result
 
 
+def short_tagline(text: str, limit: int = 16) -> str:
+    """Keep complete leading phrases, with a bounded fallback for unpunctuated text."""
+    text = text.strip()
+    if sum("\u3400" <= c <= "\u9fff" for c in text) <= limit:
+        return text
+    count = 0
+    end = 0
+    for end, char in enumerate(text):
+        count += "\u3400" <= char <= "\u9fff"
+        if count > limit:
+            break
+    prefix = text[:end]
+    boundaries = list(re.finditer(r"[，。；！？、,;.!?]", prefix))
+    if boundaries:
+        prefix = prefix[:boundaries[-1].start()]
+    return prefix.rstrip()
+
+
 def translate_zh(texts: list[str], run_claude=subprocess_claude) -> list[str | None]:
     if not texts:
         return []
@@ -173,7 +192,7 @@ def translate_zh(texts: list[str], run_claude=subprocess_claude) -> list[str | N
         translated = json.loads(run_claude(texts))
         if (isinstance(translated, list) and len(translated) == len(texts)
                 and all(isinstance(text, str) and text.strip() for text in translated)):
-            return translated
+            return [short_tagline(text) for text in translated]
     except (OSError, ValueError, subprocess.SubprocessError):
         pass
     return [None] * len(texts)

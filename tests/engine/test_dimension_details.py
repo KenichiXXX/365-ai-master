@@ -48,7 +48,7 @@ def test_all_penalties_and_concentration_bonus_reconcile(locale):
     assert [sum(item["points"] for item in d["deductions"]) for d in details] == [60, 20, 70, 10]
     for d in details:
         assert sum(item["points"] for item in d["deductions"]) == d["base"] - d["score"]
-        assert d["steps"]
+        assert 1 <= len(d["steps"]) <= 3
     context = next(d for d in details if d["key"] == "context")
     assert context["evidence"][0]["value"] == "20 / 100"
     assert next(d for d in details if d["key"] == "routing")["evidence"][1]["value"] == "0%"

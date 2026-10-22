@@ -96,7 +96,7 @@ def test_rankings_and_tip():
     assert len(daily_rankings(content, {}, "zh", TODAY)["skill"]) == 5
     assert daily_rankings(content, {}, "zh", TODAY) != daily_rankings(content, {}, "zh", TODAY + timedelta(days=1))
     expected = content["tips"][TODAY.toordinal() % len(content["tips"])]
-    assert daily_tip(content, "en", TODAY) == {**expected, "title": expected["title"]["en"], "detail": expected["detail"]["en"]}
+    assert daily_tip(content, "en", TODAY) == {**expected, "title": expected["title"]["en"], "detail": expected["detail"]["en"], "limitations": expected["limitations"]["en"]}
     assert daily_tip({"tips": []}, "en", TODAY) == {}
 
 

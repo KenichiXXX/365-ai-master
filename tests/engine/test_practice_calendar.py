@@ -148,7 +148,7 @@ def test_earned_badges_survive_gaps_rollback_and_legacy_migration(tmp_path):
     with zone("UTC"):
         first = build_snapshot(home, state, "en", NOW)
         assert first["streak"]["days"] == 3
-        assert first["streak"]["label"] == "AI usage recorded for 3 consecutive days"
+        assert first["streak"]["label"] == "AI usage: 3 consecutive days"
         for at in (NOW + timedelta(days=5), NOW - timedelta(days=1)):
             result = build_snapshot(home, state, "en", at)
             earned = {b["id"] for b in result["badges"] if b["earned"]}

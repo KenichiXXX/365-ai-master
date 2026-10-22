@@ -28,7 +28,7 @@ def test_bundled_content_loads_and_validates():
     assert tuple(card["id"] for card in content["skills"]) == SKILL_IDS
 
 
-def test_skill_copy_matches_plan_exactly():
+def test_skill_ids_detectors_and_prompts_keep_original_plan_contract():
     plan = (ROOT / "docs/superpowers/plans/2026-10-21-macos-newbie-village.md").read_text(encoding="utf-8")
     table = plan.split("**Skill cards**", 1)[1].split("**Rankings and tips:**", 1)[0]
     rows = [line for line in table.splitlines() if line.startswith("| ")][1:]
@@ -41,7 +41,8 @@ def test_skill_copy_matches_plan_exactly():
         assert card["id"] == card_id
         assert card["detect"] == detect
         for locale, copy in (("zh", zh), ("en", en)):
-            assert [card[key][locale] for key in ("title", "prompt")] == [copy.split(" / ", 2)[i] for i in (0, 2)]
+            # Task 48 supersedes the original titles; copy lint checks their new budgets.
+            assert card["prompt"][locale] == copy.split(" / ", 2)[2]
 
 
 def test_public_copy_is_byte_identical():

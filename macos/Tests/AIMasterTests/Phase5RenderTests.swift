@@ -61,11 +61,19 @@ extension RenderPreviewTests {
             let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
             XCTAssertFalse(png.isEmpty, name)
             if let output { try png.write(to: URL(fileURLWithPath: output + "-" + name + ".png")) }
-            if name == "checkup" || name.hasPrefix("discover-") {
+            if name == "checkup" || name == "training" || name.hasPrefix("discover-") {
                 let text = try phase5VisibleText(XCTUnwrap(bitmap.cgImage))
                 XCTAssertFalse(text.isEmpty, "OCR must see actual rendered text: \(name)")
                 let normalized = text.lowercased().filter { !$0.isWhitespace }
-                if name == "checkup" {
+                for line in text.split(separator: "\n") {
+                    let han = line.unicodeScalars.filter { (0x3400...0x9fff).contains(Int($0.value)) }.count
+                    XCTAssertLessThanOrEqual(han, 40, "Main view text: \(name): \(line)")
+                }
+                if name == "training" {
+                    for helper in ["完成三件事", "每连签7天", "完成可获", "Finishallthree", "Earnashield", "Earn+50XP"] {
+                        XCTAssertFalse(normalized.contains(helper.lowercased()), "Helper belongs in ⓘ: \(text)")
+                    }
+                } else if name == "checkup" {
                     XCTAssertFalse(normalized.contains("今天先改这一处"), text)
                 } else {
                     XCTAssertTrue(normalized.contains(locale == "zh" ? "为你推荐" : "foryou"), text)

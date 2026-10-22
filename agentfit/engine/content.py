@@ -20,195 +20,190 @@ POOL = ["fresh_session", "background_agent", "privacy_check"]
 _QUEST_TEXT = {
     "zh": {
         "first_edit": {
-            "title": "出生点：让 AI 动手改一次文件",
-            "why": "让 AI 真正改动文件，才算开始用起来。",
+            "title": "让 AI 改一个文件",
+            "why": "从一个小改动开始",
             "steps": [
-                "在一个项目目录里打开 Claude Code / Codex",
-                "让它改一个小地方",
-                "看一眼它改了什么",
+                "打开项目",
+                "改一处文件",
+                "检查改动",
             ],
             "prompt": "请在当前项目里做一个小改动：找到 README（没有就新建），在末尾加一行今天的日期和一句项目简介，改完告诉我改了哪里。",
         },
         "rules_file": {
-            "title": "立规矩：写第一份 CLAUDE.md",
-            "why": "CLAUDE.md / AGENTS.md 是 AI 每次开工先读的说明书，写一次长期生效。",
+            "title": "写好项目规则",
+            "why": "让 AI 每次开工有章可循",
             "steps": [
-                "让 AI 读项目结构",
-                "生成 CLAUDE.md 草稿",
-                "你删改后保存在项目根目录",
+                "让 AI 读项目",
+                "生成 CLAUDE.md",
+                "审阅后保存",
             ],
             "prompt": "请阅读当前项目结构，帮我写一份 CLAUDE.md：项目简介、常用命令（安装/运行/测试）、代码风格约定、不要做的事，控制在 "
             "60 行以内，写完给我看。",
         },
         "light_model": {
-            "title": "会分工：机械活交给轻量模型",
-            "why": "格式转换、批量提取这类活用轻量模型更快，也更省额度。",
+            "title": "切到轻量模型",
+            "why": "简单活更快、更省额度",
             "steps": [
-                "输入 /model 看可选模型",
-                "机械任务切到最轻的一档",
-                "复杂设计再切回来",
+                "输入 /model",
+                "选最轻的一档",
+                "复杂任务再切回",
             ],
             "prompt": "接下来这个任务是机械性的（批量整理/格式转换），请用最轻量的模型完成；如果当前不是轻量模型，告诉我怎么用 /model "
             "切换。",
         },
         "first_skill": {
-            "title": "第一件装备：真正用起一个 skill",
-            "why": "skill 把常干的活固化成一句话就能调用的能力。",
+            "title": "用起一个技能",
+            "why": "常干的活，一句话调用",
             "steps": [
-                "看看已安装的 skill",
-                "挑一个最贴近你项目的",
-                "用它完成一个小任务",
+                "查看已装技能",
+                "选一个合适的",
+                "完成一个小任务",
             ],
             "prompt": "请列出我当前已安装的 skill，挑一个最适合这个项目的，说明它能做什么，然后用它完成一个小任务。",
         },
         "parallel": {
-            "title": "会并行：让子代理同时干活",
-            "why": "子代理可以同时查好几处，主对话保持清爽。",
+            "title": "让子代理同时干活",
+            "why": "独立任务一起做",
             "steps": [
-                "把一个任务拆成两件互不依赖的事",
-                "让 AI 用子代理并行做",
-                "看汇总结果",
+                "拆成两件独立任务",
+                "启动子代理",
+                "检查汇总",
             ],
             "prompt": "请启动子代理并行完成两件事：A 梳理项目目录结构，B 找出所有 TODO 注释；完成后汇总给我。",
         },
         "less_rework": {
-            "title": "少返工：先对齐再动手",
-            "why": "中断和反复重试最浪费；先说清目标和验收标准。",
-            "steps": ["开工前让 AI 复述目标", "确认验收标准", "再让它动手"],
+            "title": "先对齐再动手",
+            "why": "先说清目标和验收标准",
+            "steps": ["让 AI 复述目标", "确认验收标准", "再开始执行"],
             "prompt": "开始之前，请先用三句话复述你理解的任务目标、验收标准和打算的步骤，等我确认后再动手。",
         },
         "automation": {
-            "title": "自动化：配置第一个 hook",
-            "why": "hook 让固定动作自动发生，比如改完代码自动跑测试。",
+            "title": "自动跑一次测试",
+            "why": "改完代码，自动检查",
             "steps": [
-                "选一个每次都要做的动作",
-                "让 AI 配成 hook",
-                "改一次文件验证它触发",
+                "选一个固定动作",
+                "配置 hook",
+                "改文件验证触发",
             ],
             "prompt": "请帮我配置一个 Claude Code "
             "hook：每次你改完文件后自动运行本项目的格式化或测试命令。先告诉我要改哪个配置文件、写什么，我确认后再写入。",
         },
         "declutter": {
-            "title": "断舍离：清理用不上的 skill",
-            "why": "装太多 skill 会挤占上下文，用不上的就该卸掉。",
-            "steps": ["列出所有 skill", "标出两周没用过的", "自己决定卸载哪些"],
+            "title": "清理闲置技能",
+            "why": "把空间留给常用技能",
+            "steps": ["列出所有技能", "标出闲置技能", "决定保留哪些"],
             "prompt": "请列出 ~/.claude/skills 下的所有 skill，标出最近两周没用过的，给我一份建议卸载清单（只列出，不要删除）。",
         },
         "graduate": {
-            "title": "出师：四维全面达标",
-            "why": "模型分工、作息、上下文、复用四项都 ≥85 分，你已经出师。",
-            "steps": ["看四维里最低的一项", "照今日一招练一周", "再体检"],
+            "title": "练好最弱的一项",
+            "why": "四项都达到 85 分即可出师",
+            "steps": ["找到最低分", "练习一周", "重新体检"],
             "prompt": "请根据我最近的使用习惯，指出我在模型选择、作息、上下文管理、复用沉淀四方面最弱的一项，并给我一个本周练习计划。",
         },
     },
     "en": {
         "first_edit": {
-            "title": "Spawn point: let the AI edit a file",
-            "why": "You've really started once the AI changes a file for you.",
+            "title": "Edit one file",
+            "why": "Start with a small change",
             "steps": [
-                "Open Claude Code / Codex in a project",
-                "ask for one small change",
-                "review the diff",
+                "Open a project",
+                "Ask for one edit",
+                "Review the diff",
             ],
             "prompt": "Make a small change in this project: open README (create it if "
             "missing), append today's date and a one-line project summary, "
             "then tell me exactly what you changed.",
         },
         "rules_file": {
-            "title": "House rules: write your first CLAUDE.md",
-            "why": "CLAUDE.md / AGENTS.md is the brief your AI reads before every task "
-            "— write it once, benefit forever.",
+            "title": "Write project rules",
+            "why": "Give your AI a reusable brief",
             "steps": [
-                "Let the AI read the project",
-                "generate a draft",
-                "trim it and save it at the repo root",
+                "Ask AI to read the project",
+                "Draft CLAUDE.md",
+                "Review and save",
             ],
             "prompt": "Read this project's structure and write a CLAUDE.md: summary, "
             "common commands (install/run/test), code style, and things not "
             "to do. Keep it under 60 lines and show me.",
         },
         "light_model": {
-            "title": "Delegate: give chores to a light model",
-            "why": "Light models do formatting and bulk extraction faster and save "
-            "quota.",
+            "title": "Switch to a light model",
+            "why": "Use less quota for simple tasks",
             "steps": [
-                "Type /model to see options",
-                "switch to the lightest for chores",
-                "switch back for design work",
+                "Type /model",
+                "Pick the lightest tier",
+                "Switch back for hard tasks",
             ],
             "prompt": "The next task is mechanical (bulk cleanup / format conversion). "
             "Use the lightest model; if you aren't on one, tell me how to "
             "switch with /model.",
         },
         "first_skill": {
-            "title": "First gear: actually use a skill",
-            "why": "A skill turns a recurring job into a one-line command.",
+            "title": "Try a skill",
+            "why": "Run a routine task with one command",
             "steps": [
                 "List installed skills",
-                "pick the one closest to your project",
-                "use it on a small task",
+                "Pick one for this project",
+                "Use it on a small task",
             ],
             "prompt": "List the skills I have installed, pick the best one for this "
             "project, explain what it does, then use it on a small task.",
         },
         "parallel": {
-            "title": "Go parallel: put sub-agents to work",
-            "why": "Sub-agents look in several places at once and keep your main chat "
-            "clean.",
+            "title": "Run tasks in parallel",
+            "why": "Handle independent tasks together",
             "steps": [
-                "Split a task into two independent parts",
-                "ask for sub-agents",
-                "read the summary",
+                "Split into independent tasks",
+                "Start sub-agents",
+                "Review the summary",
             ],
             "prompt": "Start sub-agents to do two things in parallel: A) map the project "
             "structure, B) find every TODO comment. Then summarize both for "
             "me.",
         },
         "less_rework": {
-            "title": "Less rework: align before acting",
-            "why": "Interruptions and blind retries waste the most; state the goal and "
-            "acceptance first.",
+            "title": "Agree before acting",
+            "why": "Make the goal and checks clear",
             "steps": [
-                "Ask the AI to restate the goal",
-                "agree on acceptance criteria",
-                "then let it work",
+                "Ask AI to restate the goal",
+                "Agree on acceptance checks",
+                "Start the work",
             ],
             "prompt": "Before starting, restate in three sentences the goal, the "
             "acceptance criteria, and your planned steps. Wait for my "
             "confirmation before acting.",
         },
         "automation": {
-            "title": "Automate: set up your first hook",
-            "why": "Hooks make routine steps automatic, e.g. run tests after every "
-            "edit.",
+            "title": "Automate a routine check",
+            "why": "Run checks after each edit",
             "steps": [
-                "Pick a step you always repeat",
-                "have the AI configure it as a hook",
-                "edit a file to see it fire",
+                "Pick a repeated step",
+                "Configure a hook",
+                "Edit a file to test it",
             ],
             "prompt": "Configure a Claude Code hook that runs this project's formatter "
             "or tests after you edit files. First tell me which config file "
             "and what you'll add; write it only after I confirm.",
         },
         "declutter": {
-            "title": "Declutter: drop skills you don't use",
-            "why": "Too many skills crowd the context; remove the ones you never use.",
+            "title": "Review unused skills",
+            "why": "Make room for the skills you use",
             "steps": [
                 "List all skills",
-                "mark the ones unused for two weeks",
-                "decide what to remove",
+                "Mark unused ones",
+                "Decide what to keep",
             ],
             "prompt": "List every skill under ~/.claude/skills, mark those unused in the "
             "last two weeks, and give me a suggested removal list (list only — "
             "don't delete anything).",
         },
         "graduate": {
-            "title": "Graduate: all four dimensions on target",
-            "why": "Routing, timing, context and reuse are all ≥85 — you've graduated.",
+            "title": "Improve your weakest area",
+            "why": "Reach 85 in all four areas",
             "steps": [
-                "Find your lowest dimension",
-                "practise today's tip for a week",
-                "re-check",
+                "Find your lowest score",
+                "Practise for a week",
+                "Re-check",
             ],
             "prompt": "Based on my recent usage, tell me which of model choice, timing, "
             "context management and reuse is weakest, and give me a one-week "
@@ -220,74 +215,71 @@ _QUEST_TEXT = {
 _DIMENSION_TIPS = {
     "zh": {
         "routing": {
-            "title": "模型分工再优化",
-            "why": "旗舰模型留给难题，日常用均衡档，杂活用轻量档。",
-            "steps": ["看一眼原因", "复制下面的指令给 AI", "明天再看分数变化"],
+            "title": "切到轻量模型",
+            "why": "旗舰留给难题，简单活用轻量",
+            "steps": ["输入 /model", "选择轻量档", "明天再体检"],
             "prompt": "请根据我接下来要做的三件事，分别建议用哪一档模型，并说明理由。",
         },
         "timing": {
-            "title": "固定 AI 工作时段",
-            "why": "零散使用要反复交代背景，攒在固定时段批量处理更省。",
-            "steps": ["看一眼原因", "复制下面的指令给 AI", "明天再看分数变化"],
+            "title": "集中处理 AI 任务",
+            "why": "同类问题一起处理",
+            "steps": ["列出今天任务", "安排两个时段", "集中处理"],
             "prompt": "请帮我把今天零散的 AI 任务整理成两个集中时段的清单。",
         },
         "context": {
-            "title": "管好上下文",
-            "why": "一个任务一个会话，长会话及时开新的，常用背景写进 CLAUDE.md。",
-            "steps": ["看一眼原因", "复制下面的指令给 AI", "明天再看分数变化"],
+            "title": "开一个新会话",
+            "why": "一个任务一个会话",
+            "steps": ["总结当前结论", "打开新会话", "粘贴必要背景"],
             "prompt": "请总结当前会话的结论和待办，写成一段可以粘到新会话开头的交接说明。",
         },
         "leverage": {
-            "title": "把重复的活沉淀下来",
-            "why": "同一件事做第三次时，就把它写成 skill 或模板。",
-            "steps": ["看一眼原因", "复制下面的指令给 AI", "明天再看分数变化"],
+            "title": "把重复任务存成技能",
+            "why": "下次一句话就能调用",
+            "steps": ["找出重复任务", "写成技能草稿", "下次再用一次"],
             "prompt": "请找出我最近重复做过的一类任务，把它写成一个可复用的 skill 草稿。",
         },
     },
     "en": {
         "routing": {
-            "title": "Tune model routing",
-            "why": "Save the flagship for hard problems; use balanced for daily work and "
-            "light for chores.",
+            "title": "Choose a lighter model",
+            "why": "Save flagship models for hard tasks",
             "steps": [
-                "Read why",
-                "Paste the prompt below to your AI",
-                "Check the score again tomorrow",
+                "Type /model",
+                "Choose a light tier",
+                "Re-check tomorrow",
             ],
             "prompt": "For the next three things I'm going to do, recommend which model "
             "tier to use for each and why.",
         },
         "timing": {
-            "title": "Batch your AI time",
-            "why": "Scattered use means re-explaining context; batching into fixed slots is "
-            "cheaper.",
+            "title": "Batch your AI tasks",
+            "why": "Handle similar tasks together",
             "steps": [
-                "Read why",
-                "Paste the prompt below to your AI",
-                "Check the score again tomorrow",
+                "List today’s tasks",
+                "Choose two time blocks",
+                "Work through each batch",
             ],
             "prompt": "Turn my scattered AI tasks for today into two focused time-block "
             "lists.",
         },
         "context": {
-            "title": "Keep context clean",
-            "why": "One task per session; start fresh when it gets long; put recurring "
-            "background in CLAUDE.md.",
+            "title": "Start a fresh chat",
+            "why": "Keep one task per conversation",
             "steps": [
-                "Read why",
-                "Paste the prompt below to your AI",
-                "Check the score again tomorrow",
+                "Summarize current conclusions",
+                "Open a new chat",
+                "Paste only needed context",
             ],
             "prompt": "Summarize this session's conclusions and open items as a hand-off "
             "note I can paste into a new session.",
         },
         "leverage": {
-            "title": "Turn repeats into assets",
-            "why": "The third time you do something, make it a skill or template.",
+            "title": "Save a repeated task as a skill",
+            "why": "Reuse it with one command next time",
             "steps": [
-                "Read why",
-                "Paste the prompt below to your AI",
-                "Check the score again tomorrow",
+                "Find a repeated task",
+                "Draft a reusable skill",
+                "Try it again next time",
             ],
             "prompt": "Find a task I've repeated recently and draft a reusable skill for "
             "it.",
@@ -298,41 +290,41 @@ _DIMENSION_TIPS = {
 _POOL_TIPS = {
     "zh": {
         "privacy_check": {
-            "title": "练习：查看工具的隐私说明",
-            "why": "无需读取日志，也可以先准备三个隐私问题。",
-            "steps": ["选一个你想了解的工具", "写下数据保存位置、训练用途和删除方式三个问题"],
+            "title": "查看隐私说明",
+            "why": "先了解数据如何使用",
+            "steps": ["选一个工具", "查保存和训练用途", "查删除方式"],
             "prompt": "请起草一份三问隐私检查清单：数据存在哪里、是否用于训练、如何删除。只给清单，不读取文件或修改设置。",
         },
         "fresh_session": {
-            "title": "练习：写一段交接说明",
-            "why": "用一个虚构任务练习写清目标、约束和验收条件。",
-            "steps": ["选一个虚构任务", "写出目标、约束和检查方法"],
+            "title": "写一段交接说明",
+            "why": "练习说清目标和检查方法",
+            "steps": ["选一个虚构任务", "写出目标和约束", "列出检查方法"],
             "prompt": "以整理虚构的读书清单为例，起草一段包含目标、约束和验收方法的交接说明。只给草稿，不操作文件。",
         },
         "background_agent": {
-            "title": "练习：拆解一个批量任务",
-            "why": "先检查步骤，再决定是否执行。",
-            "steps": ["用虚构数据描述一个批量任务", "列出步骤和每步的检查方法"],
+            "title": "拆解一个批量任务",
+            "why": "执行前先看清步骤",
+            "steps": ["虚构十个文件名", "列出处理步骤", "列出检查方法"],
             "prompt": "以整理十个虚构文件名为例，起草批量处理步骤和检查清单。不要运行命令或操作文件。",
         },
     },
     "en": {
         "privacy_check": {
-            "title": "Practice: review a tool's privacy information",
-            "why": "Prepare three privacy questions without reading any logs.",
-            "steps": ["Choose a tool to learn about", "Ask about storage, training use and deletion"],
+            "title": "Review privacy information",
+            "why": "Check how a tool handles your data",
+            "steps": ["Choose a tool", "Check storage and training use", "Check deletion options"],
             "prompt": "Draft a three-question privacy checklist about storage, training use and deletion. Only provide a checklist. Do not read files or change settings.",
         },
         "fresh_session": {
-            "title": "Practice: draft a hand-off note",
-            "why": "Use a fictional task to state a goal, constraints and acceptance checks.",
-            "steps": ["Choose a fictional task", "Write the goal, constraints and checks"],
+            "title": "Draft a hand-off note",
+            "why": "Practise clear goals and checks",
+            "steps": ["Choose a fictional task", "Write its goal and constraints", "List acceptance checks"],
             "prompt": "Using a fictional reading list, draft a hand-off note with a goal, constraints and acceptance checks. Only draft text. Do not operate on files.",
         },
         "background_agent": {
-            "title": "Practice: break down a batch task",
-            "why": "Review the steps before deciding whether to execute anything.",
-            "steps": ["Describe a batch task with fictional data", "List steps and checks"],
+            "title": "Break down a batch task",
+            "why": "Review steps before running them",
+            "steps": ["Invent ten file names", "List processing steps", "List checks"],
             "prompt": "Using ten fictional file names, draft batch-processing steps and a checklist. Do not run commands or operate on files.",
         },
     },
@@ -345,22 +337,8 @@ _RANK_TITLES = {
 }
 
 _LABELS = {
-    "zh": {
-        "routing": "模型路由",
-        "timing": "时间习惯",
-        "context": "上下文卫生",
-        "leverage": "沉淀复用",
-        "tool_unavailable": "该工具数据暂不可用",
-        "no_tools": "还没检测到 Claude Code 或 Codex。先安装一个，再回来体检。",
-    },
-    "en": {
-        "routing": "Routing",
-        "timing": "Timing",
-        "context": "Context",
-        "leverage": "Reuse",
-        "tool_unavailable": "Data temporarily unavailable",
-        "no_tools": "No Claude Code or Codex found yet. Install one, then come back.",
-    },
+    "zh": {'routing': '模型路由', 'timing': '时间习惯', 'context': '上下文卫生', 'leverage': '沉淀复用', 'tool_unavailable': '该工具数据暂不可用', 'no_tools': '先安装 Claude Code 或 Codex', 'no_logs': '尚无使用记录', 'permission_denied': '无法读取日志，可稍后重试', 'unsupported': '此日志格式暂不支持', 'partial': '部分记录可用', 'configuration_found': '已配置，尚未验证使用'},
+    "en": {'routing': 'Routing', 'timing': 'Timing', 'context': 'Context', 'leverage': 'Reuse', 'tool_unavailable': 'Data temporarily unavailable', 'no_tools': 'Install Claude Code or Codex to begin', 'no_logs': 'No usage records yet', 'permission_denied': 'Logs cannot be read. Try again later', 'unsupported': 'This log format is not supported yet', 'partial': 'Some records are available', 'configuration_found': 'Configured; use not verified'},
 }
 
 
@@ -418,7 +396,7 @@ _COVERAGE_LABELS = {
     "permission_denied": ("无法读取日志，可稍后重试", "Logs cannot be read. Try again later"),
     "unsupported": ("此日志格式暂不支持", "This log format is not supported yet"),
     "partial": ("部分记录可用", "Some records are available"),
-    "configuration_found": ("配置存在，尚未验证使用", "Configuration found; use has not been verified"),
+    "configuration_found": ("已配置，尚未验证使用", "Configured; use not verified"),
 }
 for _key, (_zh, _en) in _COVERAGE_LABELS.items():
     _LABELS["zh"][_key] = _zh
@@ -481,11 +459,11 @@ FIRST_PRACTICE = {
 }
 
 QUEST_EVIDENCE = {
-    "configuration": ("配置存在，尚未验证使用", "Configuration found; use has not been verified"),
-    "historical": ("历史记录，不代表本次练习", "Historical record, not evidence of this practice"),
-    "new_observed": ("新观察到的使用，不代表输出正确", "Newly observed use, not verified correctness"),
+    "configuration": ("已配置，尚未验证使用", "Configured; use not verified"),
+    "historical": ("历史记录，非本次练习", "Past record, not this practice"),
+    "new_observed": ("观察到使用，未验证正确性", "Use observed; correctness unverified"),
     "self_reported": ("已尝试（自报）", "Tried (self-reported)"),
-    "unsupported": ("暂不支持自动验证，可手动练习", "Automatic verification unavailable; practice manually"),
+    "unsupported": ("请手动练习", "Practise manually"),
     "not_observed": ("尚未观察到", "Not observed yet"),
 }
 
@@ -566,7 +544,7 @@ def practice_calendar_labels(locale):
         "usage_only": ("仅有使用记录", "Usage only"),
         "unavailable": ("数据不可用", "Data unavailable"),
         "rest": ("休息不会扣除已获成就", "Rest does not remove earned achievements"),
-        "streak": ("连续有 AI 使用记录 {n} 天", "AI usage recorded for {n} consecutive days"),
+        "streak": ("连续有 AI 使用记录 {n} 天", "AI usage: {n} consecutive days"),
     }
     return {key: values[0 if locale == "zh" else 1] for key, values in rows.items()}
 
@@ -574,57 +552,57 @@ def practice_calendar_labels(locale):
 def local_validation_labels(locale):
     zh = locale == "zh"
     return {"title": "本机验证面板" if zh else "Local validation",
-            "privacy": "仅代表本次安装，不会上报" if zh else "This installation only. Nothing is reported",
+            "privacy": "仅代表本次安装，不会上报" if zh else "Only on this device; nothing reported",
             "not_yet": "尚未到观察日期" if zh else "Observation date has not arrived"}
 
 
 _CHECKUP_DETAILS = {
     "zh": {
-        "healthy": "目前没有触发扣分项，保持住。",
-        "unknown": "记录还不够，暂时无法判断。",
-        "keep": "保持当前习惯，过几天再来看看。",
-        "model_overuse": ("贵模型用得多，可以让轻量模型分担一些。", ["日常任务默认用均衡档，难题再切旗舰档。", "格式转换、提取和分类试试轻量档。"]),
-        "fast_gap": ("轻量模型几乎没用，简单任务可以试试它。", ["列出最常做的三类简单任务。", "下次做这些任务时，试用轻量模型。"]),
-        "late_night": ("深夜使用较多，留一点时间给休息。", ["区分深夜任务中需要你判断和能交给机器的部分。", "白天安排任务，第二天再检查结果。"]),
-        "fragmented": ("使用时间比较零散，试试集中处理。", ["每天留出两三个集中使用 AI 的时段。", "零散问题先记下来，同类任务一起处理。"]),
-        "context_bloat": ("长对话压缩较多，旧背景可能占了太多空间。", ["完成一个任务后开新对话。", "大文件只读取需要的部分。", "把常用背景整理成固定说明。"]),
-        "cache": ("重复背景的缓存利用较少。", ["固定规则和参考资料放在提示词开头。", "变化的问题放到最后。"]),
-        "retry": ("中断比例偏高，试试换个问法或拆小任务。", ["连续失败两次就停止原样重发。", "缩小任务、补充信息或换一种表述后再试。"]),
+        "healthy": "没有扣分，保持住",
+        "unknown": "记录不足，暂无法判断",
+        "keep": "保持当前习惯",
+        "model_overuse": ("旗舰占比偏高", ["日常用均衡档", "简单活用轻量档"]),
+        "fast_gap": ("轻量占比偏低", ["输入 /model", "简单活切轻量档"]),
+        "late_night": ("深夜用量偏高", ["白天安排任务", "次日检查结果"]),
+        "fragmented": ("时段较零散", ["固定两个时段", "同类问题一起处理"]),
+        "context_bloat": ("压缩比例偏高", ["完成后开新对话", "只读必要片段", "保存常用背景"]),
+        "cache": ("缓存命中偏低", ["固定规则放开头", "变化问题放最后"]),
+        "retry": ("中断比例偏高", ["失败两次先停下", "缩小任务再试"]),
         "evidence": {
-            "premium_tokens": ("近 7 天旗舰模型 token 占比", "≤60%"),
-            "model_overuse": ("近 7 天旗舰模型占折算成本", "≤60%"),
-            "fast_gap": ("近 7 天轻量模型占比", "≥5%"),
-            "late_night": ("近 7 天深夜用量占比", "≤25%"),
-            "fragmented": ("近 7 天最集中三小时的用量占比", None),
-            "concentrated": ("近 7 天有使用的小时段", None),
-            "context_bloat": ("近 14 天上下文压缩 / 提问", "压缩少于 3 次或占比 <10%"),
-            "retry": ("近 14 天中断 / 提问", "提问少于 10 次或占比 <10%"),
-            "cache": ("近 7 天输入缓存命中率", "≥50%"),
-            "reuse": ("近 14 天技能调用", None),
+            "premium_tokens": ("旗舰 Token", "≤60%"),
+            "model_overuse": ("旗舰折算占比", "≤60%"),
+            "fast_gap": ("轻量占比", "≥5%"),
+            "late_night": ("深夜占比", "≤25%"),
+            "fragmented": ("最忙三小时", None),
+            "concentrated": ("活跃小时段", None),
+            "context_bloat": ("压缩 / 提问", "压缩少于 3 次或占比 <10%"),
+            "retry": ("中断 / 提问", "提问少于 10 次或占比 <10%"),
+            "cache": ("缓存命中", "≥50%"),
+            "reuse": ("技能调用", None),
         },
     },
     "en": {
-        "healthy": "No deductions right now. Keep it up.",
-        "unknown": "Not enough records to assess this yet.",
-        "keep": "Keep your current habits and check again in a few days.",
-        "model_overuse": ("Flagship models do most of the work; let lighter models help.", ["Use a balanced model by default; switch to flagship for hard problems.", "Try a light model for formatting, extraction and classification."]),
-        "fast_gap": ("Light models are rarely used; try one for simple tasks.", ["List your three most frequent simple tasks.", "Try a light model next time you do them."]),
-        "late_night": ("There is a lot of late-night use. Make room for rest.", ["Separate late-night tasks that need your judgment from routine work.", "Plan the work during the day and review results the next morning."]),
-        "fragmented": ("Your AI time is scattered; try batching similar tasks.", ["Set aside two or three focused AI work periods each day.", "Save small questions and handle similar tasks together."]),
-        "context_bloat": ("Long chats are compressed often; old context may be crowding things out.", ["Start a fresh chat after finishing a task.", "Read only the needed parts of large files.", "Save recurring background as fixed instructions."]),
-        "cache": ("Repeated background is not making much use of the cache.", ["Keep fixed rules and reference material at the start of your prompt.", "Put changing questions at the end."]),
-        "retry": ("Interruptions are frequent; try rephrasing or smaller tasks.", ["After two failures, stop sending the same request unchanged.", "Narrow the task, add information or rephrase before retrying."]),
+        "healthy": "No deductions. Keep it up.",
+        "unknown": "Not enough records yet",
+        "keep": "Keep your current habits",
+        "model_overuse": ("High flagship share", ["Use a balanced tier by default", "Use a light tier for simple tasks"]),
+        "fast_gap": ("Low light-model share", ["Type /model", "Try a light tier for simple tasks"]),
+        "late_night": ("High late-night usage", ["Plan work during the day", "Review results the next morning"]),
+        "fragmented": ("Scattered hours", ["Choose two time blocks", "Batch similar questions"]),
+        "context_bloat": ("Frequent compactions", ["Start fresh after each task", "Read only needed excerpts", "Save recurring background"]),
+        "cache": ("Low cache hit rate", ["Put fixed rules first", "Put changing questions last"]),
+        "retry": ("Frequent interruptions", ["Pause after two failures", "Narrow the task and retry"]),
         "evidence": {
-            "premium_tokens": ("7-day flagship token share", "≤60%"),
-            "model_overuse": ("7-day flagship share of estimated cost", "≤60%"),
-            "fast_gap": ("7-day light-model token share", "≥5%"),
-            "late_night": ("7-day midnight–6am usage share", "≤25%"),
-            "fragmented": ("7-day usage in the busiest three hours", None),
-            "concentrated": ("7-day active hours of the day", None),
-            "context_bloat": ("14-day compressions / prompts", "Fewer than 3 compressions or <10%"),
-            "retry": ("14-day interruptions / prompts", "Fewer than 10 prompts or <10%"),
-            "cache": ("7-day input cache hit rate", "≥50%"),
-            "reuse": ("14-day skill calls", None),
+            "premium_tokens": ("Flagship tokens", "≤60%"),
+            "model_overuse": ("Flagship cost share", "≤60%"),
+            "fast_gap": ("Light share", "≥5%"),
+            "late_night": ("Late-night share", "≤25%"),
+            "fragmented": ("Busiest 3 hours", None),
+            "concentrated": ("Active hours", None),
+            "context_bloat": ("Compactions / prompts", "Fewer than 3 compressions or <10%"),
+            "retry": ("Interruptions / prompts", "Fewer than 10 prompts or <10%"),
+            "cache": ("Cache hits", "≥50%"),
+            "reuse": ("Skill calls", None),
         },
     },
 }
@@ -636,25 +614,25 @@ def checkup_detail_copy(locale: str) -> dict:
 # Task 45: fixed, local-only game copy. No downloaded or generated rewards.
 GAME_TIPS = [
     ("今天也向前走了一小步。", "One small step forward today."),
-    ("先试一件小事，再看结果。", "Try one small thing, then check the result."),
+    ("先试一件小事，再看结果。", "Try one thing, then check."),
     ("好问题值得多花一分钟。", "A good question deserves another minute."),
-    ("记下一个今天的新发现。", "Write down one thing you discovered today."),
-    ("让 AI 帮你开始，由你来判断。", "Let AI help you start; keep your own judgment."),
-    ("学会一招，就找机会用一次。", "Use a new skill when the opportunity fits."),
+    ("记下一个今天的新发现。", "Note a new discovery."),
+    ("让 AI 帮你开始，由你来判断。", "Let AI start; you decide."),
+    ("学会一招，就找机会用一次。", "Try your new skill."),
     ("休息一下，回来会更清楚。", "Take a break and return with fresh eyes."),
     ("小任务也能练出好习惯。", "Small tasks build good habits."),
     ("清楚的目标，让合作更轻松。", "A clear goal makes collaboration easier."),
     ("做完以后，花一点时间检查。", "Take a moment to check your work."),
-    ("把复杂的事拆成一小步。", "Break a complex task into one small step."),
+    ("把复杂的事拆成一小步。", "Break it into one step."),
     ("保留判断，也保持好奇。", "Stay curious and keep your judgment."),
     ("今天的新招，明天可以再试。", "Try today's new skill again tomorrow."),
     ("把有用的做法留给下一次。", "Keep useful approaches for next time."),
-    ("遇到卡点，先说清楚问题。", "When stuck, start by describing the problem."),
+    ("遇到卡点，先说清楚问题。", "Describe the problem first."),
     ("让工具为你的目标服务。", "Let your tools serve your goals."),
     ("不必一次学完，慢慢来。", "You do not have to learn it all at once."),
-    ("试过以后，你会更了解自己的方法。", "Trying helps you understand your approach."),
-    ("给下一次的自己留一句提示。", "Leave a helpful note for your future self."),
-    ("今天的认真，值得一个小庆祝。", "Today's effort deserves a little celebration."),
+    ("试过以后，你会更了解自己的方法。", "Try it and reflect."),
+    ("给下一次的自己留一句提示。", "Leave yourself a helpful note."),
+    ("今天的认真，值得一个小庆祝。", "Celebrate today’s effort."),
 ]
 GAME_LEVELS = {
     "zh": ["学徒", "见习", "熟练", "专家", "大师", "宗师"],
@@ -664,5 +642,5 @@ GAME_WEEKLY = {
     "cards": (2, {"zh": "点亮 2 张新卡", "en": "Light up 2 new cards"}),
     "checkins": (5, {"zh": "打卡 5 天", "en": "Check in on 5 days"}),
     "practices": (3, {"zh": "完成 3 次练习", "en": "Complete 3 practices"}),
-    "dimension": (5, {"zh": "让一个维度提高 5 分", "en": "Improve one dimension by 5 points"}),
+    "dimension": (5, {"zh": "让一个维度提高 5 分", "en": "Raise one dimension by 5 points"}),
 }

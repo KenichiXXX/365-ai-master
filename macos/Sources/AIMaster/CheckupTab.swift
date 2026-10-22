@@ -26,9 +26,7 @@ struct CheckupTab: View {
                 RecheckScoreView(snapshot: snapshot, store: store)
                 if let title = CheckupPresentation.title(score: snapshot.overall?.score, locale: snapshot.locale ?? store.locale) {
                     Text(title).font(.title2.bold())
-                }
-                if let caption = snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) {
-                    Text(caption).font(.callout).foregroundStyle(.secondary)
+                        .help(snapshot.scoreBasisCaption(locale: snapshot.locale ?? store.locale) ?? "")
                 }
                 if snapshot.overall?.score == nil {
                     Text(snapshot.overall?.availability == "partial" ? "Partly assessable" : "No assessable records yet", bundle: .module)
@@ -93,14 +91,12 @@ struct GlobalRankCard: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(zh ? "全球排名" : "Global ranking").font(.headline)
+            Text(zh ? "查看全球排名" : "View global ranking").font(.headline)
             if store.shareAnonymousScore {
                 if let ranking = store.ranking {
                     Text(CheckupPresentation.rankCaption(ranking, locale: locale))
-                    if ranking.total >= 20 {
-                        Text(CheckupPresentation.participants(ranking, locale: locale)).font(.caption)
-                    }
                     DisclosureGroup {
+                        Text(CheckupPresentation.participants(ranking, locale: locale)).font(.body)
                         Text(AppScoreOut.sampleLimitation(locale: locale)).font(.caption)
                     } label: {
                         Image(systemName: "info.circle").accessibilityLabel(zh ? "排名说明" : "Ranking details")

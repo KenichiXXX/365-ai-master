@@ -32,8 +32,8 @@ enum DiscoverContent {
     }
 
     static func reason(dimension: String, locale: String) -> String {
-        let reasons = ["routing": ["让不同模型各展所长", "Let different models play to their strengths"],
-            "context": ["让 AI 记住重点，减少重复说明", "Help AI remember what matters"],
+        let reasons = ["routing": ["让不同模型各展所长", "Choose the right model"],
+            "context": ["让 AI 记住重点", "Help AI remember what matters"],
             "leverage": ["把重复工作交给 AI", "Let AI handle repeat tasks"],
             "timing": ["把时间留给更重要的事", "Make time for what matters"]]
         return reasons[dimension]?[locale == "zh" ? 0 : 1] ?? ""

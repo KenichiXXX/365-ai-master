@@ -12,11 +12,11 @@ final class DeclutterTests: XCTestCase {
         return Mirror(reflecting: value).children.reduce(0) { $0 + actionCount($1.value) }
     }
 
-    func testPracticeAndTipHaveOnlyTwoVisibleActions() throws {
+    func testPracticeHasOneVisibleActionAndTipHasTwo() throws {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         let card = SkillCard(id: "s", title: "S", why: "W", prompt: "P", level: 1,
                              lit: false, how: nil, detect: "self")
-        XCTAssertEqual(actionCount(PracticeControls(card: card, store: store, locale: "zh").body), 2)
+        XCTAssertEqual(actionCount(PracticeControls(card: card, store: store, locale: "zh").body), 1)
         let result = try EngineRunner.decode(Data(#"{"schema":3,"today_tip":{"title":"T","why":"W","steps":["S"],"prompt_for_claude":"P","source":{"kind":"pool","ref":"s"},"action_id":"pool:s:1","validation_kind":"self_report"}}"#.utf8), status: 0)
         XCTAssertEqual(actionCount(TipCard(tip: result.snapshot.todayTip!, store: store).body), 2)
     }

@@ -8,7 +8,7 @@ struct TrainingTab: View {
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 20) {
             if let game = snapshot.trainingGame { TrainingGameView(game: game, store: store, zh: zh) }
             Button(shareCopy("Share my practice", snapshot.locale ?? "en")) { showShareCard = true }
                 .sheet(isPresented: $showShareCard) { ShareCard(snapshot: snapshot, store: store) }
@@ -20,15 +20,12 @@ struct TrainingTab: View {
                 stat(zh ? "AI 使用记录" : "AI usage",
                      value: zh ? "\(snapshot.streak?.days ?? 0) 天" : "\(snapshot.streak?.days ?? 0) days")
             }
-            if let label = snapshot.streak?.label {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-            }
             if let calendar = snapshot.book?.practiceCalendar {
                 DisclosureGroup(zh ? "实践记录" : "Practice history") { PracticeCalendar(data: calendar) }
             }
             if let village = snapshot.village {
                 DisclosureGroup(zh ? "新手村之路" : "Village path") {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 20) {
                         villagePath(village)
                         if let quest = village.quests.first(where: { $0.key == village.current }) {
                             DisclosureGroup(quest.title) {
@@ -96,8 +93,10 @@ struct TrainingTab: View {
                         Text(zh ? "徽章已集齐 ✓" : "All badges earned ✓")
                     }
                     let earned = (snapshot.badges ?? []).filter(\.earned).map(\.title)
-                    Text(earned.isEmpty ? (zh ? "尚未获得徽章" : "No badges yet") : earned.joined(separator: " · "))
-                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    DisclosureGroup {
+                        Text(earned.isEmpty ? (zh ? "尚未获得徽章" : "No badges yet") : earned.joined(separator: " · "))
+                            .font(.body)
+                    } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "已获徽章" : "Earned badges") }
                 }.padding(12).background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
             }
         }
@@ -167,7 +166,9 @@ struct SkillCardDetails: View {
         if store.features.canLearn(card, todayID: todayID) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(card.why).font(.callout).foregroundStyle(.secondary)
-                Text(card.prompt).font(.callout).textSelection(.enabled)
+                DisclosureGroup {
+                    Text(card.prompt).font(.body).textSelection(.enabled)
+                } label: { Image(systemName: "info.circle").accessibilityLabel(locale == "zh" ? "查看指令" : "View prompt") }
                 PracticeControls(card: card, store: store, locale: locale)
             }
         } else {

@@ -15,27 +15,23 @@ struct TodaySkillTab: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 20) {
             Text(zh ? "为你推荐" : "For you").font(.headline)
             if let card = snapshot.book?.today {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(card.title).font(.title3.bold())
-                    Text(card.why).font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                    Text(card.title).font(.headline)
+                    Text(ActionCopy.benefit(card.why, locale: locale)).font(.body).foregroundStyle(.secondary).lineLimit(1)
                     PracticeControls(card: card, store: store, locale: locale)
-                    if store.practiceFeedbackID == card.id, let feedback = store.triedFeedback {
-                        Text(feedback == .lit ? (zh ? "已点亮" : "Lit up")
-                             : (zh ? "还没看到新记录，试用后再检查" : "No new record yet. Try it, then check again."))
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
                 }.padding(12).frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
             }
             ForEach(DiscoverContent.picks(snapshot), id: \.url) { row in
                 VStack(alignment: .leading, spacing: 4) {
-                    repositoryLink(row)
-                    Text((zh ? "推荐理由：" : "Why: ") + DiscoverContent.reason(
-                        dimension: DiscoverContent.weakest(snapshot) ?? "", locale: locale))
-                        .font(.caption).foregroundStyle(.secondary)
+                    Text(row.name).font(.headline).lineLimit(1)
+                    Text(ActionCopy.benefit(DiscoverContent.reason(
+                        dimension: DiscoverContent.weakest(snapshot) ?? "", locale: locale), locale: locale))
+                        .font(.body).foregroundStyle(.secondary).lineLimit(1)
+                    Button(zh ? "查看" : "View") { openRepository(row) }
                 }.padding(10).frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
             }
@@ -46,17 +42,17 @@ struct TodaySkillTab: View {
                 }
             }.pickerStyle(.segmented).labelsHidden()
             if selectedRanking == .learnable {
-                Text(zh ? "大师精选 · 新手必学" : "Master’s selection · Essentials").font(.caption).foregroundStyle(.secondary)
+                Text(zh ? "大师精选 · 新手必学" : "Master’s selection · Essentials").font(.body).foregroundStyle(.secondary)
                 ForEach(Array(store.features.discoverRankings(snapshot.book?.cards ?? []).enumerated()), id: \.element.id) { index, card in
                     HStack(alignment: .top, spacing: 8) {
                         Text("\(index + 1)").monospacedDigit().foregroundStyle(.secondary).frame(width: 24)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(card.title).font(.headline)
-                            Text(card.why).font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                            Text(card.why).font(.body).foregroundStyle(.secondary).lineLimit(1)
                         }
                         Spacer(minLength: 0)
                         Text(card.lit ? (zh ? "已点亮" : "Lit") : (zh ? "待点亮" : "Unlit"))
-                            .font(.caption).foregroundStyle(card.lit ? Color.accentColor : .secondary)
+                            .font(.body).foregroundStyle(card.lit ? Color.accentColor : .secondary)
                     }
                     Divider()
                 }
@@ -69,10 +65,12 @@ struct TodaySkillTab: View {
             }
             if let tip = snapshot.dailyTip {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(zh ? "大师推荐" : "Master's pick").font(.headline)
-                    Label(tip.title, systemImage: "quote.opening").font(.title3.bold())
-                    Text(tip.detail).font(.callout).foregroundStyle(.secondary)
-                    if let source = tip.source { Text(source).font(.caption).foregroundStyle(.secondary) }
+                    Label(tip.title, systemImage: "quote.opening").font(.headline)
+                    Text(ActionCopy.line(tip.detail, locale: locale)).font(.body).foregroundStyle(.secondary).lineLimit(1)
+                    DisclosureGroup {
+                        if let source = tip.source { Text(source).font(.body) }
+                        if let limitations = tip.limitations { Text(limitations).font(.body) }
+                    } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "大师推荐说明" : "Master's pick details") }
                 }.padding(12).frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
             }
@@ -91,7 +89,7 @@ struct TodaySkillTab: View {
     private var rankingList: some View {
         VStack(alignment: .leading, spacing: 8) {
             if selectedRanking == .product {
-                Text(zh ? "按 GitHub 星数" : "By GitHub stars").font(.caption).foregroundStyle(.secondary)
+                Text(zh ? "按 GitHub 星数" : "By GitHub stars").font(.body).foregroundStyle(.secondary)
             }
             ForEach(Array(store.features.discoverRankings(rows).enumerated()), id: \.offset) { index, row in
                 HStack(alignment: .top, spacing: 8) {
@@ -102,25 +100,29 @@ struct TodaySkillTab: View {
             }
             if rows.isEmpty { Text(zh ? "暂无榜单" : "No rankings yet").foregroundStyle(.secondary) }
             if let rankings = snapshot.rankings {
-                Text(rankings.footnote(locale: locale)).font(.system(size: 11)).foregroundStyle(.secondary)
+                DisclosureGroup {
+                    Text(rankings.footnote(locale: locale)).font(.body)
+                } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "榜单来源" : "Ranking source") }
             }
         }
     }
 
+    private func openRepository(_ row: Ranking) {
+        if PublicContent.safeURL(row.url), let url = URL(string: row.url) { NSWorkspace.shared.open(url) }
+    }
+
     private func repositoryLink(_ row: Ranking) -> some View {
-        Button {
-            if PublicContent.safeURL(row.url), let url = URL(string: row.url) { NSWorkspace.shared.open(url) }
-        } label: {
+        Button { openRepository(row) } label: {
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
                     Text(row.name).font(.headline).lineLimit(1)
                     if row.installed == true || row.installationHint == true {
-                        Text(zh ? "已装" : "Installed").font(.caption2).padding(.horizontal, 5)
+                        Text(zh ? "已装" : "Installed").font(.body).padding(.horizontal, 5)
                             .background(Color.accentColor.opacity(0.1), in: Capsule())
                     }
                 }
-                Text(row.tagline).font(.callout).foregroundStyle(.secondary).lineLimit(1)
-                if row.stars != nil { Text(row.growth(locale: locale)).font(.caption).foregroundStyle(.secondary) }
+                Text(row.tagline).font(.body).foregroundStyle(.secondary).lineLimit(1)
+                if row.stars != nil { Text(row.growth(locale: locale)).font(.body).foregroundStyle(.secondary) }
             }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
         }.buttonStyle(.plain)
     }
@@ -135,20 +137,20 @@ struct PracticeControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             DisclosureGroup {
-                Text(card.evidenceText(locale: locale)).font(.caption)
-                ForEach(Array((card.steps ?? []).enumerated()), id: \.offset) { index, step in
-                    Text("\(index + 1). \(step)").font(.callout)
+                Text(card.evidenceText(locale: locale)).font(.body)
+                ForEach(Array((card.steps ?? []).prefix(3).enumerated()), id: \.offset) { index, step in
+                    Text(step).font(.body)
                 }
-                if let signal = card.expectedSignal { Text(signal).font(.caption) }
-                if let limitations = card.limitations { Text(limitations).font(.caption) }
+                if let signal = card.expectedSignal { Text(signal).font(.body) }
+                if let limitations = card.limitations { Text(limitations).font(.body) }
                 if card.automaticSupported == false {
                     Text(zh ? "当前工具暂不支持自动验证" : "Automatic verification is not supported for this tool")
-                        .font(.caption)
+                        .font(.body)
                 }
-            } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "练习说明" : "Practice details") }
-            HStack {
-                CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy & try", locale: locale,
-                           onCopied: { store.practice(id: card.id, operation: "copy") })
+                if store.practiceFeedbackID == card.id, let feedback = store.triedFeedback {
+                    Text(feedback == .lit ? (zh ? "已点亮" : "Lit up") : (zh ? "等待新记录" : "Waiting for new records"))
+                        .font(.body)
+                }
                 Button(zh ? "学会了" : "Learned it") { store.markTried(card) }
                 Menu {
                     Button(zh ? "开始实践" : "Start practice") { store.practice(id: card.id, operation: "start") }
@@ -158,7 +160,10 @@ struct PracticeControls: View {
                     Button(zh ? "换一个" : "Skip once") { store.practice(id: card.id, operation: "skip") }
                 } label: { Text("⋯") }
                     .menuStyle(.borderlessButton).fixedSize().accessibilityLabel(zh ? "更多操作" : "More actions")
-            }.controlSize(.small).disabled(store.isRefreshing)
+            } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "练习说明" : "Practice details") }
+            CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy & try", locale: locale,
+                       onCopied: { store.practice(id: card.id, operation: "copy") })
+                .disabled(store.isRefreshing)
         }
     }
 }

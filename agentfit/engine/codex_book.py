@@ -254,7 +254,13 @@ def daily_tip(content: dict, locale: str, today: date) -> dict:
     if not tips:
         return {}
     tip = tips[today.toordinal() % len(tips)]
-    return {**tip, "title": tip["title"][locale], "detail": tip["detail"][locale]}
+    result = {**tip, "title": tip["title"][locale], "detail": tip["detail"][locale]}
+    limitations = tip.get("limitations")
+    if isinstance(limitations, dict) and isinstance(limitations.get(locale), str):
+        result["limitations"] = limitations[locale]
+    else:
+        result.pop("limitations", None)
+    return result
 
 
 def streak(active_dates: list[str], today: date) -> int:

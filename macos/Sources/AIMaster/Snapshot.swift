@@ -334,6 +334,7 @@ struct Ranking: Decodable {
 }
 
 struct DailyTip: Decodable {
+    let limitations: String?
     let title: String
     let detail: String
     let source: String?
