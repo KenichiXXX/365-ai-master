@@ -306,9 +306,9 @@ struct ProTrialSection: View {
                          : "No card required and no automatic charge. After the trial, return to Free and keep your history.")
                     Button { store.startProTrial() } label: {
                         Text(zh ? "开始 14 天免费试用" : "Start 14-day free trial")
-                            .font(Theme.title).foregroundStyle(Theme.fixedPaper)
+                            .font(Theme.title).foregroundStyle(Color.white)
                             .padding(Theme.grid * 2).frame(maxWidth: .infinity)
-                            .background(Theme.fixedInk)
+                            .background(Theme.red)
                     }.buttonStyle(.plain).accessibilityIdentifier("pro-start-trial")
                 case .active(let end):
                     Text(verbatim: (zh ? "体验至 " : "Trial until ") + formatted(end))

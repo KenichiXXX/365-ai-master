@@ -1,6 +1,7 @@
 import XCTest
 import SwiftUI
 import CryptoKit
+import Vision
 @testable import AIMaster
 
 // Opt-in local preview; real usage and generated PNGs must never be committed.
@@ -193,12 +194,42 @@ final class RenderPreviewTests: XCTestCase {
             XCTAssertNotNil(snap.trainingGame, "The bundled engine must include Phase 5")
             XCTAssertEqual(snap.book?.groups?.map(\.total), [8, 10, 6])
             store.dismissOnboarding()
+            if language == "zh" {
+                try renderFullPopovers(snapshot: snap, store: store, output: out)
+            }
             try renderPhase5(snapshot: snap, store: store, output: out + "-real-" + language)
             let popover = ImageRenderer(content: PopoverView(store: store))
             popover.scale = 2
             let image = try XCTUnwrap(popover.nsImage)
             XCTAssertEqual(image.size.width, 440)
             XCTAssertLessThanOrEqual(image.size.height, 720)
+        }
+    }
+
+    private func renderFullPopovers(snapshot: Snapshot, store: SnapshotStore, output: String) throws {
+        for (name, view) in phase6Sections(snapshot: snapshot, store: store).prefix(3) {
+            let hosting = NSHostingView(rootView: view.environment(\.locale, Locale(identifier: "zh"))
+                .environment(\.colorScheme, .light).bauhausTheme())
+            hosting.appearance = NSAppearance(named: .aqua)
+            hosting.frame = NSRect(x: 0, y: 0, width: 440, height: 720)
+            hosting.layoutSubtreeIfNeeded()
+            XCTAssertEqual(hosting.bounds.size, NSSize(width: 440, height: 720))
+            let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+            hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
+            let image = try XCTUnwrap(bitmap.cgImage)
+            let request = VNRecognizeTextRequest()
+            request.usesCPUOnly = true
+            request.recognitionLanguages = ["zh-Hans", "en-US"]
+            request.recognitionLevel = .accurate
+            try VNImageRequestHandler(cgImage: image).perform([request])
+            let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+                .joined().filter { !$0.isWhitespace }
+            for label in ["365", "PRO", "我", "大师推荐", "修炼",
+                          name == "me" ? "LEVEL" : name == "picks" ? "PICK" : "TODAY"] {
+                XCTAssertTrue(text.contains(label), "\(name): \(text)")
+            }
+            try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to:
+                URL(fileURLWithPath: output + "-full-popover-" + name + "-real-zh.png"))
         }
     }
 

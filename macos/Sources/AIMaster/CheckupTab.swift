@@ -126,10 +126,11 @@ struct GlobalRankCard: View {
                 }
             } else {
                 Text(zh ? "看看你超过了多少 AI 用户" : "See how many AI users you surpass").font(Theme.title)
-                Button(zh ? "加入" : "Join") { showConsent = true }
-                    .buttonStyle(.plain).font(Theme.body)
-                    .padding(Theme.grid)
-                    .overlay(Rectangle().strokeBorder(Theme.fixedPaper, lineWidth: Theme.ruleWidth))
+                Button { showConsent = true } label: {
+                    Text(zh ? "加入" : "Join").font(Theme.body)
+                        .foregroundStyle(Theme.fixedInk).padding(Theme.grid)
+                        .background(Theme.yellow)
+                }.buttonStyle(.plain)
                 if showConsent { ScoreConsentPanel(store: store, zh: zh, close: { showConsent = false }) }
             }
         }.foregroundStyle(Theme.fixedPaper)

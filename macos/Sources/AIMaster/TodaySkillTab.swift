@@ -29,15 +29,15 @@ struct TodaySkillTab: View {
                     .accessibilityIdentifier("today-pick")
             }
             let picks = DiscoverContent.picks(snapshot)
+            let benefits = DiscoverContent.benefits(picks, locale: locale)
             if !picks.isEmpty {
                 VStack(alignment: .leading, spacing: Theme.grid) {
                     Text(zh ? "为你推荐" : "For you").font(Theme.label)
-                    ForEach(picks, id: \.url) { row in
+                    ForEach(Array(picks.enumerated()), id: \.element.url) { index, row in
                         Button { openRepository(row) } label: {
                             VStack(alignment: .leading, spacing: Theme.grid) {
                                 Text(DiscoverContent.shortName(row, in: recommendationRows)).font(Theme.title).lineLimit(1)
-                                Text(ActionCopy.benefit(DiscoverContent.reason(
-                                    dimension: DiscoverContent.weakest(snapshot) ?? "", locale: locale), locale: locale))
+                                Text(ActionCopy.benefit(benefits[index], locale: locale))
                                     .font(Theme.body).foregroundStyle(Theme.secondary).lineLimit(1)
                             }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
                         }.buttonStyle(.plain)
