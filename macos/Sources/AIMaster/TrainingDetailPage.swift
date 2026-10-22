@@ -9,7 +9,7 @@ struct TrainingDetailPage: View {
     private var zh: Bool { snapshot.locale == "zh" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.grid * 2) {
+        VStack(alignment: .leading, spacing: Theme.sectionGap) {
             if destination == .today || destination == .challenge {
                 if let game = snapshot.trainingGame {
                     TrainingGameDetailView(game: game, store: store, zh: zh, destination: destination)
@@ -18,70 +18,70 @@ struct TrainingDetailPage: View {
                 }
             }
             if destination == .village, let village = snapshot.village {
-                VStack(alignment: .leading, spacing: Theme.grid) {
+                VStack(alignment: .leading, spacing: Theme.sectionGap) {
                     villagePath(village)
                     if let quest = village.quests.first(where: { $0.key == village.current }) {
                         DisclosureGroup(quest.title) {
                             Text(quest.evidenceLabel ?? NSLocalizedString("Historical record, not evidence of this practice", bundle: .module, comment: ""))
                                 .font(Theme.label)
                             FirstPracticeView(store: store)
-                        }
+                        }.padding(Theme.cardPadding).bauhausPanel()
                     }
                     if village.current == nil {
                         Text(zh ? "出师 ✓" : "Graduated ✓")
                             .font(Theme.title).frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(Theme.grid * 2).bauhausPanel()
+                            .padding(Theme.cardPadding).bauhausPanel()
                     } else if let tip = snapshot.todayTip, tip.source.kind == "quest",
                               tip.source.ref == village.current {
                         TipCard(tip: tip, store: store)
-                            .padding(Theme.grid * 2).frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(Theme.cardPadding).frame(maxWidth: .infinity, alignment: .leading)
                             .bauhausPanel()
                     }
                 }
             }
             if destination == .book, let book = snapshot.book {
-                VStack(alignment: .leading, spacing: Theme.grid) {
+                VStack(alignment: .leading, spacing: Theme.sectionGap) {
                     Text(zh ? "配置存在 \(book.configurationCount ?? 0) · 自报 \(book.selfReportCount ?? 0)"
                          : "Configuration \(book.configurationCount ?? 0) · Self-reported \(book.selfReportCount ?? 0)")
                         .font(Theme.label).foregroundStyle(Theme.secondary)
                     Text((book.groups ?? []).map { "\($0.title) \($0.lit)/\($0.total)" }.joined(separator: " · "))
                         .font(Theme.body).foregroundStyle(Theme.secondary)
                     if (book.groups ?? []).isEmpty {
-                        ForEach(book.cards) { card in skillRow(card) }
+                        VStack(spacing: 0) {
+                            ForEach(Array(book.cards.enumerated()), id: \.element.id) { index, card in
+                                if index > 0 { ThemeRule() }
+                                skillRow(card)
+                            }
+                        }.padding(Theme.cardPadding).bauhausPanel()
                     }
                     ForEach(book.groups ?? []) { group in
                         DisclosureGroup {
                             VStack(alignment: .leading, spacing: 8) {
-                                ForEach(book.cards.filter { $0.level == group.level }) { card in
+                                ForEach(Array(book.cards.filter { $0.level == group.level }.enumerated()), id: \.element.id) { index, card in
+                                    if index > 0 { ThemeRule() }
                                     skillRow(card)
                                 }
                             }.padding(.top, 8)
                         } label: {
                             VStack(alignment: .leading, spacing: Theme.grid) {
-                                Text("\(group.title) \(group.lit)/\(group.total)").font(Theme.title)
+                                Text("\(group.title) \(group.lit)/\(group.total)").font(Theme.sectionTitle)
                                 Text(missingSummary(group, book: book))
                                     .font(Theme.label).foregroundStyle(Theme.secondary).lineLimit(2)
                             }
-                        }.padding(Theme.grid * 2).bauhausPanel()
+                        }.padding(Theme.cardPadding).bauhausPanel()
                     }
                 }
             }
             if destination == .badges, let book = snapshot.book {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(zh ? "下一枚徽章" : "Next badge").font(Theme.title)
+                    Text(zh ? "下一枚徽章" : "Next badge").font(Theme.sectionTitle)
                     if let badge = book.nextBadge {
                         HStack {
                             Text(badge.title)
                             Spacer()
                             Text("\(badge.have)/\(badge.need)").monospacedDigit()
                         }
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                Rectangle().fill(Theme.paper)
-                                Rectangle().fill(Theme.accent)
-                                    .frame(width: geometry.size.width * min(1, max(0, Double(badge.have) / Double(max(1, badge.need)))))
-                            }
-                        }.frame(height: Theme.grid).overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
+                        ProgressView(value: Double(badge.have), total: Double(max(1, badge.need)))
                             .accessibilityLabel(badge.title)
                             .accessibilityValue("\(badge.have)/\(badge.need)")
                     } else {
@@ -92,17 +92,18 @@ struct TrainingDetailPage: View {
                         Text(earned.isEmpty ? (zh ? "尚未获得徽章" : "No badges yet") : earned.joined(separator: " · "))
                             .font(Theme.body)
                     } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "已获徽章" : "Earned badges") }
-                }.padding(Theme.grid).bauhausPanel()
+                }.padding(Theme.cardPadding).bauhausPanel()
             }
             if destination == .badges {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Theme.grid) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Theme.grid * 2) {
                     ForEach(snapshot.badges ?? []) { badge in
                         VStack(alignment: .leading, spacing: Theme.grid) {
                             Image(systemName: badge.earned ? "checkmark.seal.fill" : "seal")
+                                .foregroundStyle(badge.earned ? Theme.accent : Theme.secondary)
                             Text(badge.title).font(Theme.label)
                         }.frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
-                            .padding(Theme.grid).bauhausPanel()
-                            .foregroundStyle(badge.earned ? Theme.ink : Theme.secondary)
+                            .padding(Theme.grid * 3).bauhausPanel()
+                            .foregroundStyle(Theme.secondary)
                             .accessibilityLabel(badge.title + (badge.earned ? " ✓" : ""))
                     }
                 }
@@ -122,14 +123,13 @@ struct TrainingDetailPage: View {
         HStack(spacing: 0) {
             ForEach(Array(village.quests.enumerated()), id: \.element.id) { index, quest in
                 if index > 0 {
-                    Rectangle().fill(Theme.ink).frame(height: Theme.ruleWidth)
+                    Rectangle().fill(Theme.hairline).frame(height: Theme.ruleWidth)
                 }
                 Text(quest.status == "passed" ? "✓" : String(index + 1))
                     .font(Theme.label).frame(width: 28, height: 28)
-                    .foregroundStyle(quest.status == "passed" ? Theme.paper :
-                                        quest.status == "current" ? Theme.ink : Theme.secondary)
-                    .background(quest.status == "passed" ? Theme.ink : Theme.paper, in: Rectangle())
-                    .overlay(Rectangle().strokeBorder(Theme.ink, lineWidth: Theme.ruleWidth))
+                    .foregroundStyle(quest.status == "passed" ? Theme.onAccent :
+                                        quest.status == "current" ? Theme.accent : Theme.secondary)
+                    .background(quest.status == "passed" ? Theme.accent : Theme.hairline, in: Circle())
                     .accessibilityLabel("\(index + 1). \(quest.title), \(quest.status)")
             }
         }
@@ -149,7 +149,7 @@ struct TrainingDetailPage: View {
                 if selected == card.id { store.practice(id: card.id, operation: "seen") }
             }) {
                 HStack {
-                    Text(card.lit ? "✓" : "○").foregroundStyle(card.lit ? Theme.ink : Theme.secondary)
+                    Text(card.lit ? "✓" : "○").foregroundStyle(card.lit ? Theme.accent : Theme.secondary)
                     Text(card.title)
                     Spacer()
                     Text(card.evidenceText(locale: snapshot.locale ?? store.locale)).font(Theme.label).foregroundStyle(Theme.secondary)
@@ -160,7 +160,7 @@ struct TrainingDetailPage: View {
                 SkillCardDetails(card: card, todayID: snapshot.book?.today?.id,
                                  store: store, locale: snapshot.locale ?? store.locale)
             }
-        }.padding(.vertical, Theme.grid)
+        }.padding(.vertical, Theme.grid * 3)
     }
 }
 
