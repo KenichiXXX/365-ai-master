@@ -13,7 +13,7 @@ final class ScoreConsentTests: XCTestCase {
     @MainActor func testFirstPracticeUsesSeparateOptionalPreferences() {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         XCTAssertFalse(store.shareAnonymousScore)
-        XCTAssertNil(store.publicDownloads)
+        XCTAssertEqual(store.publicDownloads, true)
         XCTAssertFalse(store.notificationsEnabled)
         XCTAssertNotNil(ImageRenderer(content: FirstPracticeView(store: store).frame(width: 408)).nsImage)
     }

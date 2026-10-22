@@ -56,19 +56,19 @@ final class FirstPracticeTests: XCTestCase {
         XCTAssertEqual(SnapshotStore(defaults: defaults).onboardingStep, .done)
     }
 
-    func testNoPublicRequestBeforeChoiceOrAfterDecline() async {
+    func testPublicDownloadsDefaultOnAndStopAfterDecline() async {
         let defaults = UserDefaults(suiteName: UUID().uuidString)!
         var calls = 0
         let store = SnapshotStore(defaults: defaults)
         store.downloadContent = { calls += 1; return false }
         await store.refreshContent().value
-        XCTAssertEqual(calls, 0)
+        XCTAssertEqual(calls, 1)
         store.publicDownloads = false
         await store.refreshContent().value
-        XCTAssertEqual(calls, 0)
+        XCTAssertEqual(calls, 1)
         store.publicDownloads = true
         await store.refreshContent().value
-        XCTAssertEqual(calls, 1)
+        XCTAssertEqual(calls, 2)
         XCTAssertFalse(store.shareAnonymousScore)
         XCTAssertFalse(store.notificationsEnabled)
     }
@@ -80,7 +80,7 @@ final class FirstPracticeTests: XCTestCase {
         await store.refresh()?.value
         XCTAssertEqual(store.firstPracticeBranch, .usableLogs)
         XCTAssertEqual(SnapshotStore(defaults: defaults).firstPracticeBranch, .usableLogs)
-        XCTAssertEqual(SnapshotStore(defaults: defaults).publicDownloads, nil)
+        XCTAssertEqual(SnapshotStore(defaults: defaults).publicDownloads, true)
     }
     func testBundledPromptsAndEveryBranchRenderWithoutNetwork() async throws {
         for locale in ["zh", "en"] {

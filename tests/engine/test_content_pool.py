@@ -340,3 +340,33 @@ def test_course_catalogue_is_empty_and_synthetic_entries_are_bounded():
         assert not validate(malformed)
     content["course_sources"] = [entry, entry]
     assert not validate(content)
+
+
+@pytest.mark.parametrize("locale", ["zh", "en"])
+def test_live_shaped_daily_rankings_keep_metrics_and_bundled_fallback(tmp_path, locale):
+    from datetime import datetime, timezone
+    from agentfit.engine.snapshot import build_snapshot
+
+    content = json.loads((ROOT / "content/daily.json").read_text())
+    content["rankings"]["origin"] = "public"
+    for kind in ("skill", "agent", "product"):
+        assert content["rankings"][kind]
+        for item in content["rankings"][kind]:
+            item.update(stars=298000, stars7d=9302)
+    assert validate(content)
+    cache = tmp_path / "daily.json"
+    cache.write_text(json.dumps(content))
+    now = datetime(2026, 10, 22, tzinfo=timezone.utc)
+    home, state = tmp_path / "home", tmp_path / "state"
+    public = build_snapshot(home, state, locale, now=now, enabled=set(), content=cache)
+    assert public["rankings"]["origin"] == "cached"
+    for kind in ("skill", "agent", "product"):
+        assert public["rankings"][kind]
+        for row in public["rankings"][kind]:
+            assert (row["stars"], row["stars7d"]) == (298000, 9302)
+            assert isinstance(row["tagline"], str)
+    bundled = build_snapshot(home, state, locale, now=now, enabled=set(), content=None)
+    assert bundled["rankings"]["origin"] == "bundled"
+    for kind in ("skill", "agent", "product"):
+        assert bundled["rankings"][kind]
+        assert all("stars" not in row and "stars7d" not in row for row in bundled["rankings"][kind])

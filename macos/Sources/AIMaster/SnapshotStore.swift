@@ -430,7 +430,10 @@ final class SnapshotStore: ObservableObject {
     }
 
     @Published var publicDownloads: Bool? {
-        didSet { defaults.set(publicDownloads, forKey: "publicDownloads") }
+        didSet {
+            defaults.set(publicDownloads, forKey: "publicDownloads")
+            if snapshot != nil, publicDownloads != oldValue { refresh() }
+        }
     }
     @Published var dailyPracticeReminders: Bool {
         didSet {
@@ -561,7 +564,7 @@ final class SnapshotStore: ObservableObject {
         obstacle = PracticeObstacle(rawValue: defaults.string(forKey: "practiceObstacle") ?? "") ?? .skipped
         practiceStatus = FirstPracticeStatus(rawValue: defaults.string(forKey: "firstPracticeStatus") ?? "") ?? .ready
         firstPracticeBranch = FirstPracticeBranch(rawValue: defaults.string(forKey: "firstPracticeBranch") ?? "") ?? .noLogs
-        publicDownloads = defaults.object(forKey: "publicDownloads") as? Bool
+        publicDownloads = defaults.object(forKey: "publicDownloads") as? Bool ?? true
         notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
         dailyPracticeReminders = defaults.bool(forKey: "dailyPracticeReminders")
         remindersPaused = defaults.bool(forKey: "remindersPaused")
@@ -595,6 +598,7 @@ final class SnapshotStore: ObservableObject {
         isRefreshing = true
         let tools = enabledTools
         let language = locale
+        let content = publicDownloads == true ? EngineRunner.contentURL : nil
         let loader = load
         let scan = EngineScan()
         let previousScore = snapshot?.overall?.score
@@ -621,7 +625,7 @@ final class SnapshotStore: ObservableObject {
             do {
                 let result = try await Task.detached {
                     if let loader { return try loader(language, tools) }
-                    return try EngineRunner.run(locale: language, tools: tools, scan: scan)
+                    return try EngineRunner.run(locale: language, tools: tools, scan: scan, content: content)
                 }.value
                 guard !scan.isCancelled else {
                     activeScan = nil
@@ -658,7 +662,7 @@ final class SnapshotStore: ObservableObject {
             }
             activeScan = nil
             isRefreshing = false
-            if !scan.isCancelled, tools != enabledTools { refresh() }
+            if !scan.isCancelled, tools != enabledTools || (content != nil) != (publicDownloads == true) { refresh() }
         }
     }
 }

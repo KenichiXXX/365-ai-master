@@ -25,6 +25,10 @@ def test_content_updater_only_fetches_fixed_public_content():
     urls = re.findall(r'https://[^"\s]+', text)
     assert urls == ["https://raw.githubusercontent.com/KenichiXXX/365-ai-master/content/daily.json"]
     assert 'httpMethod = "GET"' in text
+    assert 'httpShouldHandleCookies = false' in text
+    assert 'URLSessionConfiguration.ephemeral' in text
+    assert 'httpCookieStorage = nil' in text
+    assert 'urlCredentialStorage = nil' in text
     for banned in ("httpBody", "setValue(", "addValue(", "uploadTask", "NWConnection"):
         assert banned not in text
 

@@ -79,7 +79,7 @@ final class ProFeaturesTests: XCTestCase {
             XCTAssertEqual(store.snapshotJSON, result.json)
         }
         XCTAssertEqual(transports, 0)
-        XCTAssertEqual(downloads, 0)
+        XCTAssertEqual(downloads, 3)
         XCTAssertEqual(notifications.requests, 0)
         XCTAssertNil(defaults.string(forKey: "anonDeviceToken"))
     }

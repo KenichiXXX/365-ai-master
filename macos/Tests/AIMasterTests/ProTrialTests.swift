@@ -115,7 +115,7 @@ final class ProTrialTests: XCTestCase {
         XCTAssertNotNil(store.trialExpiryTimer)
         XCTAssertEqual(notifications.requests, 0)
         XCTAssertFalse(store.shareAnonymousScore)
-        XCTAssertNil(store.publicDownloads)
+        XCTAssertEqual(store.publicDownloads, true)
         store.openWeeklyReview()
         XCTAssertTrue(store.showWeeklyReview)
         let cancellations = notifications.cancellations

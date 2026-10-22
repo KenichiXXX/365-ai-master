@@ -32,9 +32,9 @@ struct EngineRunner {
         return ["--state-dir", path]
     }
 
-    static func snapshotArguments(locale: String, tools: [String], content: URL = contentURL) -> [String] {
+    static func snapshotArguments(locale: String, tools: [String], content: URL? = contentURL) -> [String] {
         var arguments = ["snapshot", "--json", "--locale", locale, "--tools", tools.joined(separator: ",")]
-        if FileManager.default.fileExists(atPath: content.path) { arguments += ["--content", content.path] }
+        if let content, FileManager.default.fileExists(atPath: content.path) { arguments += ["--content", content.path] }
         return arguments + stateDirectoryArguments
     }
 
@@ -60,9 +60,9 @@ struct EngineRunner {
         return ok
     }
 
-    static func run(locale: String, tools: [String], scan: EngineScan = EngineScan()) throws -> EngineResult {
+    static func run(locale: String, tools: [String], scan: EngineScan = EngineScan(), content: URL? = contentURL) throws -> EngineResult {
         guard let url = engineURL() else { throw EngineError.missing }
-        let (data, status) = try scan.run(executable: url, arguments: snapshotArguments(locale: locale, tools: tools))
+        let (data, status) = try scan.run(executable: url, arguments: snapshotArguments(locale: locale, tools: tools, content: content))
         return try decode(data, status: status)
     }
 

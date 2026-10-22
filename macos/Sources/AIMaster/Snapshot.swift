@@ -382,7 +382,7 @@ struct UsageSummary: Decodable {
         var text = (zh ? "本周 " : "This week ") + Self.tokens(tokens7d, locale: locale) + " tokens"
         if let price = priceEstimate, let coverage = price.coveragePct, coverage > 0 {
             let amount = price.matchedSubtotalUsd.formatted(.number.locale(Locale(identifier: "en_US"))
-                .grouping(.never).precision(.fractionLength(0...2)))
+                .grouping(.automatic).precision(.fractionLength(0)))
             // Partial matches must never look like the full week's cost.
             text += zh ? " · \(coverage < 100 ? "部分" : "")折算 $\(amount)"
                 : " · ≈$\(amount) API-equivalent\(coverage < 100 ? " (partial)" : "")"

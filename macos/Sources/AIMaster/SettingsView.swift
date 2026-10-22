@@ -13,6 +13,17 @@ struct SettingsView: View {
     @State private var showPro = false
     private var zh: Bool { locale.language.languageCode?.identifier == "zh" }
 
+    static func versionLabel(bundle: Bundle = .main, locale: String) -> String {
+        guard bundle.bundleURL.pathExtension == "app",
+              let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+              !version.isEmpty else { return locale == "zh" ? "开发版" : "Dev build" }
+        return (locale == "zh" ? "版本 " : "Version ") + version
+    }
+
+    static func intervalLabel(_ seconds: Int, locale: String) -> String {
+        "\(seconds / 60)" + (locale == "zh" ? " 分钟" : " min")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -27,7 +38,7 @@ struct SettingsView: View {
                 }
                 Picker(zh ? "刷新频率" : "Refresh interval", selection: $store.refreshSeconds) {
                     ForEach(SnapshotStore.refreshIntervals, id: \.self) { seconds in
-                        Text("\(seconds) s").tag(seconds)
+                        Text(Self.intervalLabel(seconds, locale: zh ? "zh" : "en")).tag(seconds)
                     }
                 }
             }
@@ -52,8 +63,7 @@ struct SettingsView: View {
             }
             group(zh ? "关于" : "About") {
                 HStack {
-                    Text((zh ? "版本 " : "Version ") +
-                         (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"))
+                    Text(Self.versionLabel(locale: zh ? "zh" : "en"))
                     Spacer()
                     Button(zh ? "反馈" : "Feedback") { showLocalValidation = true }.disabled(store.snapshot == nil)
                     Button(zh ? "退出" : "Quit") { NSApp.terminate(nil) }
