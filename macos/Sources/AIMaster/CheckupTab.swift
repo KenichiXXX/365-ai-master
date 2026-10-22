@@ -50,7 +50,7 @@ struct CheckupTab: View {
                     }
                     if let trend = MePresentation.yesterday(snapshot.progressMe?.vsYesterday, locale: snapshot.locale ?? store.locale) {
                         Text(trend).font(Theme.label)
-                            .foregroundStyle((snapshot.progressMe?.vsYesterday ?? 0) > 0 ? Theme.accent : Theme.secondary)
+                            .foregroundStyle((snapshot.progressMe?.vsYesterday ?? 0) > 0 ? Theme.accentText : Theme.secondary)
                     }
                 }
             }.frame(maxWidth: .infinity, alignment: .leading)
@@ -154,7 +154,7 @@ struct GlobalRankCard: View {
                             Text(CheckupPresentation.rankCaption(ranking, locale: locale)).font(Theme.label)
                             if ranking.total >= 20, let change = MePresentation.rankChange(store.rankChange7d, locale: locale) {
                                 Text(change).font(Theme.label)
-                                    .foregroundStyle((store.rankChange7d ?? 0) > 0 ? Theme.accent : Theme.secondary)
+                                    .foregroundStyle((store.rankChange7d ?? 0) > 0 ? Theme.accentText : Theme.secondary)
                             }
                             DisclosureGroup {
                                 Text(CheckupPresentation.participants(ranking, locale: locale)).font(Theme.label)

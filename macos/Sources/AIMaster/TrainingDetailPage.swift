@@ -99,7 +99,7 @@ struct TrainingDetailPage: View {
                     ForEach(snapshot.badges ?? []) { badge in
                         VStack(alignment: .leading, spacing: Theme.grid) {
                             Image(systemName: badge.earned ? "checkmark.seal.fill" : "seal")
-                                .foregroundStyle(badge.earned ? Theme.accent : Theme.secondary)
+                                .foregroundStyle(badge.earned ? Theme.accentText : Theme.secondary)
                             Text(badge.title).font(Theme.label)
                         }.frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
                             .padding(Theme.grid * 3).bauhausPanel()
@@ -128,7 +128,7 @@ struct TrainingDetailPage: View {
                 Text(quest.status == "passed" ? "✓" : String(index + 1))
                     .font(Theme.label).frame(width: 28, height: 28)
                     .foregroundStyle(quest.status == "passed" ? Theme.onAccent :
-                                        quest.status == "current" ? Theme.accent : Theme.secondary)
+                                        quest.status == "current" ? Theme.accentText : Theme.secondary)
                     .background(quest.status == "passed" ? Theme.accent : Theme.hairline, in: Circle())
                     .accessibilityLabel("\(index + 1). \(quest.title), \(quest.status)")
             }
@@ -149,7 +149,7 @@ struct TrainingDetailPage: View {
                 if selected == card.id { store.practice(id: card.id, operation: "seen") }
             }) {
                 HStack {
-                    Text(card.lit ? "✓" : "○").foregroundStyle(card.lit ? Theme.accent : Theme.secondary)
+                    Text(card.lit ? "✓" : "○").foregroundStyle(card.lit ? Theme.accentText : Theme.secondary)
                     Text(card.title)
                     Spacer()
                     Text(card.evidenceText(locale: snapshot.locale ?? store.locale)).font(Theme.label).foregroundStyle(Theme.secondary)

@@ -44,7 +44,6 @@ final class PaletteTests: XCTestCase {
     }
 
     func testGoldTokensAndContrastInBothAppearances() throws {
-        XCTAssertLessThan(contrast(0x1E1A14, 0xA87518), 4.5)
         for scheme in [ColorScheme.light, .dark] {
             let dark = scheme == .dark
             let tokens: [(Color, Int, Double)] = [
@@ -53,8 +52,8 @@ final class PaletteTests: XCTestCase {
                 (Theme.ink, dark ? 0xEEE8DC : 0x1E1A14, 1),
                 (Theme.secondary, dark ? 0xB3AA9C : 0x6B6155, 1),
                 (Theme.hairline, dark ? 0xE0D3B8 : 0x5A4A2E, dark ? 0.17 : 0.15),
-                (Theme.accent, dark ? 0xF0BE5A : 0xA87518, 1),
-                (Theme.accentSurface, dark ? 0xF0BE5A : 0xA87518, 0.12),
+                (Theme.accent, dark ? 0xF0BE5A : 0xD9A12E, 1),
+                (Theme.accentSurface, dark ? 0xF0BE5A : 0xD9A12E, 0.12),
                 (Theme.onAccent, dark ? 0x12161F : 0x19150F, 1),
                 (Theme.primaryButtonText, dark ? 0x12161F : 0x19150F, 1)
             ]
@@ -69,8 +68,13 @@ final class PaletteTests: XCTestCase {
             let paper = dark ? 0x12161F : 0xF7F2E8
             XCTAssertGreaterThanOrEqual(contrast(dark ? 0xEEE8DC : 0x1E1A14, paper), 4.5)
             XCTAssertGreaterThanOrEqual(contrast(dark ? 0xB3AA9C : 0x6B6155, paper), 4.5)
-            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xF0BE5A : 0xA87518, paper), 3)
-            XCTAssertGreaterThanOrEqual(contrast(dark ? 0x12161F : 0x19150F, dark ? 0xF0BE5A : 0xA87518), 4.5)
+            let accentText = dark ? 0xF0BE5A : 0x8A5F0E
+            for background in [paper, dark ? 0x1D2330 : 0xFFFFFF] {
+                XCTAssertGreaterThanOrEqual(contrast(accentText, background), 4.5)
+            }
+            XCTAssertGreaterThanOrEqual(contrast(dark ? 0xF0BE5A : 0xD9A12E,
+                                               dark ? 0x1D2330 : 0xFFFFFF), 2.3)
+            XCTAssertGreaterThanOrEqual(contrast(dark ? 0x12161F : 0x19150F, dark ? 0xF0BE5A : 0xD9A12E), 4.5)
         }
     }
 
@@ -80,7 +84,7 @@ final class PaletteTests: XCTestCase {
         let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!)
         for scheme in [ColorScheme.light, .dark] {
             let colors = scheme == .dark ? [0xF0BE5A, 0xF08A6A, 0x4FC7B2, 0x8C9BFF]
-                                        : [0xA87518, 0xC8553A, 0x2E8C7C, 0x5566D6]
+                                        : [0xD9A12E, 0xC8553A, 0x2E8C7C, 0x5566D6]
             // A partial/reordered list must preserve each dimension's identity.
             for index in dimensions.indices {
                 let dimension = dimensions[index]
@@ -103,7 +107,7 @@ final class PaletteTests: XCTestCase {
         store.dismissOnboarding()
         for scheme in [ColorScheme.light, .dark] {
             let bitmap = try render(PopoverView(store: store), scheme: scheme)
-            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF0BE5A : 0xA87518, in: bitmap, topRightOnly: true), 500)
+            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF0BE5A : 0xD9A12E, in: bitmap, topRightOnly: true), 500)
             if let output = ProcessInfo.processInfo.environment["PALETTE_RENDER_OUT"] {
                 try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
                     .write(to: URL(fileURLWithPath: output + "-header-\(scheme).png"))
@@ -118,8 +122,26 @@ final class PaletteTests: XCTestCase {
             let image = try XCTUnwrap(bitmap.cgImage)
             let center = try XCTUnwrap(image.cropping(to: CGRect(x: image.width / 4, y: image.height / 4,
                 width: image.width / 2, height: image.height / 2)))
-            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF0BE5A : 0xA87518,
+            XCTAssertGreaterThan(try count(scheme == .dark ? 0xF0BE5A : 0xD9A12E,
                 in: NSBitmapImageRep(cgImage: center)), 100)
+        }
+    }
+
+    func testSmallGoldGlyphsAndScoresUseReadableGold() throws {
+        for scheme in [ColorScheme.light, .dark] {
+            let gold = scheme == .dark ? 0xF0BE5A : 0x8A5F0E
+            for background in [Theme.paper, Theme.surface] {
+                let trend = try render(TrendMarker(delta: 2).padding(8).background(background), scheme: scheme)
+                XCTAssertGreaterThan(try count(gold, in: trend), 3, "\(scheme) trend")
+            }
+            for size: CGFloat in [64, 96] {
+                let bitmap = try render(RingView(score: 69, size: size), scheme: scheme)
+                let image = try XCTUnwrap(bitmap.cgImage)
+                let center = try XCTUnwrap(image.cropping(to: CGRect(x: image.width / 4, y: image.height / 4,
+                    width: image.width / 2, height: image.height / 2)))
+                XCTAssertGreaterThan(try count(gold, in: NSBitmapImageRep(cgImage: center)), 10,
+                                     "\(scheme) score at \(size)")
+            }
         }
     }
 
@@ -130,7 +152,7 @@ final class PaletteTests: XCTestCase {
         var checked = 0
         for case let url as URL in files where url.pathExtension == "swift" {
             let source = try String(contentsOf: url, encoding: .utf8)
-            XCTAssertNil(source.range(of: "(?i)(?:007F75|65DCC6|EDF2F5|242E39|3A4858|1D2933|596773|F4EEE6|1C1916|2A2521|2A211B|F2EBE2|6E6259|BFB3A6|5A4636|E8D5C2|C95A24|C15723|F08A55|6E8B3D|9DBB64|3A73C9|78A6EE|9A4D8C|D489C6)",
+            XCTAssertNil(source.range(of: "(?i)(?:A87518|007F75|65DCC6|EDF2F5|242E39|3A4858|1D2933|596773|F4EEE6|1C1916|2A2521|2A211B|F2EBE2|6E6259|BFB3A6|5A4636|E8D5C2|C95A24|C15723|F08A55|6E8B3D|9DBB64|3A73C9|78A6EE|9A4D8C|D489C6)",
                                       options: .regularExpression), url.lastPathComponent)
             checked += 1
         }

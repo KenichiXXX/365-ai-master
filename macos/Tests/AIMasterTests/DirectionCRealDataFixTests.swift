@@ -49,7 +49,7 @@ extension RenderPreviewTests {
         // Sample the fill just below the glyphs, inside the button's vertical padding.
         let y = Int((1 - box.minY) * Double(bitmap.pixelsHigh)) + 4
         let color = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
-        let expected = scheme == .light ? [168.0, 117.0, 24.0] : [240.0, 190.0, 90.0]
+        let expected = scheme == .light ? [217.0, 161.0, 46.0] : [240.0, 190.0, 90.0]
         for (actual, byte) in zip([color.redComponent, color.greenComponent, color.blueComponent], expected) {
             XCTAssertEqual(actual, byte / 255, accuracy: 0.015, title, file: file, line: line)
         }

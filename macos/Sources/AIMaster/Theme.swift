@@ -21,7 +21,8 @@ enum Theme {
     static let ink = adaptive(light: 0x1E1A14, dark: 0xEEE8DC)
     static let secondary = adaptive(light: 0x6B6155, dark: 0xB3AA9C)
     static let hairline = adaptive(light: 0x5A4A2E, dark: 0xE0D3B8, lightAlpha: 0.15, darkAlpha: 0.17)
-    static let accent = adaptive(light: 0xA87518, dark: 0xF0BE5A)
+    static let accent = adaptive(light: 0xD9A12E, dark: 0xF0BE5A)
+    static let accentText = adaptive(light: 0x8A5F0E, dark: 0xF0BE5A)
     static let accentSurface = accent.opacity(0.12)
     static let onAccent = adaptive(light: 0x19150F, dark: 0x12161F)
     static let primaryButtonText = onAccent
@@ -29,7 +30,7 @@ enum Theme {
     // Match the engine's fixed routing, timing, context, leverage order, even in partial lists.
     static func dimension(_ index: Int) -> Color {
         switch index {
-        case 0: return adaptive(light: 0xA87518, dark: 0xF0BE5A)
+        case 0: return adaptive(light: 0xD9A12E, dark: 0xF0BE5A)
         case 1: return adaptive(light: 0xC8553A, dark: 0xF08A6A)
         case 2: return adaptive(light: 0x2E8C7C, dark: 0x4FC7B2)
         case 3: return adaptive(light: 0x5566D6, dark: 0x8C9BFF)
@@ -129,7 +130,7 @@ struct TrendMarker: View {
     let delta: Double
     var body: some View {
         Text(delta == 0 ? "=" : delta > 0 ? "▲" : "▼")
-            .font(Theme.label).foregroundStyle(delta > 0 ? Theme.accent : Theme.secondary)
+            .font(Theme.label).foregroundStyle(delta > 0 ? Theme.accentText : Theme.secondary)
     }
 }
 

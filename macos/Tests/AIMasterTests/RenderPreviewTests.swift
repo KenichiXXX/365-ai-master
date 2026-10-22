@@ -246,6 +246,24 @@ final class RenderPreviewTests: XCTestCase {
         }
     }
 
+    func testRenderTask67BrighterGoldRealData() async throws {
+        guard let snapshotPath = ProcessInfo.processInfo.environment["TASK67_SNAPSHOT"],
+              let output = ProcessInfo.processInfo.environment["TASK67_RENDER_OUT"] else {
+            throw XCTSkip("set TASK67_SNAPSHOT and TASK67_RENDER_OUT")
+        }
+        let result = try EngineRunner.decode(Data(contentsOf: URL(fileURLWithPath: snapshotPath)), status: 0)
+        XCTAssertEqual(result.snapshot.locale, "zh")
+        XCTAssertNotNil(result.snapshot.overall?.score)
+        XCTAssertGreaterThan(result.snapshot.usageSummary?.tokens7d ?? 0, 0)
+        var trialData: Data?
+        let store = SnapshotStore(defaults: UserDefaults(suiteName: UUID().uuidString)!, load: { _, _ in result },
+            proTrial: ProTrial(read: { trialData }, write: { trialData = $0 }))
+        store.actionCommand = { _ in true }
+        await store.refresh()?.value
+        store.dismissOnboarding()
+        try renderFullPopovers(snapshot: result.snapshot, store: store, output: output)
+    }
+
     private func renderFullPopovers(snapshot: Snapshot, store: SnapshotStore, output: String) throws {
         let sections = Array(phase6Sections(snapshot: snapshot, store: store).prefix(3))
             + [("pro", AnyView(ProSheet(store: store, zh: true, close: {})))]

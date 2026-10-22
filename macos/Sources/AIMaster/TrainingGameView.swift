@@ -24,7 +24,7 @@ struct TrainingGameView: View {
                         }
                         Spacer()
                         HStack(alignment: .firstTextBaseline, spacing: Theme.grid) {
-                            Text("\(game.today.completed)").font(Theme.stat).foregroundStyle(Theme.accent)
+                            Text("\(game.today.completed)").font(Theme.stat).foregroundStyle(Theme.accentText)
                             Text("/ 3").font(Theme.label).foregroundStyle(Theme.secondary)
                         }
                     }
@@ -118,7 +118,7 @@ struct TrainingGameDetailView: View {
                         if let tip = game.today.chestTip {
                             VStack(alignment: .leading, spacing: Theme.grid * 2) {
                                 Label(zh ? "今日宝箱 · +20 XP" : "Daily chest · +20 XP", systemImage: "gift.fill")
-                                    .foregroundStyle(Theme.accent)
+                                    .foregroundStyle(Theme.accentText)
                                 Text(tip).font(Theme.body)
                             }.frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -174,7 +174,7 @@ struct TrainingGameDetailView: View {
 
     private func dailyRow(_ title: String, done: Bool) -> some View {
         Label(title, systemImage: done ? "checkmark.circle.fill" : "circle")
-            .font(Theme.body).foregroundStyle(done ? Theme.accent : Theme.secondary)
+            .font(Theme.body).foregroundStyle(done ? Theme.accentText : Theme.secondary)
             .padding(.vertical, Theme.grid * 2)
     }
 
@@ -196,7 +196,7 @@ struct TrainingGameDetailView: View {
                         if day.state == "stamp" { Image(systemName: "checkmark.seal.fill") }
                         if day.state == "shield" { Image(systemName: "shield.fill") }
                     }.font(Theme.body).frame(maxWidth: .infinity, minHeight: 24)
-                        .foregroundStyle(day.state == "empty" ? Theme.secondary : Theme.accent)
+                        .foregroundStyle(day.state == "empty" ? Theme.secondary : Theme.accentText)
                         .background(day.state == "empty" ? Theme.hairline : Theme.accentSurface,
                                     in: RoundedRectangle(cornerRadius: Theme.buttonRadius))
                         .accessibilityLabel(day.date + ", " + (day.state == "stamp" ? (zh ? "已打卡" : "Checked in")

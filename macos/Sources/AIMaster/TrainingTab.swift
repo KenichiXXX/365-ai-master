@@ -28,7 +28,7 @@ struct TrainingTab: View {
                 Button { moments.removeFirst() } label: {
                     Text("▲ " + moment.title(zh: zh)).font(Theme.title).lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading).padding(Theme.cardPadding)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.accentText)
                         .background(Theme.accentSurface, in: RoundedRectangle(cornerRadius: Theme.cornerRadius))
                 }.buttonStyle(.plain).accessibilityIdentifier("training-achievement")
                     .task(id: moment.id) {

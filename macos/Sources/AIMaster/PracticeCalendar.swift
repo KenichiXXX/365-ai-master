@@ -36,7 +36,7 @@ struct PracticeCalendar: View {
                     ForEach(data.days) { day in
                         VStack(spacing: Theme.grid) {
                             Image(systemName: day.symbol)
-                                .foregroundStyle(day.state == "observed" ? Theme.accent : Theme.secondary)
+                                .foregroundStyle(day.state == "observed" ? Theme.accentText : Theme.secondary)
                                 .frame(width: 28, height: 28)
                                 .background(day.state == "observed" ? Theme.accentSurface : Theme.hairline, in: Circle())
                             Text(String(day.date.suffix(2))).font(Theme.label)

@@ -186,7 +186,7 @@ private struct PicksRankingRow: View {
             }.frame(maxWidth: .infinity, alignment: .leading)
             if !metric.isEmpty {
                 Text(metric).font(Theme.label).monospacedDigit().lineLimit(1).fixedSize()
-                    .foregroundStyle((weekly ?? 0) > 0 ? Theme.accent : Theme.secondary)
+                    .foregroundStyle((weekly ?? 0) > 0 ? Theme.accentText : Theme.secondary)
                     .accessibilityLabel(weekly != nil ? metric + (locale == "zh" ? " 本周增长" : " weekly growth") : metric)
             }
         }.padding(.vertical, Theme.grid * 3).contentShape(Rectangle())

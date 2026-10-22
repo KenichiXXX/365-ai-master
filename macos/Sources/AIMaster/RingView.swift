@@ -16,7 +16,7 @@ struct RingView: View {
                         .stroke(color, style: StrokeStyle(lineWidth: size * 9 / 128, lineCap: .butt))
                         .rotationEffect(.degrees(-90))
                 }
-                Text(scoreText).foregroundStyle(score == nil ? Theme.ink : Theme.accent).font(size >= 128 ? Theme.score : size >= 96 ? Theme.stat : Theme.title).monospacedDigit()
+                Text(scoreText).foregroundStyle(score == nil ? Theme.ink : size >= 128 ? Theme.accent : Theme.accentText).font(size >= 128 ? Theme.score : size >= 96 ? Theme.stat : Theme.title).monospacedDigit()
             }
             .padding(size * 9 / 256)
             .frame(width: size, height: size)
