@@ -21,7 +21,7 @@ struct ProFeatures {
         isPro || card.lit || card.id == todayID || card.id == coursePracticeID
     }
 
-    func rankings(_ rows: [Ranking], expanded: Bool) -> [Ranking] {
-        Array(rows.prefix(isPro && expanded ? 20 : 5))
+    func discoverRankings<T>(_ rows: [T]) -> [T] {
+        Array(rows.prefix(isPro ? 20 : 10))
     }
 }

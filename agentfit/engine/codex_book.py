@@ -221,9 +221,9 @@ def daily_rankings(content: dict, inv: dict[str, Inventory], locale: str,
     rankings = content["rankings"]
     result = {key: rankings[key] for key in ("source", "updated_at") if key in rankings}
     result["origin"] = "cached" if rankings.get("origin") == "public" else "bundled"
-    for kind in ("skill", "agent"):
-        items = rankings[kind]
-        offset = today.toordinal() % len(items) if items and rankings.get("rotate", True) else 0
+    for kind in ("skill", "agent", "product"):
+        items = rankings.get(kind, [])
+        offset = today.toordinal() % len(items) if items and kind != "product" and rankings.get("rotate", True) else 0
         result[kind] = [
             {**{key: item[key] for key in ("stars", "stars7d") if key in item},
              "name": item["name"], "url": item["url"], "tagline": item["tagline"][locale],

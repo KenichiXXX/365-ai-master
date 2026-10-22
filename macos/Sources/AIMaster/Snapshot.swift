@@ -267,6 +267,7 @@ struct SkillCard: Decodable, Identifiable {
 struct Rankings: Decodable {
     let skill: [Ranking]?
     let agent: [Ranking]?
+    var product: [Ranking]? = nil
     let source: String?
     let origin: String?
     let updatedAt: String?

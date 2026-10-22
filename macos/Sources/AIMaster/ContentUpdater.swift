@@ -134,8 +134,9 @@ enum PublicContent {
         if let origin = rankings["origin"], !(origin is String) || !["bundled", "public"].contains(origin as! String) { return false }
         if rankings["updated_at"] != nil, !date(rankings["updated_at"]) { return false }
         for key in ["source", "updated_at"] where rankings[key] != nil { if !text(rankings[key]) { return false } }
-        for kind in ["skill", "agent"] {
-            guard let items = rankings[kind] as? [[String: Any]] else { return false }
+        for kind in ["skill", "agent", "product"] {
+            if kind == "product" && rankings[kind] == nil { continue }
+            guard let items = rankings[kind] as? [[String: Any]], kind != "product" || items.count >= 5 else { return false }
             for item in items {
                 guard text(item["name"]), safeURL(item["url"]), bilingual(item["tagline"]),
                       let names = item["match"] as? [String], names.allSatisfy({ text($0) }) else { return false }

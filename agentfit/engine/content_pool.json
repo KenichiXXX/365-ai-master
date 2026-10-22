@@ -1187,7 +1187,7 @@
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "skills",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1205,7 +1205,7 @@
         "source_url": "https://github.com/modelcontextprotocol/servers",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "context",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1223,7 +1223,7 @@
         "source_url": "https://github.com/stanfordnlp/dspy",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "model",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1241,7 +1241,7 @@
         "source_url": "https://github.com/mem0ai/mem0",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "memory",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1259,7 +1259,7 @@
         "source_url": "https://github.com/langchain-ai/langchain",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "agent",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1277,7 +1277,7 @@
         "source_url": "https://github.com/langgenius/dify",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "automation",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1295,7 +1295,7 @@
         "source_url": "https://github.com/Mintplex-Labs/anything-llm",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "context",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1313,7 +1313,7 @@
         "source_url": "https://github.com/lobehub/lobe-chat",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "model",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1331,7 +1331,7 @@
         "source_url": "https://github.com/danny-avila/LibreChat",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "model",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1349,7 +1349,7 @@
         "source_url": "https://github.com/n8n-io/n8n",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "automation",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1369,7 +1369,7 @@
         "source_url": "https://github.com/browser-use/browser-use",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "automation",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1387,7 +1387,7 @@
         "source_url": "https://github.com/aider-AI/aider",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "agent",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1405,7 +1405,7 @@
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "agent",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1423,7 +1423,7 @@
         "source_url": "https://github.com/assafelovic/gpt-researcher",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "productivity",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1441,7 +1441,7 @@
         "source_url": "https://github.com/microsoft/autogen",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "agent",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1459,7 +1459,7 @@
         "source_url": "https://github.com/crewAIInc/crewAI",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "agent",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1477,7 +1477,7 @@
         "source_url": "https://github.com/geekan/MetaGPT",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "agent",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1495,7 +1495,7 @@
         "source_url": "https://github.com/OpenInterpreter/open-interpreter",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "automation",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1513,7 +1513,7 @@
         "source_url": "https://github.com/khoj-ai/khoj",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "memory",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1531,7 +1531,7 @@
         "source_url": "https://github.com/ItzCrazyKns/Perplexica",
         "source_date": null,
         "source_type": "curated",
-        "task_category": null,
+        "task_category": "productivity",
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1539,7 +1539,141 @@
         }
       }
     ],
-    "origin": "bundled"
+    "origin": "bundled",
+    "product": [
+      {
+        "name": "openai/codex",
+        "url": "https://github.com/openai/codex",
+        "tagline": {
+          "zh": "在终端中与 AI 一起编程",
+          "en": "Code with AI in your terminal"
+        },
+        "match": [
+          "codex"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "google-gemini/gemini-cli",
+        "url": "https://github.com/google-gemini/gemini-cli",
+        "tagline": {
+          "zh": "在命令行中使用 Gemini 编程",
+          "en": "Code with Gemini from the command line"
+        },
+        "match": [
+          "gemini-cli"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "sst/opencode",
+        "url": "https://github.com/sst/opencode",
+        "tagline": {
+          "zh": "开源的终端 AI 编程助手",
+          "en": "An open-source terminal coding assistant"
+        },
+        "match": [
+          "opencode"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "QwenLM/qwen-code",
+        "url": "https://github.com/QwenLM/qwen-code",
+        "tagline": {
+          "zh": "在终端中使用 Qwen 编程",
+          "en": "Code with Qwen in your terminal"
+        },
+        "match": [
+          "qwen-code"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "cline/cline",
+        "url": "https://github.com/cline/cline",
+        "tagline": {
+          "zh": "在编辑器里用 AI 完成编程任务",
+          "en": "Complete coding tasks with AI in your editor"
+        },
+        "match": [
+          "cline"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "Aider-AI/aider",
+        "url": "https://github.com/Aider-AI/aider",
+        "tagline": {
+          "zh": "与 AI 结对修改代码",
+          "en": "Pair with AI to edit code"
+        },
+        "match": [
+          "aider"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "continuedev/continue",
+        "url": "https://github.com/continuedev/continue",
+        "tagline": {
+          "zh": "把 AI 编程助手带入编辑器",
+          "en": "Bring AI assistance into your editor"
+        },
+        "match": [
+          "continue"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "block/goose",
+        "url": "https://github.com/block/goose",
+        "tagline": {
+          "zh": "帮你完成开发任务的开源助手",
+          "en": "An open-source assistant for development tasks"
+        },
+        "match": [
+          "goose"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "anthropics/claude-code",
+        "url": "https://github.com/anthropics/claude-code",
+        "tagline": {
+          "zh": "在终端中使用 Claude 编程",
+          "en": "Code with Claude in your terminal"
+        },
+        "match": [
+          "claude-code"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "All-Hands-AI/OpenHands",
+        "url": "https://github.com/All-Hands-AI/OpenHands",
+        "tagline": {
+          "zh": "用 AI 助手处理软件开发任务",
+          "en": "Use AI assistance for software development"
+        },
+        "match": [
+          "openhands"
+        ],
+        "source_type": "curated"
+      },
+      {
+        "name": "MoonshotAI/kimi-cli",
+        "url": "https://github.com/MoonshotAI/kimi-cli",
+        "tagline": {
+          "zh": "在终端中使用 Kimi 编程",
+          "en": "Code with Kimi in your terminal"
+        },
+        "match": [
+          "kimi-cli"
+        ],
+        "source_type": "curated"
+      }
+    ]
   },
   "tips": [
     {

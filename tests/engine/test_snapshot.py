@@ -107,7 +107,7 @@ def test_snapshot_v2_blocks(tmp_path):
     s = build_snapshot(_home(tmp_path), tmp_path / "state", "en", now=NOW)
     assert s["book"]["total"] == 24
     assert isinstance(s["book"]["today"]["title"], str)
-    assert set(s["rankings"]) == {"skill", "agent", "origin"}
+    assert set(s["rankings"]) == {"skill", "agent", "product", "origin"}
     assert s["rankings"]["origin"] == "bundled"
     assert s["tool_updates"] == []
     assert isinstance(s["daily_tip"]["detail"], str)

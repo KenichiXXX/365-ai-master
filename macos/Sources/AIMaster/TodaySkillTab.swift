@@ -4,117 +4,125 @@ import AppKit
 struct TodaySkillTab: View {
     let snapshot: Snapshot
     @ObservedObject var store: SnapshotStore
-    @State private var expandedRankings: Set<String> = []
+    @State private var selectedRanking: DiscoverRanking = .skill
     private var zh: Bool { snapshot.locale == "zh" }
+    private var locale: String { snapshot.locale ?? store.locale }
+
+    init(snapshot: Snapshot, store: SnapshotStore, ranking: DiscoverRanking = .skill) {
+        self.snapshot = snapshot
+        self.store = store
+        _selectedRanking = State(initialValue: ranking)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
+            Text(zh ? "为你推荐" : "For you").font(.headline)
             if let card = snapshot.book?.today {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(card.mode == "review" ? (zh ? "复习" : "Review") : (zh ? "新技能" : "New skill"))
-                        .font(.system(size: 11).bold()).foregroundStyle(Color.accentColor)
-                    Text(card.title).font(.title2.bold())
-                    Text(card.why).font(.body).foregroundStyle(.secondary)
-                    PracticeControls(card: card, store: store, locale: snapshot.locale ?? store.locale)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(card.title).font(.title3.bold())
+                    Text(card.why).font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                    PracticeControls(card: card, store: store, locale: locale)
+                    if store.practiceFeedbackID == card.id, let feedback = store.triedFeedback {
+                        Text(feedback == .lit ? (zh ? "已点亮" : "Lit up")
+                             : (zh ? "还没看到新记录，试用后再检查" : "No new record yet. Try it, then check again."))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }.padding(12).frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
             }
-            if snapshot.book?.today == nil {
-                Text(zh ? "暂无适配练习，可复习已有内容" : "No compatible exercise is available. Review an existing skill.")
+            ForEach(DiscoverContent.picks(snapshot), id: \.url) { row in
+                VStack(alignment: .leading, spacing: 4) {
+                    repositoryLink(row)
+                    Text((zh ? "推荐理由：" : "Why: ") + DiscoverContent.reason(
+                        dimension: DiscoverContent.weakest(snapshot) ?? "", locale: locale))
+                        .font(.caption).foregroundStyle(.secondary)
+                }.padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
             }
-            rankingList(zh ? "Skill 榜" : "Skills", rows: snapshot.rankings?.skill ?? [])
-            rankingList(zh ? "Agent 榜" : "Agents", rows: snapshot.rankings?.agent ?? [])
-            if let tip = snapshot.dailyTip {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(zh ? "大师一句话" : "Master's tip").font(.headline)
-                    Text(tip.title).font(.title2.bold())
-                    Text(tip.detail).font(.body).foregroundStyle(.secondary)
-                    if let source = tip.source, !source.isEmpty { Text(source).font(.system(size: 11)).foregroundStyle(.secondary) }
+            Text(zh ? "全球排行" : "Rankings").font(.headline)
+            Picker(zh ? "全球排行" : "Rankings", selection: $selectedRanking) {
+                ForEach(DiscoverRanking.allCases, id: \.self) { kind in
+                    Text(kind.title(zh: zh)).tag(kind)
                 }
-            }
-            if !snapshot.relevantToolUpdates.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(zh ? "与你的工具有关的更新" : "Updates for your tools").font(.headline)
-                    ForEach(snapshot.relevantToolUpdates) { update in
+            }.pickerStyle(.segmented).labelsHidden()
+            if selectedRanking == .learnable {
+                Text(zh ? "大师精选 · 新手必学" : "Master’s selection · Essentials").font(.caption).foregroundStyle(.secondary)
+                ForEach(Array(store.features.discoverRankings(snapshot.book?.cards ?? []).enumerated()), id: \.element.id) { index, card in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("\(index + 1)").monospacedDigit().foregroundStyle(.secondary).frame(width: 24)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(update.summary)
-                            Text(DisplayDate.short(update.releasedAt, locale: snapshot.locale ?? store.locale)).font(.caption).foregroundStyle(.secondary)
-                            if let card = snapshot.book?.cards.first(where: { $0.id == update.practiceId }) {
-                                DisclosureGroup(card.title) {
-                                    PracticeControls(card: card, store: store, locale: snapshot.locale ?? store.locale)
-                                }
-                            }
-                            if PublicContent.safeURL(update.sourceUrl), let url = URL(string: update.sourceUrl) {
-                                Link(zh ? "官方来源" : "Official source", destination: url)
-                            }
+                            Text(card.title).font(.headline)
+                            Text(card.why).font(.callout).foregroundStyle(.secondary).lineLimit(1)
                         }
+                        Spacer(minLength: 0)
+                        Text(card.lit ? (zh ? "已点亮" : "Lit") : (zh ? "待点亮" : "Unlit"))
+                            .font(.caption).foregroundStyle(card.lit ? Color.accentColor : .secondary)
                     }
+                    Divider()
                 }
+            } else {
+                rankingList
             }
-            if !(snapshot.book?.yesterday ?? []).isEmpty {
-                DisclosureGroup(zh ? "昨天的练习" : "Yesterday’s practice") {
-                    ForEach(snapshot.book?.yesterday ?? []) { attempt in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(snapshot.book?.cards.first { $0.id == attempt.skillId }?.title ?? (zh ? "复习" : "Review"))
-                                .font(.headline)
-                            Text(attempt.status == "observed"
-                                 ? (zh ? "昨天的动作已有后续记录" : "A later record was found for yesterday's action")
-                                 : attempt.status == "not_yet" ? (zh ? "尚未观察到" : "Not observed yet")
-                                 : (zh ? "未获得新数据" : "No new data received"))
-                                .font(.callout)
-                            Button(zh ? "停止追踪" : "Stop tracking") {
-                                store.practice(id: attempt.attemptId, operation: "stop")
-                            }.disabled(store.isRefreshing)
-                        }
-                    }
-                }
+            if !store.isPro {
+                Button(zh ? "Pro 查看前 20 名" : "See the Top 20 with Pro") { store.showProSettings = true }
+                    .buttonStyle(.plain).foregroundStyle(.tint)
             }
-
+            if let tip = snapshot.dailyTip {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(zh ? "大师推荐" : "Master's pick").font(.headline)
+                    Label(tip.title, systemImage: "quote.opening").font(.title3.bold())
+                    Text(tip.detail).font(.callout).foregroundStyle(.secondary)
+                    if let source = tip.source { Text(source).font(.caption).foregroundStyle(.secondary) }
+                }.padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
+            }
         }
     }
 
-    private func rankingList(_ title: String, rows: [Ranking]) -> some View {
+    private var rows: [Ranking] {
+        switch selectedRanking {
+        case .skill: return snapshot.rankings?.skill ?? []
+        case .agent: return snapshot.rankings?.agent ?? []
+        case .product: return snapshot.rankings?.product ?? []
+        case .learnable: return []
+        }
+    }
+
+    private var rankingList: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(title) · \(store.features.rankings(rows, expanded: expandedRankings.contains(title)).count)").font(.headline)
-            ForEach(Array(store.features.rankings(rows, expanded: expandedRankings.contains(title)).enumerated()), id: \.offset) { _, row in
-                Button(action: {
-                    if PublicContent.safeURL(row.url), let url = URL(string: row.url) {
-                        NSWorkspace.shared.open(url)
-                    }
-                }) {
-                    HStack(alignment: .top, spacing: 8) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(row.name).font(.headline).lineLimit(1)
-                            Text(row.tagline).font(.callout).foregroundStyle(.secondary).lineLimit(1)
-                            if row.stars != nil || row.installed == true {
-                                HStack {
-                                    Text(row.growth(locale: snapshot.locale ?? "en"))
-                                        .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-                                    if row.installed == true {
-                                        Text(zh ? "已装" : "Installed").font(.caption2)
-                                            .padding(.horizontal, 5).background(Color.accentColor.opacity(0.1), in: Capsule())
-                                    }
-                                }
-                            }
-                        }
-                        Spacer(minLength: 0)
-                    }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
-                }.buttonStyle(.plain)
+            if selectedRanking == .product {
+                Text(zh ? "按 GitHub 星数" : "By GitHub stars").font(.caption).foregroundStyle(.secondary)
+            }
+            ForEach(Array(store.features.discoverRankings(rows).enumerated()), id: \.offset) { index, row in
+                HStack(alignment: .top, spacing: 8) {
+                    Text("\(index + 1)").monospacedDigit().foregroundStyle(.secondary).frame(width: 24)
+                    repositoryLink(row)
+                }
                 Divider()
             }
-            if rows.count > 5 {
-                Button(expandedRankings.contains(title) && store.isPro ? (zh ? "收起" : "Show less") : (zh ? "展开全部" : "Show all")) {
-                    if store.isPro {
-                        if expandedRankings.contains(title) { expandedRankings.remove(title) }
-                        else { expandedRankings.insert(title) }
-                    } else { store.showProSettings = true }
-                }.buttonStyle(.plain).foregroundStyle(.tint)
-            }
+            if rows.isEmpty { Text(zh ? "暂无榜单" : "No rankings yet").foregroundStyle(.secondary) }
             if let rankings = snapshot.rankings {
-                Text(rankings.footnote(locale: snapshot.locale ?? "en"))
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                Text(rankings.footnote(locale: locale)).font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }
+    }
+
+    private func repositoryLink(_ row: Ranking) -> some View {
+        Button {
+            if PublicContent.safeURL(row.url), let url = URL(string: row.url) { NSWorkspace.shared.open(url) }
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(row.name).font(.headline).lineLimit(1)
+                    if row.installed == true || row.installationHint == true {
+                        Text(zh ? "已装" : "Installed").font(.caption2).padding(.horizontal, 5)
+                            .background(Color.accentColor.opacity(0.1), in: Capsule())
+                    }
+                }
+                Text(row.tagline).font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                if row.stars != nil { Text(row.growth(locale: locale)).font(.caption).foregroundStyle(.secondary) }
+            }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+        }.buttonStyle(.plain)
     }
 }
 
@@ -139,9 +147,9 @@ struct PracticeControls: View {
                 }
             } label: { Image(systemName: "info.circle").accessibilityLabel(zh ? "练习说明" : "Practice details") }
             HStack {
-                CopyButton(prompt: card.prompt, title: zh ? "复制给 Claude 的指令" : "Copy prompt", locale: locale,
+                CopyButton(prompt: card.prompt, title: zh ? "复制试一下" : "Copy & try", locale: locale,
                            onCopied: { store.practice(id: card.id, operation: "copy") })
-                Button(zh ? "做完了，帮我检查" : "Check now") { store.refresh() }
+                Button(zh ? "学会了" : "Learned it") { store.markTried(card) }
                 Menu {
                     Button(zh ? "开始实践" : "Start practice") { store.practice(id: card.id, operation: "start") }
                     if card.isSelfReport {

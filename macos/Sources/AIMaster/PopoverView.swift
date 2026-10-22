@@ -14,7 +14,7 @@ struct PopoverView: View {
             }
             Picker(selection: $selectedTab) {
                 Text("Check-up", bundle: .module).tag(0)
-                Text("New today", bundle: .module).tag(1)
+                Text("Discover", bundle: .module).tag(1)
                 Text("Training", bundle: .module).tag(2)
             } label: { Text("Check-up", bundle: .module) }
                 .pickerStyle(.segmented)

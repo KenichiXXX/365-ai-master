@@ -35,6 +35,45 @@ def subprocess_gh(query: str) -> dict:
     return json.loads(result.stdout)
 
 
+PRODUCT_REPOS = (
+    "openai/codex", "google-gemini/gemini-cli", "sst/opencode", "QwenLM/qwen-code",
+    "cline/cline", "Aider-AI/aider", "continuedev/continue", "block/goose",
+    "anthropics/claude-code", "All-Hands-AI/OpenHands", "MoonshotAI/kimi-cli",
+)
+
+
+class GitHubNotFound(Exception):
+    pass
+
+
+def subprocess_repo(repo: str) -> dict:
+    try:
+        result = subprocess.run(["gh", "api", "repos/" + repo, "-H", "User-Agent: " + USER_AGENT],
+                                capture_output=True, text=True, check=True, timeout=30)
+    except subprocess.CalledProcessError as error:
+        if "HTTP 404" in (error.stderr or ""):
+            raise GitHubNotFound(repo) from error
+        raise
+    return json.loads(result.stdout)
+
+
+def fetch_github_products(run_gh=subprocess_repo) -> list[dict]:
+    items = []
+    for repo in PRODUCT_REPOS:
+        try:
+            items.append(run_gh(repo))
+        except GitHubNotFound:
+            continue
+    return items
+
+
+def select_products(items, history: dict, *, today=None) -> list[dict]:
+    previous = history.get(((today or date.today()) - timedelta(days=7)).isoformat(), {})
+    return sorted([{**item, "stars7d": item["stargazers_count"] - previous[item["full_name"]]
+                    if item["full_name"] in previous else None} for item in items],
+                  key=lambda item: item["stargazers_count"], reverse=True)
+
+
 def subprocess_claude(texts: list[str]) -> str:
     prompt = ("Translate these English one-liners faithfully into short Chinese. "
               "Return only a JSON array of strings in the same order, with no additions.\n"
@@ -140,11 +179,19 @@ def translate_zh(texts: list[str], run_claude=subprocess_claude) -> list[str | N
     return [None] * len(texts)
 
 
-def build_content(base: dict, skills: list, agents: list, today: date, *, tool_updates=None) -> dict:
+def build_content(base: dict, skills: list, agents: list, today: date, *, tool_updates=None, products=None) -> dict:
     content = deepcopy(base)
-    content["rankings"] = {"skill": skills, "agent": agents, "rotate": False,
+    content["rankings"] = {"skill": deepcopy(skills), "agent": deepcopy(agents), "rotate": False,
                            "source": "The Skill Leaderboard · GitHub", "updated_at": today.isoformat(),
                            "origin": "public"}
+    content["rankings"]["product"] = deepcopy(products if products is not None else base["rankings"]["product"])
+    categories = {item["name"].casefold(): item["task_category"]
+                  for kind in ("skill", "agent") for item in base["rankings"][kind]
+                  if item.get("task_category")}
+    for kind in ("skill", "agent"):
+        for item in content["rankings"][kind]:
+            if not item.get("task_category") and item["name"].casefold() in categories:
+                item["task_category"] = categories[item["name"].casefold()]
     content["updated_at"] = today.isoformat()
     content["tool_updates"] = tool_updates or []
     return content
@@ -182,10 +229,14 @@ def main(argv=None) -> int:
         skills = select_skills(fetch_skill_leaderboard())
         raw_agents = fetch_github_agents(today=today)
         agents = select_agents(raw_agents, history, today=today)
+        raw_products = fetch_github_products()
+        products = select_products(raw_products, history, today=today)
+        if len(products) < 5:
+            raise ValueError("product ranking requires at least 5 items")
         if len(skills) < 10 or len(agents) < 10:
             raise ValueError("each ranking requires at least 10 eligible items")
         texts = [(item.get("tagline") or "").strip() or (item.get("summary") or "").strip() for item in skills]
-        texts += [(item.get("description") or "").strip() for item in agents]
+        texts += [(item.get("description") or item["full_name"]).strip() for item in agents + products]
         translations = [None] * len(texts) if args.no_translate else translate_zh(texts)
         skill_rows = [to_ranking_item(item["repo"], "https://github.com/" + item["repo"],
                                      texts[i], translations[i], item["stars"], item.get("stars7d"),
@@ -195,12 +246,16 @@ def main(argv=None) -> int:
                                      texts[len(skills) + i], translations[len(skills) + i],
                                      item["stargazers_count"], item["stars7d"], metadata=item)
                       for i, item in enumerate(agents)]
-        content = build_content(base, skill_rows, agent_rows, today, tool_updates=updates)
+        product_rows = [to_ranking_item(item["full_name"], item["html_url"],
+                                       texts[len(skills) + len(agents) + i], translations[len(skills) + len(agents) + i],
+                                       item["stargazers_count"], item["stars7d"], metadata=item)
+                        for i, item in enumerate(products)]
+        content = build_content(base, skill_rows, agent_rows, today, tool_updates=updates, products=product_rows)
         if not validate(content):
             raise ValueError("generated content failed validation")
         cutoff = (today - timedelta(days=34)).isoformat()
         history = {day: counts for day, counts in history.items() if cutoff <= day <= today.isoformat()}
-        history[today.isoformat()] = {item["full_name"]: item["stargazers_count"] for item in raw_agents}
+        history[today.isoformat()] = {item["full_name"]: item["stargazers_count"] for item in raw_agents + raw_products}
     except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError) as error:
         print(f"harvest aborted: {error}", file=sys.stderr)
         return 3

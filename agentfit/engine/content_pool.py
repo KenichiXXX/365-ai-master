@@ -165,9 +165,11 @@ def validate(d: object) -> bool:
     if rankings.get("origin", "bundled") not in ("bundled", "public"):
         return False
 
-    for kind in ("skill", "agent"):
+    for kind in ("skill", "agent", "product"):
+        if kind == "product" and kind not in rankings:
+            continue  # Older signed content remains usable.
         items = rankings.get(kind)
-        if not isinstance(items, list):
+        if not isinstance(items, list) or (kind == "product" and len(items) < 5):
             return False
         for item in items:
             if not isinstance(item, dict) or not all(_text(item.get(key)) for key in ("name", "url")):

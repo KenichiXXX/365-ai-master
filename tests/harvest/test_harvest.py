@@ -84,13 +84,16 @@ def test_build_content():
     assert result["skills"] == base["skills"] and result["tips"] == base["tips"]
     assert base == before
     assert result["rankings"] == {"skill": [item], "agent": [item], "rotate": False,
-                                  "source": "The Skill Leaderboard · GitHub", "updated_at": "2026-10-21", "origin": "public"}
+                                  "source": "The Skill Leaderboard · GitHub", "updated_at": "2026-10-21", "origin": "public", "product": base["rankings"]["product"]}
     assert result["updated_at"] == "2026-10-21"
 
 
 def setup_main(tmp_path, monkeypatch):
     monkeypatch.setattr(h, "fetch_skill_leaderboard", lambda: fixture("skillleaderboard_catalog.json")["catalog"])
     monkeypatch.setattr(h, "fetch_github_agents", lambda **kw: fixture("github_search_agents.json")["items"])
+    monkeypatch.setattr(h, "fetch_github_products", lambda: [
+        {"full_name": r, "html_url": "https://github.com/" + r, "description": "Fixture tool", "stargazers_count": i * 100}
+        for i, r in enumerate(h.PRODUCT_REPOS)])
     out, history = tmp_path / "daily.json", tmp_path / "stars-history.json"
     args = ["--out", str(out), "--history", str(history), "--no-translate"]
     return out, history, args
@@ -109,7 +112,7 @@ def test_main_success_and_history_retention(tmp_path, monkeypatch):
     assert all(i["tagline"]["zh"] == i["tagline"]["en"] for i in data["rankings"]["skill"])
 
 
-@pytest.mark.parametrize("failure", ["skills", "agents", "invalid", "fetch"])
+@pytest.mark.parametrize("failure", ["skills", "agents", "products", "invalid", "fetch"])
 def test_main_abort_writes_nothing(tmp_path, monkeypatch, failure):
     out, history, args = setup_main(tmp_path, monkeypatch)
     out.write_text("previous content")
@@ -119,8 +122,10 @@ def test_main_abort_writes_nothing(tmp_path, monkeypatch, failure):
         monkeypatch.setattr(h, name, lambda **kw: fixture(
             "skillleaderboard_catalog.json" if failure == "skills" else "github_search_agents.json"
         )["catalog" if failure == "skills" else "items"][:9])
+    elif failure == "products":
+        monkeypatch.setattr(h, "fetch_github_products", lambda: [])
     elif failure == "invalid":
-        monkeypatch.setattr(h, "build_content", lambda *args: {})
+        monkeypatch.setattr(h, "build_content", lambda *args, **kwargs: {})
     else:
         def broken():
             raise OSError("offline")
@@ -200,9 +205,9 @@ def test_main_translates_both_rankings_in_one_batch(tmp_path, monkeypatch):
         return ["中文"] * len(texts)
     monkeypatch.setattr(h, "translate_zh", translate)
     assert h.main(args[:-1]) == 0
-    assert len(calls) == 1 and len(calls[0]) == 24
+    assert len(calls) == 1 and len(calls[0]) == 35
     data = json.loads(out.read_text())
-    assert all(item["tagline"]["zh"] == "中文" for kind in ("skill", "agent") for item in data["rankings"][kind])
+    assert all(item["tagline"]["zh"] == "中文" for kind in ("skill", "agent", "product") for item in data["rankings"][kind])
 
 
 def test_main_abort_does_not_create_files(tmp_path, monkeypatch):
@@ -287,3 +292,70 @@ def test_phase4_harvest_keeps_practice_contract_and_empty_course_catalogue():
     assert second["course_sources"] == []
     assert len({c["id"] for c in second["skills"]}) == 24
     assert second["tool_updates"] == []
+
+
+def test_products_fixed_sources_sort_by_stars_and_skip_only_404():
+    calls = []
+    def fetch(repo):
+        calls.append(repo)
+        if repo == "openai/codex":
+            raise h.GitHubNotFound(repo)
+        return {"full_name": repo, "html_url": "https://github.com/" + repo,
+                "description": "Coding tool", "stargazers_count": len(calls) * 100}
+    products = h.fetch_github_products(fetch)
+    assert tuple(calls) == h.PRODUCT_REPOS
+    selected = h.select_products(products, {"2026-10-14": {"google-gemini/gemini-cli": 150}}, today=TODAY)
+    assert selected[0]["stargazers_count"] == 1100
+    assert next(r for r in selected if r["full_name"] == "google-gemini/gemini-cli")["stars7d"] == 50
+    assert selected[0]["stars7d"] is None
+    def broken(repo):
+        raise OSError("offline")
+    with pytest.raises(OSError):
+        h.fetch_github_products(broken)
+
+
+def test_product_schema_and_bundled_fallback():
+    base = load_content(None)
+    assert [r["name"] for r in base["rankings"]["product"]] == list(h.PRODUCT_REPOS)
+    assert all("stars" not in r and "stars7d" not in r for r in base["rankings"]["product"])
+    assert validate(base)
+    for product in ([], [{}] * 5, base["rankings"]["product"][:4]):
+        invalid = copy.deepcopy(base)
+        invalid["rankings"]["product"] = product
+        assert not validate(invalid)
+    invalid = copy.deepcopy(base)
+    invalid["rankings"]["product"][0]["stars"] = "invented"
+    assert not validate(invalid)
+
+
+def test_products_survive_localized_snapshot():
+    from agentfit.engine.codex_book import daily_rankings
+    ranks = daily_rankings(load_content(None), {}, "zh", TODAY, n=20)
+    assert len(ranks["product"]) == 11
+    assert ranks["product"][0]["name"] == "openai/codex"
+    assert ranks["product"][0]["tagline"] == "在终端中与 AI 一起编程"
+
+
+def test_repo_adapter_requests_exact_endpoint_and_only_404_is_skipped(monkeypatch):
+    calls = []
+    def run(args, **kwargs):
+        calls.append((args, kwargs))
+        return subprocess.CompletedProcess(args, 0, '{"full_name":"openai/codex"}', '')
+    monkeypatch.setattr(h.subprocess, "run", run)
+    assert h.subprocess_repo("openai/codex") == {"full_name": "openai/codex"}
+    assert calls[0][0][:3] == ["gh", "api", "repos/openai/codex"]
+    assert calls[0][1] == {"capture_output": True, "text": True, "check": True, "timeout": 30}
+    for status in (404, 403, 500):
+        def fail(args, **kwargs):
+            raise subprocess.CalledProcessError(1, args, stderr=f"gh: failed (HTTP {status})")
+        monkeypatch.setattr(h.subprocess, "run", fail)
+        with pytest.raises(h.GitHubNotFound if status == 404 else subprocess.CalledProcessError):
+            h.subprocess_repo("openai/codex")
+
+
+def test_refresh_preserves_reviewed_recommendation_categories():
+    base = load_content(None)
+    row = h.to_ranking_item("mem0ai/mem0", "https://github.com/mem0ai/mem0", "Memory", "记忆", 500, None)
+    content = h.build_content(base, [row], [], TODAY)
+    assert content["rankings"]["skill"][0]["task_category"] == "memory"
+    assert row["task_category"] is None
