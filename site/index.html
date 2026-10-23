@@ -7,7 +7,7 @@
 <meta name="description" content="住在 Mac 菜单栏里的 AI 教练。看清你用 Claude Code 和 Codex 的水平，每天学一招，用一次就自动点亮。全部在本机计算，0 token。">
 <meta property="og:title" content="365 AI Master · 每天一招，365 天成为 AI 大师">
 <meta property="og:description" content="Mac 菜单栏里的 AI 教练：看清水平、每天一招、用了就点亮。本机计算，0 token。">
-<link rel="alternate" hreflang="en" href="en/">
+<link rel="alternate" hreflang="en" href="en/index.html">
 <link rel="alternate" hreflang="zh-CN" href="./">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23EDBA52'/%3E%3Cstop offset='1' stop-color='%23B98419'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-dasharray='63 88' transform='rotate(-90 32 32)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +30,7 @@
       <a href="#pricing">价格</a>
       <a href="#faq">常见问题</a>
     </nav>
-    <a class="nav__lang" href="en/" hreflang="en">English</a>
+    <a class="nav__lang" href="en/index.html" hreflang="en">English</a>
     <a class="button button--gold button--small" href="https://github.com/KenichiXXX/365-ai-master/releases">下载</a>
   </div>
 </header>
@@ -58,10 +58,7 @@
               72<span class="menubar__dot"></span>
             </span>
           </div>
-          <picture class="popover">
-            <source srcset="assets/img/home-zh-dark.png" media="(prefers-color-scheme: dark)">
-            <img src="assets/img/home-zh-light.png" width="400" height="680" alt="365 AI Master 弹窗：72 分，熟练者，击败全球 72% 的 AI 用户；今日一招：先开 Plan 模式；本周按 API 价折算 $642，Codex 额度剩余 62%">
-          </picture>
+          <div class="popover"><img class="theme-light" width="400" height="680" alt="365 AI Master 弹窗：72 分，熟练者，击败全球 72% 的 AI 用户；今日一招：先开 Plan 模式；本周按 API 价折算 $642，Codex 额度剩余 62%" src="assets/img/home-zh-light.png"><img class="theme-dark" width="400" height="680" alt="365 AI Master 弹窗：72 分，熟练者，击败全球 72% 的 AI 用户；今日一招：先开 Plan 模式；本周按 API 价折算 $642，Codex 额度剩余 62%" loading="lazy" src="assets/img/home-zh-dark.png"></div>
         </div>
       </div>
     </div>
@@ -85,10 +82,7 @@
       <div class="features">
         <article class="feature">
           <div class="feature__shot">
-            <picture>
-              <source srcset="assets/img/home-zh-dark.png" media="(prefers-color-scheme: dark)">
-              <img src="assets/img/home-zh-light.png" alt="分数 72，熟练者，再提 3 分升到专家" loading="lazy">
-            </picture>
+            <div><img class="theme-light" alt="分数 72，熟练者，再提 3 分升到专家" loading="lazy" src="assets/img/home-zh-light.png"><img class="theme-dark" alt="分数 72，熟练者，再提 3 分升到专家" loading="lazy" src="assets/img/home-zh-dark.png"></div>
           </div>
           <div class="feature__body">
             <h3>你现在是什么段位</h3>
@@ -97,10 +91,7 @@
         </article>
         <article class="feature">
           <div class="feature__shot" style="display:grid;align-content:center;padding-bottom:22px">
-            <picture>
-              <source srcset="assets/img/today-done-zh-dark.png" media="(prefers-color-scheme: dark)">
-              <img src="assets/img/today-done-zh-light.png" alt="今日一招已点亮" loading="lazy" style="border-radius:14px">
-            </picture>
+            <div><img class="theme-light" alt="今日一招已点亮" loading="lazy" style="border-radius:14px" src="assets/img/today-done-zh-light.png"><img class="theme-dark" alt="今日一招已点亮" loading="lazy" style="border-radius:14px" src="assets/img/today-done-zh-dark.png"></div>
           </div>
           <div class="feature__body">
             <h3>今天练哪一招</h3>
@@ -109,10 +100,7 @@
         </article>
         <article class="feature">
           <div class="feature__shot">
-            <picture>
-              <source srcset="assets/img/home-zh-dark.png" media="(prefers-color-scheme: dark)">
-              <img class="crop-bottom" src="assets/img/home-zh-light.png" alt="本周按 API 价折算 $642，Codex 额度剩余 62%，3 天后重置，连续 21 天" loading="lazy">
-            </picture>
+            <div><img class="theme-light crop-bottom"  alt="本周按 API 价折算 $642，Codex 额度剩余 62%，3 天后重置，连续 21 天" loading="lazy" src="assets/img/home-zh-light.png"><img class="theme-dark crop-bottom"  alt="本周按 API 价折算 $642，Codex 额度剩余 62%，3 天后重置，连续 21 天" loading="lazy" src="assets/img/home-zh-dark.png"></div>
           </div>
           <div class="feature__body">
             <h3>这周用了多少</h3>
@@ -154,10 +142,7 @@
   <section class="section" id="path" style="padding-top:0">
     <div class="wrap split">
       <div class="split__shot">
-        <picture>
-          <source srcset="assets/img/path-zh-dark.png" media="(prefers-color-scheme: dark)">
-          <img src="assets/img/path-zh-light.png" alt="修炼路线：入门、进阶、高手三段，已点亮的招式打勾" loading="lazy">
-        </picture>
+        <div><img class="theme-light" alt="修炼路线：入门、进阶、高手三段，已点亮的招式打勾" loading="lazy" src="assets/img/path-zh-light.png"><img class="theme-dark" alt="修炼路线：入门、进阶、高手三段，已点亮的招式打勾" loading="lazy" src="assets/img/path-zh-dark.png"></div>
       </div>
       <div>
         <h2>24 招，三段路线</h2>
@@ -178,10 +163,7 @@
         <p class="section__lead">点开任何一项能力，看到的是你自己的数字：旗舰模型占了多少、轻量模型用了多少、目标是多少。再给你一个最快的提分动作，复制提示词就能练。</p>
       </div>
       <div class="split__shot">
-        <picture>
-          <source srcset="assets/img/dimension-zh-dark.png" media="(prefers-color-scheme: dark)">
-          <img src="assets/img/dimension-zh-light.png" alt="用对模型 58 分：最快的提分动作是切到轻量模型，旗舰折算占比和目标对比" loading="lazy">
-        </picture>
+        <div><img class="theme-light" alt="用对模型 58 分：最快的提分动作是切到轻量模型，旗舰折算占比和目标对比" loading="lazy" src="assets/img/dimension-zh-light.png"><img class="theme-dark" alt="用对模型 58 分：最快的提分动作是切到轻量模型，旗舰折算占比和目标对比" loading="lazy" src="assets/img/dimension-zh-dark.png"></div>
       </div>
     </div>
   </section>
@@ -287,7 +269,7 @@
     <div class="footer__right">
       <a href="https://github.com/KenichiXXX/365-ai-master">GitHub</a>
       <a href="https://github.com/KenichiXXX/365-ai-master/issues">反馈</a>
-      <a href="en/" hreflang="en">English</a>
+      <a href="en/index.html" hreflang="en">English</a>
     </div>
   </div>
 </footer>
