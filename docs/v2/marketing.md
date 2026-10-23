@@ -116,7 +116,9 @@
 
 ## 五、上线前需要 Kenichi 做的事
 
-1. **签名与公证**：用 Apple 开发者账号签名、公证 App，打成 DMG；否则别人下载后会被系统拦截。
+1. **签名与公证**：发版脚本已写好（`scripts/release_mac.sh`）。现在不带参数运行，会产出临时签名的 `dist/release/365-AI-Master-2.0.0.dmg`，只适合发给内测朋友。证书和公证凭据配好后：
+   - 只公证：`SIGN_IDENTITY="Developer ID Application: 姓名 (团队ID)" scripts/release_mac.sh --notarize`
+   - 公证并发布到 GitHub（会先确认）：`SIGN_IDENTITY="…" scripts/release_mac.sh --publish`
 2. **GitHub Release**：在 `KenichiXXX/365-ai-master` 发 v2.0.0 Release 并上传 DMG（官网下载按钮指向这里）。
 3. **付款**：Waffo 商户上线后，把两个付款链接填进 App；之后官网「付款通道开通后」的说明可以改掉。
 4. **域名与部署**：已上线 https://724.fund/365AImaster （英文版 /365AImaster/en）。更新方式：在 724fund-research 仓库最新的 main 上运行 `python3 scripts/site_deploy.py <724仓库>/public`，提交后推送即可自动部署。
@@ -132,3 +134,10 @@
 | 第 3 天（周二或周三） | Product Hunt | 当日排名、留言 |
 | 第 5 天 | Show HN | 技术讨论里暴露的问题 |
 | 第 7 天 | 复盘：下载 → 完成引导 → 次日回访 → 开始试用 → 付费 | 每一步的人数，决定下一周修什么 |
+
+## 七、给内测朋友的说明（临时签名版）
+
+> 这是 365 AI Master 的内测版，只读你 Mac 上的 Claude Code / Codex 使用记录，本机计算，不花 token，不上传。
+> 1. 打开 `365-AI-Master-2.0.0.dmg`，把「365 AI Master」拖进「应用程序」。
+> 2. 第一次打开如果提示「无法验证开发者」：打开「系统设置」→「隐私与安全性」，在页面下方点「仍要打开」。
+> 3. 菜单栏会出现一个圆环和分数，点开就能用。需要 macOS 13 以上、Apple 芯片。
