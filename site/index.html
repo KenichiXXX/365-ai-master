@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>365 AI Master · 每天一招，365 天成为 AI 大师</title>
+<meta name="description" content="住在 Mac 菜单栏里的 AI 教练。看清你用 Claude Code 和 Codex 的水平，每天学一招，用一次就自动点亮。全部在本机计算，0 token。">
+<meta property="og:title" content="365 AI Master · 每天一招，365 天成为 AI 大师">
+<meta property="og:description" content="Mac 菜单栏里的 AI 教练：看清水平、每天一招、用了就点亮。本机计算，0 token。">
+<link rel="alternate" hreflang="en" href="en/">
+<link rel="alternate" hreflang="zh-CN" href="./">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23EDBA52'/%3E%3Cstop offset='1' stop-color='%23B98419'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='white' stroke-width='7' stroke-linecap='round' stroke-dasharray='63 88' transform='rotate(-90 32 32)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="./">
+      <svg class="brand__mark" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EDBA52"/><stop offset="1" stop-color="#B98419"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#m)"/><circle cx="32" cy="32" r="14" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="63 88" transform="rotate(-90 32 32)"/></svg>
+      365 AI Master
+    </a>
+    <nav class="nav__links" aria-label="页面导航">
+      <a href="#features">功能</a>
+      <a href="#loop">怎么用</a>
+      <a href="#privacy">隐私</a>
+      <a href="#pricing">价格</a>
+      <a href="#faq">常见问题</a>
+    </nav>
+    <a class="nav__lang" href="en/" hreflang="en">English</a>
+    <a class="button button--gold button--small" href="https://github.com/KenichiXXX/365-ai-master/releases">下载</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero__grid">
+      <div>
+        <p class="eyebrow">Claude Code 和 Codex 用户的菜单栏教练</p>
+        <h1>每天一招，<br><span class="num">365</span> 天成为 AI 大师</h1>
+        <p class="hero__lead">它读你 Mac 上已有的 AI 使用记录，告诉你现在是什么段位、今天该练哪一招。用一次，日志里看得到，就自动点亮。全程在本机计算，不花你一个 token。</p>
+        <div class="hero__actions">
+          <a class="button button--gold" href="https://github.com/KenichiXXX/365-ai-master/releases">免费下载 Mac 版</a>
+          <a class="button button--quiet" href="#loop">看它怎么用</a>
+        </div>
+        <p class="hero__meta">测试版 · macOS 13 以上 · Apple 芯片 · 免费版永久可用</p>
+      </div>
+      <div class="stage">
+        <svg class="dial" viewBox="0 0 1000 1000" data-day="73" aria-hidden="true"></svg>
+        <div class="desk">
+          <div class="menubar" aria-hidden="true">
+            <span class="menubar__item">周四 09:41</span>
+            <span class="menubar__app">
+              <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="2"/><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="27 38" transform="rotate(-90 8 8)"/></svg>
+              72<span class="menubar__dot"></span>
+            </span>
+          </div>
+          <picture class="popover">
+            <source srcset="assets/img/home-zh-dark.png" media="(prefers-color-scheme: dark)">
+            <img src="assets/img/home-zh-light.png" width="400" height="680" alt="365 AI Master 弹窗：72 分，熟练者，击败全球 72% 的 AI 用户；今日一招：先开 Plan 模式；本周按 API 价折算 $642，Codex 额度剩余 62%">
+          </picture>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="band">
+    <div class="wrap band__inner">
+      <span>读取 <b>Claude Code</b></span>
+      <span><b>Codex</b></span>
+      <span>Gemini CLI · OpenCode · Qwen Code 逐步接入</span>
+      <span>本机计算 · <b>0 token</b></span>
+    </div>
+  </div>
+
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="section__head">
+        <h2>点开菜单栏，三件事一眼看清</h2>
+        <p class="section__lead">不用看报表，不用配置。打开就知道自己在哪、今天做什么、这周怎么样。</p>
+      </div>
+      <div class="features">
+        <article class="feature">
+          <div class="feature__shot">
+            <picture>
+              <source srcset="assets/img/home-zh-dark.png" media="(prefers-color-scheme: dark)">
+              <img src="assets/img/home-zh-light.png" alt="分数 72，熟练者，再提 3 分升到专家" loading="lazy">
+            </picture>
+          </div>
+          <div class="feature__body">
+            <h3>你现在是什么段位</h3>
+            <p>一个 0 到 100 的分数，五个段位，从新手到大师。四项能力分别打分：用对模型、专注节奏、上下文管理、能力复用。</p>
+          </div>
+        </article>
+        <article class="feature">
+          <div class="feature__shot" style="display:grid;align-content:center;padding-bottom:22px">
+            <picture>
+              <source srcset="assets/img/today-done-zh-dark.png" media="(prefers-color-scheme: dark)">
+              <img src="assets/img/today-done-zh-light.png" alt="今日一招已点亮" loading="lazy" style="border-radius:14px">
+            </picture>
+          </div>
+          <div class="feature__body">
+            <h3>今天练哪一招</h3>
+            <p>从你还没用过的技巧里挑一招，附上能直接粘贴的提示词。日志看得出来的，用一次就自动点亮；看不出来的，学会后自己打勾。</p>
+          </div>
+        </article>
+        <article class="feature">
+          <div class="feature__shot">
+            <picture>
+              <source srcset="assets/img/home-zh-dark.png" media="(prefers-color-scheme: dark)">
+              <img class="crop-bottom" src="assets/img/home-zh-light.png" alt="本周按 API 价折算 $642，Codex 额度剩余 62%，3 天后重置，连续 21 天" loading="lazy">
+            </picture>
+          </div>
+          <div class="feature__body">
+            <h3>这周用了多少</h3>
+            <p>按公开 API 价格折算这周的用量；Codex 额度还剩多少、几天后重置、按现在的速度够不够用。</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="loop" style="padding-top:0">
+    <div class="wrap">
+      <div class="section__head">
+        <h2>每天一分钟，它让你真的变强</h2>
+        <p class="section__lead">别的工具告诉你用了多少，365 告诉你用得好不好，再陪你把下一招练会。</p>
+      </div>
+      <div class="loop">
+        <div class="loop__step">
+          <h3>点开菜单栏</h3>
+          <p>分数旁边有个小金点，说明今天这一招还没练。</p>
+        </div>
+        <div class="loop__step">
+          <h3>复制提示词</h3>
+          <p>每一招都配好了能直接用的提示词。</p>
+          <div class="prompt">进入 Plan 模式，先给我方案，不要改文件：[你的任务]</div>
+        </div>
+        <div class="loop__step">
+          <h3>在 Claude Code 里用一次</h3>
+          <p>正常干你的活，不需要额外操作，也不用切出去填表。</p>
+        </div>
+        <div class="loop__step">
+          <h3>自动点亮</h3>
+          <p>下次刷新时，365 在本机日志里看到你用了，这一招点亮，修炼路线前进一格。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="path" style="padding-top:0">
+    <div class="wrap split">
+      <div class="split__shot">
+        <picture>
+          <source srcset="assets/img/path-zh-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="assets/img/path-zh-light.png" alt="修炼路线：入门、进阶、高手三段，已点亮的招式打勾" loading="lazy">
+        </picture>
+      </div>
+      <div>
+        <h2>24 招，三段路线</h2>
+        <p class="section__lead">每一招都来自真实的工作方式：写 CLAUDE.md、Plan 模式、子代理、MCP、Hook、worktree……先把入门打牢，再往上走。</p>
+        <ol class="levels">
+          <li><b>8</b><div><strong>入门</strong><span>@ 引用文件、联网搜索、/init、贴截图。免费版全部开放。</span></div></li>
+          <li><b>10</b><div><strong>进阶</strong><span>Plan 模式、任务清单、轻量模型、调高推理强度、复用 skill。</span></div></li>
+          <li><b>6</b><div><strong>高手</strong><span>子代理并行、MCP、Hook、worktree、批量执行、自定义命令。</span></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="improve" style="padding-top:0">
+    <div class="wrap split">
+      <div>
+        <h2>每一项都告诉你为什么扣分、怎么补</h2>
+        <p class="section__lead">点开任何一项能力，看到的是你自己的数字：旗舰模型占了多少、轻量模型用了多少、目标是多少。再给你一个最快的提分动作，复制提示词就能练。</p>
+      </div>
+      <div class="split__shot">
+        <picture>
+          <source srcset="assets/img/dimension-zh-dark.png" media="(prefers-color-scheme: dark)">
+          <img src="assets/img/dimension-zh-light.png" alt="用对模型 58 分：最快的提分动作是切到轻量模型，旗舰折算占比和目标对比" loading="lazy">
+        </picture>
+      </div>
+    </div>
+  </section>
+
+  <section class="section privacy" id="privacy">
+    <div class="wrap privacy__grid">
+      <p class="zero">0<small>token。分析不调用任何 AI，<br>不花你的额度。</small></p>
+      <div>
+        <h2>你的记录不离开你的 Mac</h2>
+        <p class="section__lead" style="margin-bottom:28px">评分规则写在开源代码里，同样的记录永远算出同样的分。</p>
+        <ul class="facts">
+          <li><strong>只读本机日志</strong><span>读取 <code>~/.claude</code>、<code>~/.codex</code> 等目录里的使用记录，只读不改。</span></li>
+          <li><strong>规则计算，不调用 AI</strong><span>不发送提示词、文件或对话给任何模型，不消耗你的订阅额度。</span></li>
+          <li><strong>默认不上传任何东西</strong><span>只有你主动加入全球排名，才会每天上传一次总分和四项分数，以及一个随机编号。</span></li>
+          <li><strong>每天下载一份公开榜单</strong><span>技能和工具榜单是公开文件，可以在设置里关掉。</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section__head">
+        <h2>一年 12 美元，每天不到 3 分钱</h2>
+        <p class="section__lead">免费版就能用起来。想走完全部 365 天，再升级 Pro。</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <p class="plan__name">免费版</p>
+          <p class="plan__price">$0</p>
+          <ul>
+            <li>分数、段位和四项能力详情</li>
+            <li>每天一招，入门路线 8 招全开</li>
+            <li>本周用量折算与 Codex 额度</li>
+            <li>每日榜单前 10</li>
+          </ul>
+          <a class="button button--quiet" href="https://github.com/KenichiXXX/365-ai-master/releases">免费下载</a>
+        </div>
+        <div class="plan plan--pro">
+          <p class="plan__name">Pro</p>
+          <p class="plan__price">$12 <small>/ 年</small></p>
+          <p class="plan__note">创始价 · 约每月 $1</p>
+          <ul>
+            <li>免费版的全部功能</li>
+            <li>全部 24 招，进阶和高手任选</li>
+            <li>每周复盘和 30 天成长曲线</li>
+            <li>四项能力的全球排名</li>
+            <li>完整榜单 Top 20 和产品榜</li>
+          </ul>
+          <a class="button button--gold" href="https://github.com/KenichiXXX/365-ai-master/releases">先免费试用 14 天</a>
+          <p class="plan__fine">试用不绑卡，到期自动回到免费版。付款通道开通后支持微信支付、支付宝、银行卡和 Apple Pay。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" style="padding-top:0">
+    <div class="wrap"><div class="faq">
+      <h2 style="margin-bottom:28px">常见问题</h2>
+      <details>
+        <summary>会不会消耗我的 token？</summary>
+        <p>不会。分析全部在你的 Mac 上用规则完成，不调用任何 AI 模型，也不会把你的记录发给模型。</p>
+      </details>
+      <details>
+        <summary>支持哪些工具？</summary>
+        <p>Claude Code 和 Codex 已完整支持。Gemini CLI、OpenCode 和 Qwen Code 能识别，正在逐步接入。</p>
+      </details>
+      <details>
+        <summary>分数是怎么算的？</summary>
+        <p>四项能力各 100 分，按权重合成总分：模型用得对不对、时间是否集中、会话是否整洁、常干的活有没有沉淀成技能。每一项都列出你的数字和目标，规则写在开源代码里。</p>
+      </details>
+      <details>
+        <summary>和 CodexBar、ccusage 这类工具有什么不同？</summary>
+        <p>它们告诉你用了多少额度；365 告诉你用得好不好、今天该练哪一招，并且在日志里确认你真的用上了。额度显示我们也有，但那只是一小部分。</p>
+      </details>
+      <details>
+        <summary>“击败全球 X%” 是怎么来的？</summary>
+        <p>来自自愿加入匿名排名的用户。参与人数少于 20 时只显示早期名次，不说“全球”。不加入也能正常使用全部功能。</p>
+      </details>
+      <details>
+        <summary>有 Windows 或 Linux 版吗？</summary>
+        <p>暂时只有 Mac 版。</p>
+      </details>
+      <details>
+        <summary>可以退款吗？</summary>
+        <p>14 天试用不用付钱。付款后如需退款，凭购买凭证联系我们处理。</p>
+      </details>
+    </div></div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap">
+      <h2>今天就练第一招</h2>
+      <p>下载、打开、看一眼分数。第一招五分钟就能练完。</p>
+      <a class="button button--gold" href="https://github.com/KenichiXXX/365-ai-master/releases">免费下载 Mac 版</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <span>© 2026 365 AI Master · 每天一招，365 天成为 AI 大师</span>
+    <div class="footer__right">
+      <a href="https://github.com/KenichiXXX/365-ai-master">GitHub</a>
+      <a href="https://github.com/KenichiXXX/365-ai-master/issues">反馈</a>
+      <a href="en/" hreflang="en">English</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/site.js" defer></script>
+</body>
+</html>
