@@ -113,11 +113,11 @@ struct ShareCardGraphic: View {
     let input: ShareCardInput
     let locale: String
 
-    private let night = Theme.color(0x0F131A)
-    private let card = Theme.color(0x181D26)
-    private let gold = Theme.color(0xF0BE5A)
-    private let ink = Theme.color(0xF2EEE6)
-    private let muted = Theme.color(0xA8A397)
+    private let night = Theme.color(0x17181E)
+    private let card = Theme.color(0x202129)
+    private let gold = Theme.color(0xBBAFF3)
+    private let ink = Theme.color(0xF4F4F8)
+    private let muted = Theme.color(0xA6A7B7)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -134,7 +134,7 @@ struct ShareCardGraphic: View {
                         Circle().stroke(Color.white.opacity(0.1), lineWidth: 12)
                         Circle().trim(from: 0, to: Double(score.value) / 100)
                             .stroke(gold, style: StrokeStyle(lineWidth: 12, lineCap: .round)).rotationEffect(.degrees(-90))
-                        Text("\(score.value)").font(.system(size: 46, weight: .bold, design: .rounded)).foregroundStyle(ink)
+                        Text("\(score.value)").font(.system(size: 46, weight: .bold)).foregroundStyle(ink)
                     }.frame(width: 128, height: 128)
                 }
                 VStack(alignment: .leading, spacing: 6) {
@@ -163,7 +163,7 @@ struct ShareCardGraphic: View {
                 }
             }
             .padding(18).frame(maxWidth: .infinity, alignment: .leading)
-            .background(card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .background(card, in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
             VStack(alignment: .leading, spacing: 4) {
                 Text(tr(locale, "每天一招，365 天成为 AI 大师", "One AI skill a day. Master AI in 365 days."))
                     .font(.system(size: 15, weight: .semibold)).foregroundStyle(ink)

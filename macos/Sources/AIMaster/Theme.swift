@@ -7,32 +7,39 @@ enum Theme {
     static let page: CGFloat = 16
     static let gap: CGFloat = 12
     static let cardPadding: CGFloat = 14
-    static let cardRadius: CGFloat = 16
-    static let controlRadius: CGFloat = 10
+    static let cardRadius: CGFloat = 8
+    static let controlRadius: CGFloat = 8
     static let motion = Animation.spring(response: 0.32, dampingFraction: 0.86)
 
-    static let canvas = adaptive(light: 0xF7F5F0, dark: 0x0F131A)
-    static let surface = adaptive(light: 0xFFFFFF, dark: 0x181D26)
-    static let inset = adaptive(light: 0xF0EDE6, dark: 0x222834)
-    static let ink = adaptive(light: 0x1B1916, dark: 0xF2EEE6)
-    static let secondary = adaptive(light: 0x6E695F, dark: 0xA8A397)
-    static let tertiary = adaptive(light: 0xA29C91, dark: 0x6F6B63)
-    static let hairline = adaptive(light: 0x1B1916, dark: 0xFFFFFF, lightAlpha: 0.08, darkAlpha: 0.09)
-    static let separator = adaptive(light: 0x1B1916, dark: 0xFFFFFF, lightAlpha: 0.06, darkAlpha: 0.07)
+    static let canvas = adaptive(light: 0xF7F7FB, dark: 0x17181E)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x202129)
+    static let inset = adaptive(light: 0xF0EFF6, dark: 0x2C2D38)
+    static let ink = adaptive(light: 0x252532, dark: 0xF4F4F8)
+    static let secondary = adaptive(light: 0x626575, dark: 0xA6A7B7)
+    static let tertiary = adaptive(light: 0x626575, dark: 0xA6A7B7)
+    static let hairline = adaptive(light: 0xE6E5EE, dark: 0x41434F)
+    static let separator = adaptive(light: 0xE6E5EE, dark: 0x41434F)
 
-    static let gold = adaptive(light: 0xD9A12E, dark: 0xF0BE5A)
-    static let goldText = adaptive(light: 0x8A5F0E, dark: 0xF0BE5A)
-    static let goldSoft = adaptive(light: 0xFBF1DC, dark: 0xF0BE5A, darkAlpha: 0.10)
-    static let onGold = color(0x1B1305)
+    static let primary = color(0x6754C4)
+    static let primaryText = adaptive(light: 0x6754C4, dark: 0xBBAFF3)
+    static let primarySoft = adaptive(light: 0xEEEBF8, dark: 0x2E2946)
+    static let onPrimary = Color.white
+    static let focusRing = adaptive(light: 0x6754C4, dark: 0xBBAFF3)
 
-    static let good = adaptive(light: 0x2E9C84, dark: 0x4FC7A9)
-    static let goodText = adaptive(light: 0x1F6E5D, dark: 0x6FD9BD)
-    static let goodSoft = adaptive(light: 0xDDF2EC, dark: 0x4FC7A9, darkAlpha: 0.15)
-    static let low = adaptive(light: 0xE0674A, dark: 0xF08A6A)
-    static let lowText = adaptive(light: 0xB4432A, dark: 0xF4A086)
-    static let lowSoft = adaptive(light: 0xFDE7E1, dark: 0xF08A6A, darkAlpha: 0.15)
+    // Compatibility names keep every existing page and semantic tone intact.
+    static let gold = primary
+    static let goldText = primaryText
+    static let goldSoft = primarySoft
+    static let onGold = onPrimary
 
-    static let score = Font.system(size: 44, weight: .semibold, design: .rounded)
+    static let good = adaptive(light: 0x22724E, dark: 0x7DCEA7)
+    static let goodText = adaptive(light: 0x22724E, dark: 0x7DCEA7)
+    static let goodSoft = adaptive(light: 0xE8F3ED, dark: 0x7DCEA7, darkAlpha: 0.15)
+    static let low = adaptive(light: 0xB53650, dark: 0xF29AAA)
+    static let lowText = adaptive(light: 0xB53650, dark: 0xF29AAA)
+    static let lowSoft = adaptive(light: 0xFBEAEE, dark: 0xF29AAA, darkAlpha: 0.15)
+
+    static let score = Font.system(size: 44, weight: .semibold)
     static let title = Font.system(size: 20, weight: .semibold)
     static let headline = Font.system(size: 15, weight: .semibold)
     static let body = Font.system(size: 13)
@@ -40,7 +47,7 @@ enum Theme {
     static let caption = Font.system(size: 11)
     static let captionStrong = Font.system(size: 11, weight: .semibold)
     static func number(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font {
-        .system(size: size, weight: weight, design: .rounded)
+        .system(size: size, weight: weight)
     }
 
     static func color(_ hex: Int) -> Color { Color(nsColor: nsColor(hex)) }
@@ -92,7 +99,7 @@ extension View {
         self.padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(fill, in: RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous).strokeBorder(stroke, lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous).strokeBorder(stroke, lineWidth: 1))
     }
 
     func appStyle() -> some View {
@@ -104,38 +111,59 @@ extension View {
     }
 }
 
+// Shared visual states leave Button actions, keyboard shortcuts and native focus routing unchanged.
+private struct AtelierControlSurface: ViewModifier {
+    let fill: Color
+    var pressed = false
+    var outlined = false
+    @State private var hovered = false
+    @Environment(\.isEnabled) private var enabled
+    @Environment(\.isFocused) private var focused
+
+    func body(content: Content) -> some View {
+        content
+            .background(fill, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                    .fill(Color.black.opacity(enabled ? (pressed ? 0.16 : hovered ? 0.07 : 0) : 0))
+                    .allowsHitTesting(false)
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                    .strokeBorder(focused && enabled ? Theme.focusRing : outlined ? Theme.hairline : .clear,
+                                  lineWidth: focused && enabled ? 2 : 1)
+                    .allowsHitTesting(false)
+            }
+            .opacity(enabled ? 1 : 0.45)
+            .contentShape(RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
+            .onHover { hovered = $0 }
+    }
+}
+
 struct PrimaryButtonStyle: ButtonStyle {
     var tone: Tone = .gold
     var expand = true
-    @Environment(\.isEnabled) private var enabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Theme.bodyStrong)
             .foregroundStyle(tone == .gold ? Theme.onGold : Color.white)
             .padding(.horizontal, 14)
-            .frame(maxWidth: expand ? .infinity : nil, minHeight: 34)
-            .background(tone.fill.opacity(configuration.isPressed ? 0.8 : 1),
-                        in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
-            .opacity(enabled ? 1 : 0.45)
-            .contentShape(Rectangle())
+            .frame(maxWidth: expand ? .infinity : nil, minHeight: 40)
+            .modifier(AtelierControlSurface(fill: tone.fill, pressed: configuration.isPressed))
     }
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
     var expand = false
-    @Environment(\.isEnabled) private var enabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Theme.bodyStrong)
             .foregroundStyle(Theme.ink)
             .padding(.horizontal, 12)
-            .frame(maxWidth: expand ? .infinity : nil, minHeight: 34)
-            .background(Theme.inset.opacity(configuration.isPressed ? 0.6 : 1),
-                        in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
-            .opacity(enabled ? 1 : 0.45)
-            .contentShape(Rectangle())
+            .frame(maxWidth: expand ? .infinity : nil, minHeight: 40)
+            .modifier(AtelierControlSurface(fill: Theme.inset, pressed: configuration.isPressed, outlined: true))
     }
 }
 
@@ -145,8 +173,8 @@ struct LinkButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(font)
-            .foregroundStyle(color.opacity(configuration.isPressed ? 0.6 : 1))
-            .contentShape(Rectangle())
+            .foregroundStyle(color)
+            .modifier(AtelierControlSurface(fill: .clear, pressed: configuration.isPressed))
     }
 }
 
@@ -156,9 +184,7 @@ struct IconButtonStyle: ButtonStyle {
             .font(.system(size: 13, weight: .medium))
             .foregroundStyle(Theme.secondary)
             .frame(width: 28, height: 28)
-            .background(Theme.inset.opacity(configuration.isPressed ? 1 : 0),
-                        in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .contentShape(Rectangle())
+            .modifier(AtelierControlSurface(fill: .clear, pressed: configuration.isPressed))
     }
 }
 
@@ -175,7 +201,7 @@ struct Chip: View {
         .font(Theme.captionStrong)
         .foregroundStyle(tone.text)
         .padding(.horizontal, 7).padding(.vertical, 3)
-        .background(tone.soft, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .background(tone.soft, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
         .fixedSize()
     }
 }
@@ -251,7 +277,7 @@ struct NavRow: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.goldText)
                     .frame(width: 26, height: 26)
-                    .background(Theme.goldSoft, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .background(Theme.goldSoft, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
                 Text(title).font(Theme.body).foregroundStyle(Theme.ink)
                 Spacer(minLength: 8)
                 if let badge { badge }
@@ -275,7 +301,7 @@ struct AppMark: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .fill(LinearGradient(colors: [Theme.color(0xEDBA52), Theme.color(0xB98419)],
+                .fill(LinearGradient(colors: [Theme.color(0x8573DA), Theme.primary],
                                      startPoint: .topLeading, endPoint: .bottomTrailing))
             Circle().trim(from: 0, to: 0.72)
                 .stroke(Color.white, style: StrokeStyle(lineWidth: size * 0.11, lineCap: .round))
@@ -299,7 +325,7 @@ struct StepRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text("\(number)")
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(Theme.goldText)
                 .frame(width: 17, height: 17)
                 .background(fill, in: Circle())

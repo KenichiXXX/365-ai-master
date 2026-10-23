@@ -138,7 +138,7 @@ struct Segmented<Value: Hashable>: View {
                         .frame(maxWidth: .infinity, minHeight: 28)
                         .background {
                             if selection == option {
-                                RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Theme.surface)
+                                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous).fill(Theme.surface)
                                     .shadow(color: .black.opacity(0.08), radius: 1.5, y: 1)
                             }
                         }
@@ -148,6 +148,6 @@ struct Segmented<Value: Hashable>: View {
             }
         }
         .padding(2)
-        .background(Theme.inset, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(Theme.inset, in: RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous))
     }
 }

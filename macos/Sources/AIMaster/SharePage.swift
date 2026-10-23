@@ -13,7 +13,7 @@ struct SharePage: View {
         VStack(spacing: Theme.gap) {
             if let png, let image = NSImage(data: png) {
                 Image(nsImage: image).resizable().scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
                     .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
             }
             HStack {
