@@ -119,7 +119,7 @@
 1. **签名与公证**：用 Apple 开发者账号签名、公证 App，打成 DMG；否则别人下载后会被系统拦截。
 2. **GitHub Release**：在 `KenichiXXX/365-ai-master` 发 v2.0.0 Release 并上传 DMG（官网下载按钮指向这里）。
 3. **付款**：Waffo 商户上线后，把两个付款链接填进 App；之后官网「付款通道开通后」的说明可以改掉。
-4. **域名与部署**：选定域名后，把 `site/` 部署到 Cloudflare Pages（纯静态，无需构建）；部署后补上 `og:image` 的完整网址。
+4. **域名与部署**：已上线 https://724.fund/365AImaster （英文版 /365AImaster/en）。更新方式：在 724fund-research 仓库最新的 main 上运行 `python3 scripts/site_deploy.py <724仓库>/public`，提交后推送即可自动部署。
 5. **联系方式**：目前反馈入口是 GitHub Issues；如需邮箱，提供一个专用地址。
 
 ## 六、发布第一周节奏（建议）
