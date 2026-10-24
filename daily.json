@@ -1,7 +1,7 @@
 {
   "version": 1,
   "course_sources": [],
-  "updated_at": "2026-10-24",
+  "updated_at": "2026-10-25",
   "skills": [
     {
       "id": "rules_file",
@@ -1234,8 +1234,8 @@
         "match": [
           "security-audit-skill"
         ],
-        "stars": 40714,
-        "stars7d": 10675,
+        "stars": 42945,
+        "stars7d": 12521,
         "source_url": "https://github.com/cloudflare/security-audit-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1256,8 +1256,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 174335,
-        "stars7d": 9458,
+        "stars": 175141,
+        "stars7d": 9641,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "catalog",
@@ -1278,8 +1278,8 @@
         "match": [
           "skills"
         ],
-        "stars": 301387,
-        "stars7d": 7821,
+        "stars": 302144,
+        "stars7d": 7635,
         "source_url": "https://github.com/mattpocock/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1300,8 +1300,8 @@
         "match": [
           "graphify"
         ],
-        "stars": 133533,
-        "stars7d": 6434,
+        "stars": 134120,
+        "stars7d": 6670,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
         "source_type": "catalog",
@@ -1322,8 +1322,8 @@
         "match": [
           "anatomy"
         ],
-        "stars": 19448,
-        "stars7d": 5902,
+        "stars": 19891,
+        "stars7d": 5416,
         "source_url": "https://github.com/wheresryan22/anatomy",
         "source_date": null,
         "source_type": "catalog",
@@ -1344,53 +1344,9 @@
         "match": [
           "diagram-design"
         ],
-        "stars": 60222,
-        "stars7d": 4017,
+        "stars": 60500,
+        "stars7d": 3832,
         "source_url": "https://github.com/cathrynlavery/diagram-design",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "Leonxlnx/taste-skill",
-        "url": "https://github.com/Leonxlnx/taste-skill",
-        "tagline": {
-          "en": "A system for generating high-end brand guidelines and visual identity decks.",
-          "zh": "A system for generating high-end brand guidelines and visual identity decks."
-        },
-        "match": [
-          "taste-skill"
-        ],
-        "stars": 101384,
-        "stars7d": 3608,
-        "source_url": "https://github.com/Leonxlnx/taste-skill",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "obra/superpowers",
-        "url": "https://github.com/obra/superpowers",
-        "tagline": {
-          "en": "A framework for orchestrating parallel agents and structured planning in software development",
-          "zh": "A framework for orchestrating parallel agents and structured planning in software development"
-        },
-        "match": [
-          "superpowers"
-        ],
-        "stars": 303980,
-        "stars7d": 3604,
-        "source_url": "https://github.com/obra/superpowers",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1410,9 +1366,31 @@
         "match": [
           "impeccable"
         ],
-        "stars": 85234,
-        "stars7d": 3411,
+        "stars": 85836,
+        "stars7d": 3661,
         "source_url": "https://github.com/pbakaus/impeccable",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "A system for generating high-end brand guidelines and visual identity decks.",
+          "zh": "A system for generating high-end brand guidelines and visual identity decks."
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 101799,
+        "stars7d": 3578,
+        "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1432,8 +1410,8 @@
         "match": [
           "lemo-opuscar"
         ],
-        "stars": 5936,
-        "stars7d": 3333,
+        "stars": 6342,
+        "stars7d": 3547,
         "source_url": "https://github.com/lemomo-ai/lemo-opuscar",
         "source_date": null,
         "source_type": "catalog",
@@ -1445,18 +1423,18 @@
         }
       },
       {
-        "name": "K-Dense-AI/scientific-agent-skills",
-        "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "name": "obra/superpowers",
+        "url": "https://github.com/obra/superpowers",
         "tagline": {
-          "en": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs",
-          "zh": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs"
+          "en": "A framework for orchestrating parallel agents and structured planning in software development",
+          "zh": "A framework for orchestrating parallel agents and structured planning in software development"
         },
         "match": [
-          "scientific-agent-skills"
+          "superpowers"
         ],
-        "stars": 54067,
-        "stars7d": 2978,
-        "source_url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "stars": 304429,
+        "stars7d": 3475,
+        "source_url": "https://github.com/obra/superpowers",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1476,31 +1454,9 @@
         "match": [
           "ui-ux-pro-max-skill"
         ],
-        "stars": 139218,
-        "stars7d": 2791,
+        "stars": 139669,
+        "stars7d": 2956,
         "source_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "addyosmani/agent-skills",
-        "url": "https://github.com/addyosmani/agent-skills",
-        "tagline": {
-          "en": "A library of production-grade engineering capabilities for AI coding agents",
-          "zh": "A library of production-grade engineering capabilities for AI coding agents"
-        },
-        "match": [
-          "agent-skills"
-        ],
-        "stars": 109797,
-        "stars7d": 2566,
-        "source_url": "https://github.com/addyosmani/agent-skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1520,9 +1476,53 @@
         "match": [
           "andrej-karpathy-skills"
         ],
-        "stars": 222728,
-        "stars7d": 2494,
+        "stars": 223117,
+        "stars7d": 2646,
         "source_url": "https://github.com/multica-ai/andrej-karpathy-skills",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "addyosmani/agent-skills",
+        "url": "https://github.com/addyosmani/agent-skills",
+        "tagline": {
+          "en": "A library of production-grade engineering capabilities for AI coding agents",
+          "zh": "A library of production-grade engineering capabilities for AI coding agents"
+        },
+        "match": [
+          "agent-skills"
+        ],
+        "stars": 110086,
+        "stars7d": 2487,
+        "source_url": "https://github.com/addyosmani/agent-skills",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "K-Dense-AI/scientific-agent-skills",
+        "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+        "tagline": {
+          "en": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs",
+          "zh": "Automates the design and monitoring of protein characterization experiments via cloud laboratory APIs"
+        },
+        "match": [
+          "scientific-agent-skills"
+        ],
+        "stars": 54358,
+        "stars7d": 2453,
+        "source_url": "https://github.com/K-Dense-AI/scientific-agent-skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1542,8 +1542,8 @@
         "match": [
           "humanizer"
         ],
-        "stars": 59827,
-        "stars7d": 2372,
+        "stars": 60127,
+        "stars7d": 2434,
         "source_url": "https://github.com/blader/humanizer",
         "source_date": null,
         "source_type": "catalog",
@@ -1564,8 +1564,8 @@
         "match": [
           "skills"
         ],
-        "stars": 48892,
-        "stars7d": 2280,
+        "stars": 49200,
+        "stars7d": 2378,
         "source_url": "https://github.com/emilkowalski/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1586,8 +1586,8 @@
         "match": [
           "replica-skill"
         ],
-        "stars": 4871,
-        "stars7d": 2057,
+        "stars": 5128,
+        "stars7d": 2112,
         "source_url": "https://github.com/Jakeschincariol/replica-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1599,18 +1599,18 @@
         }
       },
       {
-        "name": "earthtojake/text-to-cad",
-        "url": "https://github.com/earthtojake/text-to-cad",
+        "name": "latent-spaces/brag",
+        "url": "https://github.com/latent-spaces/brag",
         "tagline": {
-          "en": "Translates natural language into parametric CAD models and 3D printing workflows",
-          "zh": "Translates natural language into parametric CAD models and 3D printing workflows"
+          "en": "Transforms project directories and website URLs into shareable launch videos",
+          "zh": "Transforms project directories and website URLs into shareable launch videos"
         },
         "match": [
-          "text-to-cad"
+          "brag"
         ],
-        "stars": 22651,
-        "stars7d": 1781,
-        "source_url": "https://github.com/earthtojake/text-to-cad",
+        "stars": 18226,
+        "stars7d": 1826,
+        "source_url": "https://github.com/latent-spaces/brag",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1630,8 +1630,8 @@
         "match": [
           "skills"
         ],
-        "stars": 183170,
-        "stars7d": 1660,
+        "stars": 183402,
+        "stars7d": 1721,
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1643,18 +1643,18 @@
         }
       },
       {
-        "name": "latent-spaces/brag",
-        "url": "https://github.com/latent-spaces/brag",
+        "name": "earthtojake/text-to-cad",
+        "url": "https://github.com/earthtojake/text-to-cad",
         "tagline": {
-          "en": "Transforms project directories and website URLs into shareable launch videos.",
-          "zh": "Transforms project directories and website URLs into shareable launch videos."
+          "en": "Translates natural language into parametric CAD models and 3D printing workflows",
+          "zh": "Translates natural language into parametric CAD models and 3D printing workflows"
         },
         "match": [
-          "brag"
+          "text-to-cad"
         ],
-        "stars": 17796,
-        "stars7d": 1567,
-        "source_url": "https://github.com/latent-spaces/brag",
+        "stars": 22851,
+        "stars7d": 1712,
+        "source_url": "https://github.com/earthtojake/text-to-cad",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1676,7 +1676,7 @@
         "match": [
           "rea"
         ],
-        "stars": 372889,
+        "stars": 378396,
         "stars7d": null,
         "source_url": "https://github.com/morluto/rea",
         "source_date": null,
@@ -1698,7 +1698,7 @@
         "match": [
           "ecc"
         ],
-        "stars": 287275,
+        "stars": 288044,
         "stars7d": null,
         "source_url": "https://github.com/affaan-m/ECC",
         "source_date": null,
@@ -1720,7 +1720,7 @@
         "match": [
           "deepseek-harness"
         ],
-        "stars": 259402,
+        "stars": 260446,
         "stars7d": null,
         "source_url": "https://github.com/deepseek-ai/deepseek-harness",
         "source_date": null,
@@ -1742,7 +1742,7 @@
         "match": [
           "hermes-agent"
         ],
-        "stars": 256519,
+        "stars": 256790,
         "stars7d": null,
         "source_url": "https://github.com/NousResearch/hermes-agent",
         "source_date": null,
@@ -1764,7 +1764,7 @@
         "match": [
           "firecrawl"
         ],
-        "stars": 194663,
+        "stars": 194995,
         "stars7d": null,
         "source_url": "https://github.com/firecrawl/firecrawl",
         "source_date": null,
@@ -1786,7 +1786,7 @@
         "match": [
           "ponytail"
         ],
-        "stars": 174758,
+        "stars": 175485,
         "stars7d": null,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
@@ -1808,7 +1808,7 @@
         "match": [
           "langchain"
         ],
-        "stars": 148331,
+        "stars": 148388,
         "stars7d": null,
         "source_url": "https://github.com/langchain-ai/langchain",
         "source_date": null,
@@ -1830,7 +1830,7 @@
         "match": [
           "graphify"
         ],
-        "stars": 133873,
+        "stars": 134401,
         "stars7d": null,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
@@ -1852,7 +1852,7 @@
         "match": [
           "browser-use"
         ],
-        "stars": 118982,
+        "stars": 119056,
         "stars7d": null,
         "source_url": "https://github.com/browser-use/browser-use",
         "source_date": null,
@@ -1874,7 +1874,7 @@
         "match": [
           "gemini-cli"
         ],
-        "stars": 107563,
+        "stars": 107996,
         "stars7d": null,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
@@ -1896,7 +1896,7 @@
         "match": [
           "paperclip"
         ],
-        "stars": 106571,
+        "stars": 106933,
         "stars7d": null,
         "source_url": "https://github.com/paperclipai/paperclip",
         "source_date": null,
@@ -1918,7 +1918,7 @@
         "match": [
           "orca"
         ],
-        "stars": 103780,
+        "stars": 104912,
         "stars7d": null,
         "source_url": "https://github.com/stablyai/orca",
         "source_date": null,
@@ -1940,7 +1940,7 @@
         "match": [
           "claude-mem"
         ],
-        "stars": 102545,
+        "stars": 102799,
         "stars7d": null,
         "source_url": "https://github.com/thedotmack/claude-mem",
         "source_date": null,
@@ -1962,7 +1962,7 @@
         "match": [
           "taste-skill"
         ],
-        "stars": 101601,
+        "stars": 102000,
         "stars7d": null,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
@@ -1984,7 +1984,7 @@
         "match": [
           "agent-reach"
         ],
-        "stars": 101326,
+        "stars": 101724,
         "stars7d": null,
         "source_url": "https://github.com/Panniantong/Agent-Reach",
         "source_date": null,
@@ -2006,7 +2006,7 @@
         "match": [
           "ragflow"
         ],
-        "stars": 92762,
+        "stars": 92810,
         "stars7d": null,
         "source_url": "https://github.com/infiniflow/ragflow",
         "source_date": null,
@@ -2028,7 +2028,7 @@
         "match": [
           "archify"
         ],
-        "stars": 88273,
+        "stars": 88722,
         "stars7d": null,
         "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
@@ -2050,7 +2050,7 @@
         "match": [
           "crawl4ai"
         ],
-        "stars": 86118,
+        "stars": 86182,
         "stars7d": null,
         "source_url": "https://github.com/unclecode/crawl4ai",
         "source_date": null,
@@ -2072,7 +2072,7 @@
         "match": [
           "deer-flow"
         ],
-        "stars": 84341,
+        "stars": 84382,
         "stars7d": null,
         "source_url": "https://github.com/bytedance/deer-flow",
         "source_date": null,
@@ -2094,7 +2094,7 @@
         "match": [
           "omniroute"
         ],
-        "stars": 80370,
+        "stars": 80743,
         "stars7d": null,
         "source_url": "https://github.com/cheaper-inference/OmniRoute",
         "source_date": null,
@@ -2109,7 +2109,7 @@
     ],
     "rotate": false,
     "source": "The Skill Leaderboard · GitHub",
-    "updated_at": "2026-10-24",
+    "updated_at": "2026-10-25",
     "origin": "public",
     "product": [
       {
@@ -2122,7 +2122,7 @@
         "match": [
           "opencode"
         ],
-        "stars": 220597,
+        "stars": 221065,
         "stars7d": null,
         "source_url": "https://github.com/anomalyco/opencode",
         "source_date": null,
@@ -2144,7 +2144,7 @@
         "match": [
           "claude-code"
         ],
-        "stars": 153165,
+        "stars": 153283,
         "stars7d": null,
         "source_url": "https://github.com/anthropics/claude-code",
         "source_date": null,
@@ -2166,7 +2166,7 @@
         "match": [
           "codex"
         ],
-        "stars": 130642,
+        "stars": 130801,
         "stars7d": null,
         "source_url": "https://github.com/openai/codex",
         "source_date": null,
@@ -2188,7 +2188,7 @@
         "match": [
           "gemini-cli"
         ],
-        "stars": 107563,
+        "stars": 107996,
         "stars7d": null,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
@@ -2210,7 +2210,7 @@
         "match": [
           "openhands"
         ],
-        "stars": 91679,
+        "stars": 91744,
         "stars7d": null,
         "source_url": "https://github.com/OpenHands/OpenHands",
         "source_date": null,
@@ -2232,7 +2232,7 @@
         "match": [
           "cline"
         ],
-        "stars": 70784,
+        "stars": 70824,
         "stars7d": null,
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
@@ -2254,7 +2254,7 @@
         "match": [
           "goose"
         ],
-        "stars": 55594,
+        "stars": 55649,
         "stars7d": null,
         "source_url": "https://github.com/aaif-goose/goose",
         "source_date": null,
@@ -2276,7 +2276,7 @@
         "match": [
           "aider"
         ],
-        "stars": 49720,
+        "stars": 49737,
         "stars7d": null,
         "source_url": "https://github.com/Aider-AI/aider",
         "source_date": null,
@@ -2298,7 +2298,7 @@
         "match": [
           "continue"
         ],
-        "stars": 36302,
+        "stars": 36312,
         "stars7d": null,
         "source_url": "https://github.com/continuedev/continue",
         "source_date": null,
@@ -2320,7 +2320,7 @@
         "match": [
           "qwen-code"
         ],
-        "stars": 28675,
+        "stars": 28703,
         "stars7d": null,
         "source_url": "https://github.com/QwenLM/qwen-code",
         "source_date": null,
@@ -2342,7 +2342,7 @@
         "match": [
           "kimi-cli"
         ],
-        "stars": 11420,
+        "stars": 11421,
         "stars7d": null,
         "source_url": "https://github.com/MoonshotAI/kimi-cli",
         "source_date": null,
