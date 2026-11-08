@@ -1,7 +1,7 @@
 {
   "version": 1,
   "course_sources": [],
-  "updated_at": "2026-11-08",
+  "updated_at": "2026-11-09",
   "skills": [
     {
       "id": "rules_file",
@@ -1234,8 +1234,8 @@
         "match": [
           "security-audit-skill"
         ],
-        "stars": 64829,
-        "stars7d": 10142,
+        "stars": 66342,
+        "stars7d": 10456,
         "source_url": "https://github.com/cloudflare/security-audit-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1256,8 +1256,8 @@
         "match": [
           "skills"
         ],
-        "stars": 317177,
-        "stars7d": 9335,
+        "stars": 318152,
+        "stars7d": 9272,
         "source_url": "https://github.com/mattpocock/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1278,8 +1278,8 @@
         "match": [
           "unslop"
         ],
-        "stars": 11071,
-        "stars7d": 8781,
+        "stars": 11629,
+        "stars7d": 7447,
         "source_url": "https://github.com/heydamir/unslop",
         "source_date": null,
         "source_type": "catalog",
@@ -1294,14 +1294,14 @@
         "name": "pbakaus/impeccable",
         "url": "https://github.com/pbakaus/impeccable",
         "tagline": {
-          "en": "Design, redesign, and animate frontends including websites, dashboards, app UI components, native iOS and Android screens, and design systems.",
-          "zh": "Design, redesign, and animate frontends including websites, dashboards, app UI components, native iOS and Android screens, and design systems."
+          "en": "Design and audit frontend interfaces.",
+          "zh": "Design and audit frontend interfaces."
         },
         "match": [
           "impeccable"
         ],
-        "stars": 105140,
-        "stars7d": 7494,
+        "stars": 105891,
+        "stars7d": 7045,
         "source_url": "https://github.com/pbakaus/impeccable",
         "source_date": null,
         "source_type": "catalog",
@@ -1322,8 +1322,8 @@
         "match": [
           "hallmark"
         ],
-        "stars": 49920,
-        "stars7d": 6527,
+        "stars": 50598,
+        "stars7d": 6222,
         "source_url": "https://github.com/Nutlope/hallmark",
         "source_date": null,
         "source_type": "catalog",
@@ -1344,31 +1344,9 @@
         "match": [
           "claude-code-game-studios"
         ],
-        "stars": 36323,
-        "stars7d": 5670,
+        "stars": 36801,
+        "stars7d": 5136,
         "source_url": "https://github.com/Donchitos/Claude-Code-Game-Studios",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "patch-gg/pixelfx",
-        "url": "https://github.com/patch-gg/pixelfx",
-        "tagline": {
-          "en": "Create pixel art effects and sprite sheets.",
-          "zh": "Create pixel art effects and sprite sheets."
-        },
-        "match": [
-          "pixelfx"
-        ],
-        "stars": 5728,
-        "stars7d": 5057,
-        "source_url": "https://github.com/patch-gg/pixelfx",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1388,8 +1366,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 186117,
-        "stars7d": 4887,
+        "stars": 186643,
+        "stars7d": 4819,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "catalog",
@@ -1404,14 +1382,14 @@
         "name": "Leonxlnx/taste-skill",
         "url": "https://github.com/Leonxlnx/taste-skill",
         "tagline": {
-          "en": "This skill enables the creation and review of landing pages for SaaS, AI, and developer tools across stacks including React, Next.js, and Tailwind, focusing on plain copy, consistent spacing, and high-fidelity product UI.",
-          "zh": "This skill enables the creation and review of landing pages for SaaS, AI, and developer tools across stacks including React, Next.js, and Tailwind, focusing on plain copy, consistent spacing, and high-fidelity product UI."
+          "en": "Build and polish professional landing pages.",
+          "zh": "Build and polish professional landing pages."
         },
         "match": [
           "taste-skill"
         ],
-        "stars": 111419,
-        "stars7d": 4791,
+        "stars": 111856,
+        "stars7d": 4441,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1432,9 +1410,31 @@
         "match": [
           "superpowers"
         ],
-        "stars": 313851,
-        "stars7d": 4147,
+        "stars": 314369,
+        "stars7d": 4021,
         "source_url": "https://github.com/obra/superpowers",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "patch-gg/pixelfx",
+        "url": "https://github.com/patch-gg/pixelfx",
+        "tagline": {
+          "en": "Create pixel art effects and sprite sheets.",
+          "zh": "Create pixel art effects and sprite sheets."
+        },
+        "match": [
+          "pixelfx"
+        ],
+        "stars": 5983,
+        "stars7d": 3948,
+        "source_url": "https://github.com/patch-gg/pixelfx",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1448,37 +1448,15 @@
         "name": "Graphify-Labs/graphify",
         "url": "https://github.com/Graphify-Labs/graphify",
         "tagline": {
-          "en": "The tool analyzes codebase architecture and file relationships to generate interactive HTML visualizations, GraphRAG-ready JSON, and plain-language reports.",
-          "zh": "The tool analyzes codebase architecture and file relationships to generate interactive HTML visualizations, GraphRAG-ready JSON, and plain-language reports."
+          "en": "Map codebases into navigable knowledge graphs.",
+          "zh": "Map codebases into navigable knowledge graphs."
         },
         "match": [
           "graphify"
         ],
-        "stars": 143761,
-        "stars7d": 4017,
+        "stars": 144223,
+        "stars7d": 3937,
         "source_url": "https://github.com/Graphify-Labs/graphify",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "multica-ai/andrej-karpathy-skills",
-        "url": "https://github.com/multica-ai/andrej-karpathy-skills",
-        "tagline": {
-          "en": "Make smaller, verifiable changes with coding agents.",
-          "zh": "Make smaller, verifiable changes with coding agents."
-        },
-        "match": [
-          "andrej-karpathy-skills"
-        ],
-        "stars": 230458,
-        "stars7d": 3306,
-        "source_url": "https://github.com/multica-ai/andrej-karpathy-skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1498,8 +1476,8 @@
         "match": [
           "lemo-opuscar"
         ],
-        "stars": 13220,
-        "stars7d": 3288,
+        "stars": 13569,
+        "stars7d": 3258,
         "source_url": "https://github.com/lemomo-ai/lemo-opuscar",
         "source_date": null,
         "source_type": "catalog",
@@ -1514,14 +1492,14 @@
         "name": "nextlevelbuilder/ui-ux-pro-max-skill",
         "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "tagline": {
-          "en": "Design user interfaces and multi-platform creative assets.",
-          "zh": "Design user interfaces and multi-platform creative assets."
+          "en": "Design user interfaces and multi-format creative assets.",
+          "zh": "Design user interfaces and multi-format creative assets."
         },
         "match": [
           "ui-ux-pro-max-skill"
         ],
-        "stars": 146365,
-        "stars7d": 3153,
+        "stars": 146731,
+        "stars7d": 3103,
         "source_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1542,8 +1520,8 @@
         "match": [
           "humanizer"
         ],
-        "stars": 65825,
-        "stars7d": 2983,
+        "stars": 66167,
+        "stars7d": 3052,
         "source_url": "https://github.com/blader/humanizer",
         "source_date": null,
         "source_type": "catalog",
@@ -1558,18 +1536,40 @@
         "name": "anthropics/skills",
         "url": "https://github.com/anthropics/skills",
         "tagline": {
-          "en": "A p5.js implementation for creating original algorithmic and generative art through seeded randomness.",
-          "zh": "A p5.js implementation for creating original algorithmic and generative art through seeded randomness."
+          "en": "Implement specialized capabilities for AI agents.",
+          "zh": "Implement specialized capabilities for AI agents."
         },
         "match": [
           "skills"
         ],
-        "stars": 188358,
-        "stars7d": 2684,
+        "stars": 189143,
+        "stars7d": 3030,
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": "skills",
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "multica-ai/andrej-karpathy-skills",
+        "url": "https://github.com/multica-ai/andrej-karpathy-skills",
+        "tagline": {
+          "en": "Make smaller, verifiable changes with coding agents.",
+          "zh": "Make smaller, verifiable changes with coding agents."
+        },
+        "match": [
+          "andrej-karpathy-skills"
+        ],
+        "stars": 230768,
+        "stars7d": 3016,
+        "source_url": "https://github.com/multica-ai/andrej-karpathy-skills",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1586,8 +1586,8 @@
         "match": [
           "anatomy"
         ],
-        "stars": 25665,
-        "stars7d": 2515,
+        "stars": 25893,
+        "stars7d": 2317,
         "source_url": "https://github.com/wheresryan22/anatomy",
         "source_date": null,
         "source_type": "catalog",
@@ -1599,18 +1599,40 @@
         }
       },
       {
-        "name": "AgriciDaniel/claude-seo",
-        "url": "https://github.com/AgriciDaniel/claude-seo",
+        "name": "garrytan/gstack",
+        "url": "https://github.com/garrytan/gstack",
         "tagline": {
-          "en": "Audit websites for SEO and AI search visibility.",
-          "zh": "Audit websites for SEO and AI search visibility."
+          "en": "Automate engineering oversight and agent skill development.",
+          "zh": "Automate engineering oversight and agent skill development."
         },
         "match": [
-          "claude-seo"
+          "gstack"
         ],
-        "stars": 27155,
-        "stars7d": 2400,
-        "source_url": "https://github.com/AgriciDaniel/claude-seo",
+        "stars": 140724,
+        "stars7d": 2138,
+        "source_url": "https://github.com/garrytan/gstack",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "scenario-labs/skills",
+        "url": "https://github.com/scenario-labs/skills",
+        "tagline": {
+          "en": "Automate pull request management and asset generation.",
+          "zh": "Automate pull request management and asset generation."
+        },
+        "match": [
+          "skills"
+        ],
+        "stars": 3524,
+        "stars7d": 2101,
+        "source_url": "https://github.com/scenario-labs/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1630,31 +1652,9 @@
         "match": [
           "diagram-design"
         ],
-        "stars": 65586,
-        "stars7d": 2224,
+        "stars": 65767,
+        "stars7d": 2097,
         "source_url": "https://github.com/cathrynlavery/diagram-design",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "scenario-labs/skills",
-        "url": "https://github.com/scenario-labs/skills",
-        "tagline": {
-          "en": "Capabilities include generating images, video, 3D models, and textures via Scenario, as well as triaging and resolving GitHub PR review comments.",
-          "zh": "Capabilities include generating images, video, 3D models, and textures via Scenario, as well as triaging and resolving GitHub PR review comments."
-        },
-        "match": [
-          "skills"
-        ],
-        "stars": 3477,
-        "stars7d": 2146,
-        "source_url": "https://github.com/scenario-labs/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1667,18 +1667,18 @@
     ],
     "agent": [
       {
-        "name": "Ebony-Vinyl/dsh-our-free-model",
-        "url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
+        "name": "ccch1mneyyy/dsh-Go",
+        "url": "https://github.com/ccch1mneyyy/dsh-Go",
         "tagline": {
-          "en": "在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap.",
-          "zh": "在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap."
+          "en": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
+          "zh": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。"
         },
         "match": [
-          "dsh-our-free-model"
+          "dsh-go"
         ],
-        "stars": 65376,
-        "stars7d": 11074,
-        "source_url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
+        "stars": 16006,
+        "stars7d": 11422,
+        "source_url": "https://github.com/ccch1mneyyy/dsh-Go",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1689,18 +1689,18 @@
         }
       },
       {
-        "name": "ccch1mneyyy/dsh-Go",
-        "url": "https://github.com/ccch1mneyyy/dsh-Go",
+        "name": "Ebony-Vinyl/dsh-our-free-model",
+        "url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
         "tagline": {
-          "en": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
-          "zh": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。"
+          "en": "在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap.",
+          "zh": "在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap."
         },
         "match": [
-          "dsh-go"
+          "dsh-our-free-model"
         ],
-        "stars": 14301,
-        "stars7d": 10737,
-        "source_url": "https://github.com/ccch1mneyyy/dsh-Go",
+        "stars": 66140,
+        "stars7d": 10428,
+        "source_url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1720,8 +1720,8 @@
         "match": [
           "deepseek-harness"
         ],
-        "stars": 275722,
-        "stars7d": 8307,
+        "stars": 276439,
+        "stars7d": 8140,
         "source_url": "https://github.com/deepseek-ai/deepseek-harness",
         "source_date": null,
         "source_type": "repository",
@@ -1742,8 +1742,8 @@
         "match": [
           "orca"
         ],
-        "stars": 118548,
-        "stars7d": 6858,
+        "stars": 119239,
+        "stars7d": 6807,
         "source_url": "https://github.com/stablyai/orca",
         "source_date": null,
         "source_type": "repository",
@@ -1764,8 +1764,8 @@
         "match": [
           "claude-mem"
         ],
-        "stars": 114434,
-        "stars7d": 6677,
+        "stars": 114870,
+        "stars7d": 5735,
         "source_url": "https://github.com/thedotmack/claude-mem",
         "source_date": null,
         "source_type": "repository",
@@ -1786,8 +1786,8 @@
         "match": [
           "ecc"
         ],
-        "stars": 299138,
-        "stars7d": 5121,
+        "stars": 299675,
+        "stars7d": 4925,
         "source_url": "https://github.com/affaan-m/ECC",
         "source_date": null,
         "source_type": "repository",
@@ -1808,8 +1808,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 186354,
-        "stars7d": 4860,
+        "stars": 186889,
+        "stars7d": 4814,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "repository",
@@ -1830,8 +1830,8 @@
         "match": [
           "taste-skill"
         ],
-        "stars": 111627,
-        "stars7d": 4638,
+        "stars": 112019,
+        "stars7d": 4301,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "repository",
@@ -1852,8 +1852,8 @@
         "match": [
           "hyperframes"
         ],
-        "stars": 80545,
-        "stars7d": 4008,
+        "stars": 81058,
+        "stars7d": 3987,
         "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "repository",
@@ -1874,8 +1874,8 @@
         "match": [
           "graphify"
         ],
-        "stars": 143965,
-        "stars7d": 3961,
+        "stars": 144466,
+        "stars7d": 3962,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
         "source_type": "repository",
@@ -1896,8 +1896,8 @@
         "match": [
           "deeptutor"
         ],
-        "stars": 56345,
-        "stars7d": 3611,
+        "stars": 56943,
+        "stars7d": 3327,
         "source_url": "https://github.com/HKUDS/DeepTutor",
         "source_date": null,
         "source_type": "repository",
@@ -1918,8 +1918,8 @@
         "match": [
           "ppt-master"
         ],
-        "stars": 74528,
-        "stars7d": 2887,
+        "stars": 74886,
+        "stars7d": 2800,
         "source_url": "https://github.com/hugohe3/ppt-master",
         "source_date": null,
         "source_type": "repository",
@@ -1940,8 +1940,8 @@
         "match": [
           "agent-reach"
         ],
-        "stars": 109988,
-        "stars7d": 2784,
+        "stars": 110286,
+        "stars7d": 2704,
         "source_url": "https://github.com/Panniantong/Agent-Reach",
         "source_date": null,
         "source_type": "repository",
@@ -1962,31 +1962,9 @@
         "match": [
           "paperclip"
         ],
-        "stars": 112012,
-        "stars7d": 2577,
+        "stars": 112311,
+        "stars7d": 2421,
         "source_url": "https://github.com/paperclipai/paperclip",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "NousResearch/hermes-agent",
-        "url": "https://github.com/NousResearch/hermes-agent",
-        "tagline": {
-          "en": "The agent that grows with you",
-          "zh": "The agent that grows with you"
-        },
-        "match": [
-          "hermes-agent"
-        ],
-        "stars": 261488,
-        "stars7d": 2324,
-        "source_url": "https://github.com/NousResearch/hermes-agent",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2006,8 +1984,8 @@
         "match": [
           "archify"
         ],
-        "stars": 94453,
-        "stars7d": 2323,
+        "stars": 94715,
+        "stars7d": 2342,
         "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "repository",
@@ -2019,18 +1997,18 @@
         }
       },
       {
-        "name": "cheaper-inference/OmniRoute",
-        "url": "https://github.com/cheaper-inference/OmniRoute",
+        "name": "NousResearch/hermes-agent",
+        "url": "https://github.com/NousResearch/hermes-agent",
         "tagline": {
-          "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
-          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
+          "en": "The agent that grows with you",
+          "zh": "The agent that grows with you"
         },
         "match": [
-          "omniroute"
+          "hermes-agent"
         ],
-        "stars": 85439,
-        "stars7d": 2222,
-        "source_url": "https://github.com/cheaper-inference/OmniRoute",
+        "stars": 261743,
+        "stars7d": 2255,
+        "source_url": "https://github.com/NousResearch/hermes-agent",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2050,8 +2028,8 @@
         "match": [
           "firecrawl"
         ],
-        "stars": 199511,
-        "stars7d": 2121,
+        "stars": 199796,
+        "stars7d": 2134,
         "source_url": "https://github.com/firecrawl/firecrawl",
         "source_date": null,
         "source_type": "repository",
@@ -2072,8 +2050,8 @@
         "match": [
           "herdr"
         ],
-        "stars": 49091,
-        "stars7d": 1969,
+        "stars": 49410,
+        "stars7d": 2100,
         "source_url": "https://github.com/herdrdev/herdr",
         "source_date": null,
         "source_type": "repository",
@@ -2085,18 +2063,40 @@
         }
       },
       {
-        "name": "microsoft/TokenEconomizer",
-        "url": "https://github.com/microsoft/TokenEconomizer",
+        "name": "cheaper-inference/OmniRoute",
+        "url": "https://github.com/cheaper-inference/OmniRoute",
         "tagline": {
-          "en": "Experience-Driven Black-Box Cost Control for Coding Agents",
-          "zh": "Experience-Driven Black-Box Cost Control for Coding Agents"
+          "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
+          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
         },
         "match": [
-          "tokeneconomizer"
+          "omniroute"
         ],
-        "stars": 4948,
-        "stars7d": 1960,
-        "source_url": "https://github.com/microsoft/TokenEconomizer",
+        "stars": 85704,
+        "stars7d": 2087,
+        "source_url": "https://github.com/cheaper-inference/OmniRoute",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "career-ops-hq/career-ops",
+        "url": "https://github.com/career-ops-hq/career-ops",
+        "tagline": {
+          "en": "Open-source AI job search agent and job finder: scan job boards, score each job 1-5 against your CV before you apply, tailor an ATS-friendly resume and cover letter, get interview prep and an application tracker. It helps you fill in each application; you press Submit. Runs locally in Codex, OpenCode and other AI CLIs, or as a Claude Code plugin.",
+          "zh": "Open-source AI job search agent and job finder: scan job boards, score each job 1-5 against your CV before you apply, tailor an ATS-friendly resume and cover letter, get interview prep and an application tracker. It helps you fill in each application; you press Submit. Runs locally in Codex, OpenCode and other AI CLIs, or as a Claude Code plugin."
+        },
+        "match": [
+          "career-ops"
+        ],
+        "stars": 81186,
+        "stars7d": 1919,
+        "source_url": "https://github.com/career-ops-hq/career-ops",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2109,7 +2109,7 @@
     ],
     "rotate": false,
     "source": "The Skill Leaderboard · GitHub",
-    "updated_at": "2026-11-08",
+    "updated_at": "2026-11-09",
     "origin": "public",
     "product": [
       {
@@ -2122,8 +2122,8 @@
         "match": [
           "opencode"
         ],
-        "stars": 225282,
-        "stars7d": 1679,
+        "stars": 225519,
+        "stars7d": 1692,
         "source_url": "https://github.com/anomalyco/opencode",
         "source_date": null,
         "source_type": "repository",
@@ -2144,8 +2144,8 @@
         "match": [
           "claude-code"
         ],
-        "stars": 154909,
-        "stars7d": 825,
+        "stars": 154998,
+        "stars7d": 832,
         "source_url": "https://github.com/anthropics/claude-code",
         "source_date": null,
         "source_type": "repository",
@@ -2166,8 +2166,8 @@
         "match": [
           "codex"
         ],
-        "stars": 133586,
-        "stars7d": 1105,
+        "stars": 133805,
+        "stars7d": 1076,
         "source_url": "https://github.com/openai/codex",
         "source_date": null,
         "source_type": "repository",
@@ -2188,8 +2188,8 @@
         "match": [
           "gemini-cli"
         ],
-        "stars": 108769,
-        "stars7d": 115,
+        "stars": 108784,
+        "stars7d": 129,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
         "source_type": "repository",
@@ -2210,7 +2210,7 @@
         "match": [
           "openhands"
         ],
-        "stars": 92896,
+        "stars": 92972,
         "stars7d": 531,
         "source_url": "https://github.com/OpenHands/OpenHands",
         "source_date": null,
@@ -2232,8 +2232,8 @@
         "match": [
           "cline"
         ],
-        "stars": 71449,
-        "stars7d": 335,
+        "stars": 71473,
+        "stars7d": 292,
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
         "source_type": "repository",
@@ -2254,8 +2254,8 @@
         "match": [
           "goose"
         ],
-        "stars": 56336,
-        "stars7d": 286,
+        "stars": 56371,
+        "stars7d": 283,
         "source_url": "https://github.com/aaif-goose/goose",
         "source_date": null,
         "source_type": "repository",
@@ -2276,8 +2276,8 @@
         "match": [
           "aider"
         ],
-        "stars": 50012,
-        "stars7d": 157,
+        "stars": 50026,
+        "stars7d": 142,
         "source_url": "https://github.com/Aider-AI/aider",
         "source_date": null,
         "source_type": "repository",
@@ -2298,8 +2298,8 @@
         "match": [
           "continue"
         ],
-        "stars": 36429,
-        "stars7d": 44,
+        "stars": 36432,
+        "stars7d": 36,
         "source_url": "https://github.com/continuedev/continue",
         "source_date": null,
         "source_type": "repository",
@@ -2320,8 +2320,8 @@
         "match": [
           "qwen-code"
         ],
-        "stars": 29074,
-        "stars7d": 222,
+        "stars": 29106,
+        "stars7d": 247,
         "source_url": "https://github.com/QwenLM/qwen-code",
         "source_date": null,
         "source_type": "repository",
@@ -2342,7 +2342,7 @@
         "match": [
           "kimi-cli"
         ],
-        "stars": 11420,
+        "stars": 11419,
         "stars7d": -2,
         "source_url": "https://github.com/MoonshotAI/kimi-cli",
         "source_date": null,
