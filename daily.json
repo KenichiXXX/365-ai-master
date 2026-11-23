@@ -1,7 +1,7 @@
 {
   "version": 1,
   "course_sources": [],
-  "updated_at": "2026-11-23",
+  "updated_at": "2026-11-24",
   "skills": [
     {
       "id": "rules_file",
@@ -1225,6 +1225,28 @@
   "rankings": {
     "skill": [
       {
+        "name": "tt-a1i/archify",
+        "url": "https://github.com/tt-a1i/archify",
+        "tagline": {
+          "en": "Visualize system architecture and technical workflows.",
+          "zh": "Visualize system architecture and technical workflows."
+        },
+        "match": [
+          "archify"
+        ],
+        "stars": 98968,
+        "stars7d": 26480,
+        "source_url": "https://github.com/tt-a1i/archify",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
         "name": "elementalsouls/Claude-BugHunter",
         "url": "https://github.com/elementalsouls/Claude-BugHunter",
         "tagline": {
@@ -1234,8 +1256,8 @@
         "match": [
           "claude-bughunter"
         ],
-        "stars": 16865,
-        "stars7d": 10974,
+        "stars": 18880,
+        "stars7d": 11813,
         "source_url": "https://github.com/elementalsouls/Claude-BugHunter",
         "source_date": null,
         "source_type": "catalog",
@@ -1256,8 +1278,8 @@
         "match": [
           "rust-anything"
         ],
-        "stars": 7718,
-        "stars7d": 7718,
+        "stars": 8447,
+        "stars7d": 8446,
         "source_url": "https://github.com/erkamyaman/rust-anything",
         "source_date": null,
         "source_type": "catalog",
@@ -1278,9 +1300,31 @@
         "match": [
           "superpowers"
         ],
-        "stars": 323819,
-        "stars7d": 5973,
+        "stars": 324617,
+        "stars7d": 6285,
         "source_url": "https://github.com/obra/superpowers",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "nexu-io/openmotion",
+        "url": "https://github.com/nexu-io/openmotion",
+        "tagline": {
+          "en": "Create motion design briefs and brandkits.",
+          "zh": "Create motion design briefs and brandkits."
+        },
+        "match": [
+          "openmotion"
+        ],
+        "stars": 15594,
+        "stars7d": 5565,
+        "source_url": "https://github.com/nexu-io/openmotion",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1300,8 +1344,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 196642,
-        "stars7d": 5481,
+        "stars": 197249,
+        "stars7d": 5431,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "catalog",
@@ -1322,31 +1366,9 @@
         "match": [
           "skills"
         ],
-        "stars": 330097,
-        "stars7d": 5320,
+        "stars": 331014,
+        "stars7d": 5384,
         "source_url": "https://github.com/mattpocock/skills",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "nexu-io/openmotion",
-        "url": "https://github.com/nexu-io/openmotion",
-        "tagline": {
-          "en": "Create motion design briefs and brandkits.",
-          "zh": "Create motion design briefs and brandkits."
-        },
-        "match": [
-          "openmotion"
-        ],
-        "stars": 14977,
-        "stars7d": 4998,
-        "source_url": "https://github.com/nexu-io/openmotion",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1366,8 +1388,8 @@
         "match": [
           "last30days-skill"
         ],
-        "stars": 72368,
-        "stars7d": 4657,
+        "stars": 73131,
+        "stars7d": 5305,
         "source_url": "https://github.com/mvanhorn/last30days-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1388,8 +1410,8 @@
         "match": [
           "godogen"
         ],
-        "stars": 7380,
-        "stars7d": 4381,
+        "stars": 7387,
+        "stars7d": 4388,
         "source_url": "https://github.com/htdt/godogen",
         "source_date": null,
         "source_type": "catalog",
@@ -1410,8 +1432,8 @@
         "match": [
           "impeccable"
         ],
-        "stars": 114767,
-        "stars7d": 4295,
+        "stars": 115338,
+        "stars7d": 4233,
         "source_url": "https://github.com/pbakaus/impeccable",
         "source_date": null,
         "source_type": "catalog",
@@ -1423,18 +1445,18 @@
         }
       },
       {
-        "name": "Leonxlnx/taste-skill",
-        "url": "https://github.com/Leonxlnx/taste-skill",
+        "name": "mjmirza/app-store-compliance",
+        "url": "https://github.com/mjmirza/app-store-compliance",
         "tagline": {
-          "en": "Build company websites with cohesive visual design.",
-          "zh": "Build company websites with cohesive visual design."
+          "en": "Audit mobile apps for store submission compliance.",
+          "zh": "Audit mobile apps for store submission compliance."
         },
         "match": [
-          "taste-skill"
+          "app-store-compliance"
         ],
-        "stars": 119917,
-        "stars7d": 4048,
-        "source_url": "https://github.com/Leonxlnx/taste-skill",
+        "stars": 4498,
+        "stars7d": 4047,
+        "source_url": "https://github.com/mjmirza/app-store-compliance",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1454,9 +1476,31 @@
         "match": [
           "hallmark"
         ],
-        "stars": 59276,
-        "stars7d": 4035,
+        "stars": 59839,
+        "stars7d": 4002,
         "source_url": "https://github.com/Nutlope/hallmark",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "Build company websites with cohesive visual design.",
+          "zh": "Build company websites with cohesive visual design."
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 120422,
+        "stars7d": 3859,
+        "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1476,8 +1520,8 @@
         "match": [
           "security-audit-skill"
         ],
-        "stars": 76873,
-        "stars7d": 3982,
+        "stars": 77324,
+        "stars7d": 3780,
         "source_url": "https://github.com/cloudflare/security-audit-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1498,8 +1542,8 @@
         "match": [
           "skills"
         ],
-        "stars": 198747,
-        "stars7d": 3746,
+        "stars": 199250,
+        "stars7d": 3572,
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1520,8 +1564,8 @@
         "match": [
           "graphify"
         ],
-        "stars": 151797,
-        "stars7d": 3714,
+        "stars": 152285,
+        "stars7d": 3544,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
         "source_type": "catalog",
@@ -1542,8 +1586,8 @@
         "match": [
           "unslop"
         ],
-        "stars": 19980,
-        "stars7d": 3643,
+        "stars": 20575,
+        "stars7d": 3540,
         "source_url": "https://github.com/heydamir/unslop",
         "source_date": null,
         "source_type": "catalog",
@@ -1555,84 +1599,18 @@
         }
       },
       {
-        "name": "mjmirza/app-store-compliance",
-        "url": "https://github.com/mjmirza/app-store-compliance",
+        "name": "heygen-com/hyperframes",
+        "url": "https://github.com/heygen-com/hyperframes",
         "tagline": {
-          "en": "Audit mobile apps for store submission compliance.",
-          "zh": "Audit mobile apps for store submission compliance."
+          "en": "Compose and render branded motion graphics videos.",
+          "zh": "Compose and render branded motion graphics videos."
         },
         "match": [
-          "app-store-compliance"
+          "hyperframes"
         ],
-        "stars": 3698,
-        "stars7d": 3249,
-        "source_url": "https://github.com/mjmirza/app-store-compliance",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "lemomo-ai/lemo-opuscar",
-        "url": "https://github.com/lemomo-ai/lemo-opuscar",
-        "tagline": {
-          "en": "Create films from stories using code-driven visual styles.",
-          "zh": "Create films from stories using code-driven visual styles."
-        },
-        "match": [
-          "lemo-opuscar"
-        ],
-        "stars": 19704,
-        "stars7d": 3194,
-        "source_url": "https://github.com/lemomo-ai/lemo-opuscar",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "nextlevelbuilder/ui-ux-pro-max-skill",
-        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-        "tagline": {
-          "en": "Design interfaces and generate tailored design systems.",
-          "zh": "Design interfaces and generate tailored design systems."
-        },
-        "match": [
-          "ui-ux-pro-max-skill"
-        ],
-        "stars": 152675,
-        "stars7d": 2940,
-        "source_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "blader/humanizer",
-        "url": "https://github.com/blader/humanizer",
-        "tagline": {
-          "en": "Edit AI-written text into natural prose.",
-          "zh": "Edit AI-written text into natural prose."
-        },
-        "match": [
-          "humanizer"
-        ],
-        "stars": 72144,
-        "stars7d": 2836,
-        "source_url": "https://github.com/blader/humanizer",
+        "stars": 88632,
+        "stars7d": 3281,
+        "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1652,9 +1630,31 @@
         "match": [
           "diagram-design"
         ],
-        "stars": 70059,
-        "stars7d": 2780,
+        "stars": 70677,
+        "stars7d": 3145,
         "source_url": "https://github.com/cathrynlavery/diagram-design",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "lemomo-ai/lemo-opuscar",
+        "url": "https://github.com/lemomo-ai/lemo-opuscar",
+        "tagline": {
+          "en": "Create films from stories using code-driven visual styles.",
+          "zh": "Create films from stories using code-driven visual styles."
+        },
+        "match": [
+          "lemo-opuscar"
+        ],
+        "stars": 20116,
+        "stars7d": 3058,
+        "source_url": "https://github.com/lemomo-ai/lemo-opuscar",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1676,8 +1676,8 @@
         "match": [
           "dsh-our-free-model"
         ],
-        "stars": 83931,
-        "stars7d": 8209,
+        "stars": 85023,
+        "stars7d": 7764,
         "source_url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
         "source_date": null,
         "source_type": "repository",
@@ -1698,8 +1698,8 @@
         "match": [
           "orca"
         ],
-        "stars": 132918,
-        "stars7d": 7211,
+        "stars": 134414,
+        "stars7d": 7696,
         "source_url": "https://github.com/stablyai/orca",
         "source_date": null,
         "source_type": "repository",
@@ -1720,9 +1720,31 @@
         "match": [
           "dsh-go"
         ],
-        "stars": 30153,
-        "stars7d": 6431,
+        "stars": 30737,
+        "stars7d": 5998,
         "source_url": "https://github.com/ccch1mneyyy/dsh-Go",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "firecrawl/firecrawl",
+        "url": "https://github.com/firecrawl/firecrawl",
+        "tagline": {
+          "en": "Knowledge infrastructure to make your agents smarter. Search, scrape and access 550+ data providers through one API.",
+          "zh": "Knowledge infrastructure to make your agents smarter. Search, scrape and access 550+ data providers through one API."
+        },
+        "match": [
+          "firecrawl"
+        ],
+        "stars": 207835,
+        "stars7d": 5494,
+        "source_url": "https://github.com/firecrawl/firecrawl",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1742,8 +1764,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 196845,
-        "stars7d": 5428,
+        "stars": 197482,
+        "stars7d": 5357,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "repository",
@@ -1764,53 +1786,9 @@
         "match": [
           "ecc"
         ],
-        "stars": 308979,
-        "stars7d": 5182,
+        "stars": 309532,
+        "stars7d": 4966,
         "source_url": "https://github.com/affaan-m/ECC",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "firecrawl/firecrawl",
-        "url": "https://github.com/firecrawl/firecrawl",
-        "tagline": {
-          "en": "Knowledge infrastructure to make your agents smarter. Search, scrape and access 550+ data providers through one API.",
-          "zh": "Knowledge infrastructure to make your agents smarter. Search, scrape and access 550+ data providers through one API."
-        },
-        "match": [
-          "firecrawl"
-        ],
-        "stars": 206973,
-        "stars7d": 4928,
-        "source_url": "https://github.com/firecrawl/firecrawl",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "deepseek-ai/deepseek-harness",
-        "url": "https://github.com/deepseek-ai/deepseek-harness",
-        "tagline": {
-          "en": "DeepSeek Harness: Everything is a Plugin.",
-          "zh": "DeepSeek Harness: Everything is a Plugin."
-        },
-        "match": [
-          "deepseek-harness"
-        ],
-        "stars": 285536,
-        "stars7d": 3942,
-        "source_url": "https://github.com/deepseek-ai/deepseek-harness",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1830,9 +1808,53 @@
         "match": [
           "taste-skill"
         ],
-        "stars": 120087,
-        "stars7d": 3901,
+        "stars": 120626,
+        "stars7d": 3772,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "deepseek-ai/deepseek-harness",
+        "url": "https://github.com/deepseek-ai/deepseek-harness",
+        "tagline": {
+          "en": "DeepSeek Harness: Everything is a Plugin.",
+          "zh": "DeepSeek Harness: Everything is a Plugin."
+        },
+        "match": [
+          "deepseek-harness"
+        ],
+        "stars": 286051,
+        "stars7d": 3735,
+        "source_url": "https://github.com/deepseek-ai/deepseek-harness",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "heygen-com/hyperframes",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "tagline": {
+          "en": "Open-source AI video editor: edit your own footage, or create and remake any video with Claude Code, Codex or the free Studio app. Write HTML, render MP4. By HeyGen.",
+          "zh": "Open-source AI video editor: edit your own footage, or create and remake any video with Claude Code, Codex or the free Studio app. Write HTML, render MP4. By HeyGen."
+        },
+        "match": [
+          "hyperframes"
+        ],
+        "stars": 88895,
+        "stars7d": 3685,
+        "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1852,8 +1874,8 @@
         "match": [
           "ffmpeg-skill"
         ],
-        "stars": 9684,
-        "stars7d": 3735,
+        "stars": 10197,
+        "stars7d": 3587,
         "source_url": "https://github.com/kajisho5/ffmpeg-skill",
         "source_date": null,
         "source_type": "repository",
@@ -1874,31 +1896,9 @@
         "match": [
           "graphify"
         ],
-        "stars": 152020,
-        "stars7d": 3639,
+        "stars": 152509,
+        "stars7d": 3507,
         "source_url": "https://github.com/Graphify-Labs/graphify",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "heygen-com/hyperframes",
-        "url": "https://github.com/heygen-com/hyperframes",
-        "tagline": {
-          "en": "AI video you can actually edit. HyperFrames is a free, open-source AI video editor. Describe any video and get a real project you can change down to the frame.",
-          "zh": "AI video you can actually edit. HyperFrames is a free, open-source AI video editor. Describe any video and get a real project you can change down to the frame."
-        },
-        "match": [
-          "hyperframes"
-        ],
-        "stars": 88250,
-        "stars7d": 3533,
-        "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1918,8 +1918,8 @@
         "match": [
           "deeptutor"
         ],
-        "stars": 61586,
-        "stars7d": 2117,
+        "stars": 61923,
+        "stars7d": 2158,
         "source_url": "https://github.com/HKUDS/DeepTutor",
         "source_date": null,
         "source_type": "repository",
@@ -1940,9 +1940,31 @@
         "match": [
           "ppt-master"
         ],
-        "stars": 79271,
-        "stars7d": 2110,
+        "stars": 79564,
+        "stars7d": 2040,
         "source_url": "https://github.com/hugohe3/ppt-master",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "paperclipai/paperclip",
+        "url": "https://github.com/paperclipai/paperclip",
+        "tagline": {
+          "en": "The open-source app everyone uses to manage agents at work",
+          "zh": "The open-source app everyone uses to manage agents at work"
+        },
+        "match": [
+          "paperclip"
+        ],
+        "stars": 116300,
+        "stars7d": 1957,
+        "source_url": "https://github.com/paperclipai/paperclip",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1962,8 +1984,8 @@
         "match": [
           "archify"
         ],
-        "stars": 98784,
-        "stars7d": 2012,
+        "stars": 99093,
+        "stars7d": 1936,
         "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "repository",
@@ -1984,8 +2006,8 @@
         "match": [
           "agent-reach"
         ],
-        "stars": 114004,
-        "stars7d": 1951,
+        "stars": 114249,
+        "stars7d": 1924,
         "source_url": "https://github.com/Panniantong/Agent-Reach",
         "source_date": null,
         "source_type": "repository",
@@ -2006,31 +2028,9 @@
         "match": [
           "omniroute"
         ],
-        "stars": 89620,
-        "stars7d": 1840,
+        "stars": 89863,
+        "stars7d": 1765,
         "source_url": "https://github.com/cheaper-inference/OmniRoute",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "paperclipai/paperclip",
-        "url": "https://github.com/paperclipai/paperclip",
-        "tagline": {
-          "en": "The open-source app everyone uses to manage agents at work",
-          "zh": "The open-source app everyone uses to manage agents at work"
-        },
-        "match": [
-          "paperclip"
-        ],
-        "stars": 115953,
-        "stars7d": 1820,
-        "source_url": "https://github.com/paperclipai/paperclip",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2050,8 +2050,8 @@
         "match": [
           "hermes-agent"
         ],
-        "stars": 265417,
-        "stars7d": 1793,
+        "stars": 265657,
+        "stars7d": 1757,
         "source_url": "https://github.com/NousResearch/hermes-agent",
         "source_date": null,
         "source_type": "repository",
@@ -2072,8 +2072,8 @@
         "match": [
           "claude-mem"
         ],
-        "stars": 119066,
-        "stars7d": 1710,
+        "stars": 119309,
+        "stars7d": 1634,
         "source_url": "https://github.com/thedotmack/claude-mem",
         "source_date": null,
         "source_type": "repository",
@@ -2085,18 +2085,18 @@
         }
       },
       {
-        "name": "microsoft/TokenEconomizer",
-        "url": "https://github.com/microsoft/TokenEconomizer",
+        "name": "coreyhaines31/marketingskills",
+        "url": "https://github.com/coreyhaines31/marketingskills",
         "tagline": {
-          "en": "Experience-Driven Black-Box Cost Control for Coding Agents",
-          "zh": "Experience-Driven Black-Box Cost Control for Coding Agents"
+          "en": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
+          "zh": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering."
         },
         "match": [
-          "tokeneconomizer"
+          "marketingskills"
         ],
-        "stars": 7960,
-        "stars7d": 1503,
-        "source_url": "https://github.com/microsoft/TokenEconomizer",
+        "stars": 62239,
+        "stars7d": 1443,
+        "source_url": "https://github.com/coreyhaines31/marketingskills",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2109,7 +2109,7 @@
     ],
     "rotate": false,
     "source": "The Skill Leaderboard · GitHub",
-    "updated_at": "2026-11-23",
+    "updated_at": "2026-11-24",
     "origin": "public",
     "product": [
       {
@@ -2122,8 +2122,8 @@
         "match": [
           "opencode"
         ],
-        "stars": 228593,
-        "stars7d": 1557,
+        "stars": 228796,
+        "stars7d": 1494,
         "source_url": "https://github.com/anomalyco/opencode",
         "source_date": null,
         "source_type": "repository",
@@ -2144,8 +2144,8 @@
         "match": [
           "claude-code"
         ],
-        "stars": 156695,
-        "stars7d": 911,
+        "stars": 156819,
+        "stars7d": 907,
         "source_url": "https://github.com/anthropics/claude-code",
         "source_date": null,
         "source_type": "repository",
@@ -2166,8 +2166,8 @@
         "match": [
           "codex"
         ],
-        "stars": 136145,
-        "stars7d": 741,
+        "stars": 136245,
+        "stars7d": 715,
         "source_url": "https://github.com/openai/codex",
         "source_date": null,
         "source_type": "repository",
@@ -2188,8 +2188,8 @@
         "match": [
           "gemini-cli"
         ],
-        "stars": 109000,
-        "stars7d": 150,
+        "stars": 109022,
+        "stars7d": 155,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
         "source_type": "repository",
@@ -2210,8 +2210,8 @@
         "match": [
           "openhands"
         ],
-        "stars": 94079,
-        "stars7d": 550,
+        "stars": 94164,
+        "stars7d": 558,
         "source_url": "https://github.com/OpenHands/OpenHands",
         "source_date": null,
         "source_type": "repository",
@@ -2232,8 +2232,8 @@
         "match": [
           "cline"
         ],
-        "stars": 71824,
-        "stars7d": 163,
+        "stars": 71854,
+        "stars7d": 165,
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
         "source_type": "repository",
@@ -2254,8 +2254,8 @@
         "match": [
           "goose"
         ],
-        "stars": 56876,
-        "stars7d": 213,
+        "stars": 56902,
+        "stars7d": 212,
         "source_url": "https://github.com/aaif-goose/goose",
         "source_date": null,
         "source_type": "repository",
@@ -2276,8 +2276,8 @@
         "match": [
           "aider"
         ],
-        "stars": 50221,
-        "stars7d": 88,
+        "stars": 50231,
+        "stars7d": 87,
         "source_url": "https://github.com/Aider-AI/aider",
         "source_date": null,
         "source_type": "repository",
@@ -2298,8 +2298,8 @@
         "match": [
           "continue"
         ],
-        "stars": 36538,
-        "stars7d": 54,
+        "stars": 36545,
+        "stars7d": 51,
         "source_url": "https://github.com/continuedev/continue",
         "source_date": null,
         "source_type": "repository",
@@ -2320,8 +2320,8 @@
         "match": [
           "qwen-code"
         ],
-        "stars": 30872,
-        "stars7d": 334,
+        "stars": 30902,
+        "stars7d": 271,
         "source_url": "https://github.com/QwenLM/qwen-code",
         "source_date": null,
         "source_type": "repository",
@@ -2342,8 +2342,8 @@
         "match": [
           "kimi-cli"
         ],
-        "stars": 11401,
-        "stars7d": -4,
+        "stars": 11400,
+        "stars7d": -7,
         "source_url": "https://github.com/MoonshotAI/kimi-cli",
         "source_date": null,
         "source_type": "repository",
