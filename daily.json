@@ -1,7 +1,7 @@
 {
   "version": 1,
   "course_sources": [],
-  "updated_at": "2026-11-26",
+  "updated_at": "2026-11-27",
   "skills": [
     {
       "id": "rules_file",
@@ -1234,8 +1234,8 @@
         "match": [
           "archify"
         ],
-        "stars": 99768,
-        "stars7d": 27280,
+        "stars": 100289,
+        "stars7d": 27801,
         "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "catalog",
@@ -1256,8 +1256,8 @@
         "match": [
           "claude-bughunter"
         ],
-        "stars": 22270,
-        "stars7d": 11844,
+        "stars": 23819,
+        "stars7d": 12073,
         "source_url": "https://github.com/elementalsouls/Claude-BugHunter",
         "source_date": null,
         "source_type": "catalog",
@@ -1278,31 +1278,9 @@
         "match": [
           "rust-anything"
         ],
-        "stars": 9445,
-        "stars7d": 6970,
+        "stars": 9842,
+        "stars7d": 5546,
         "source_url": "https://github.com/erkamyaman/rust-anything",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "obra/superpowers",
-        "url": "https://github.com/obra/superpowers",
-        "tagline": {
-          "en": "Plan engineering work and coordinate parallel agents.",
-          "zh": "Plan engineering work and coordinate parallel agents."
-        },
-        "match": [
-          "superpowers"
-        ],
-        "stars": 326242,
-        "stars7d": 6535,
-        "source_url": "https://github.com/obra/superpowers",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1322,8 +1300,8 @@
         "match": [
           "skills"
         ],
-        "stars": 332584,
-        "stars7d": 5425,
+        "stars": 333281,
+        "stars7d": 5443,
         "source_url": "https://github.com/mattpocock/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1335,18 +1313,18 @@
         }
       },
       {
-        "name": "mvanhorn/last30days-skill",
-        "url": "https://github.com/mvanhorn/last30days-skill",
+        "name": "obra/superpowers",
+        "url": "https://github.com/obra/superpowers",
         "tagline": {
-          "en": "Research recent trends across social and web sources.",
-          "zh": "Research recent trends across social and web sources."
+          "en": "Plan engineering work and coordinate parallel agents.",
+          "zh": "Plan engineering work and coordinate parallel agents."
         },
         "match": [
-          "last30days-skill"
+          "superpowers"
         ],
-        "stars": 74741,
-        "stars7d": 5145,
-        "source_url": "https://github.com/mvanhorn/last30days-skill",
+        "stars": 327066,
+        "stars7d": 5375,
+        "source_url": "https://github.com/obra/superpowers",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1366,9 +1344,53 @@
         "match": [
           "app-store-compliance"
         ],
-        "stars": 6234,
-        "stars7d": 5117,
+        "stars": 6784,
+        "stars7d": 5284,
         "source_url": "https://github.com/mjmirza/app-store-compliance",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "cathrynlavery/diagram-design",
+        "url": "https://github.com/cathrynlavery/diagram-design",
+        "tagline": {
+          "en": "Draw branded diagrams in HTML and SVG.",
+          "zh": "Draw branded diagrams in HTML and SVG."
+        },
+        "match": [
+          "diagram-design"
+        ],
+        "stars": 73516,
+        "stars7d": 5149,
+        "source_url": "https://github.com/cathrynlavery/diagram-design",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "mvanhorn/last30days-skill",
+        "url": "https://github.com/mvanhorn/last30days-skill",
+        "tagline": {
+          "en": "Research recent trends across social and web sources.",
+          "zh": "Research recent trends across social and web sources."
+        },
+        "match": [
+          "last30days-skill"
+        ],
+        "stars": 75461,
+        "stars7d": 4945,
+        "source_url": "https://github.com/mvanhorn/last30days-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1388,8 +1410,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 198445,
-        "stars7d": 4763,
+        "stars": 199094,
+        "stars7d": 4540,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "catalog",
@@ -1410,31 +1432,9 @@
         "match": [
           "openmotion"
         ],
-        "stars": 16199,
-        "stars7d": 4636,
+        "stars": 16581,
+        "stars7d": 4456,
         "source_url": "https://github.com/nexu-io/openmotion",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "cathrynlavery/diagram-design",
-        "url": "https://github.com/cathrynlavery/diagram-design",
-        "tagline": {
-          "en": "Draw branded diagrams in HTML and SVG.",
-          "zh": "Draw branded diagrams in HTML and SVG."
-        },
-        "match": [
-          "diagram-design"
-        ],
-        "stars": 72571,
-        "stars7d": 4468,
-        "source_url": "https://github.com/cathrynlavery/diagram-design",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1454,31 +1454,9 @@
         "match": [
           "godogen"
         ],
-        "stars": 7407,
-        "stars7d": 4408,
+        "stars": 7421,
+        "stars7d": 4422,
         "source_url": "https://github.com/htdt/godogen",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "pbakaus/impeccable",
-        "url": "https://github.com/pbakaus/impeccable",
-        "tagline": {
-          "en": "Audit UX and refine frontend design.",
-          "zh": "Audit UX and refine frontend design."
-        },
-        "match": [
-          "impeccable"
-        ],
-        "stars": 116610,
-        "stars7d": 3995,
-        "source_url": "https://github.com/pbakaus/impeccable",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1498,9 +1476,31 @@
         "match": [
           "fast-anything"
         ],
-        "stars": 3799,
-        "stars7d": 3799,
+        "stars": 4119,
+        "stars7d": 4119,
         "source_url": "https://github.com/EL4CTEO/fast-anything",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "pbakaus/impeccable",
+        "url": "https://github.com/pbakaus/impeccable",
+        "tagline": {
+          "en": "Audit UX and refine frontend design.",
+          "zh": "Audit UX and refine frontend design."
+        },
+        "match": [
+          "impeccable"
+        ],
+        "stars": 117234,
+        "stars7d": 4023,
+        "source_url": "https://github.com/pbakaus/impeccable",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1520,8 +1520,8 @@
         "match": [
           "hallmark"
         ],
-        "stars": 60858,
-        "stars7d": 3601,
+        "stars": 61383,
+        "stars7d": 3564,
         "source_url": "https://github.com/Nutlope/hallmark",
         "source_date": null,
         "source_type": "catalog",
@@ -1542,8 +1542,8 @@
         "match": [
           "unslop"
         ],
-        "stars": 21499,
-        "stars7d": 3461,
+        "stars": 21978,
+        "stars7d": 3489,
         "source_url": "https://github.com/heydamir/unslop",
         "source_date": null,
         "source_type": "catalog",
@@ -1564,31 +1564,9 @@
         "match": [
           "hyperframes"
         ],
-        "stars": 89891,
-        "stars7d": 3259,
+        "stars": 90509,
+        "stars7d": 3386,
         "source_url": "https://github.com/heygen-com/hyperframes",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "Leonxlnx/taste-skill",
-        "url": "https://github.com/Leonxlnx/taste-skill",
-        "tagline": {
-          "en": "Build company websites with cohesive visual design.",
-          "zh": "Build company websites with cohesive visual design."
-        },
-        "match": [
-          "taste-skill"
-        ],
-        "stars": 121366,
-        "stars7d": 3254,
-        "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1608,8 +1586,8 @@
         "match": [
           "skills"
         ],
-        "stars": 200256,
-        "stars7d": 3249,
+        "stars": 200792,
+        "stars7d": 3279,
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1630,9 +1608,31 @@
         "match": [
           "graphify"
         ],
-        "stars": 153166,
-        "stars7d": 3244,
+        "stars": 153623,
+        "stars7d": 3224,
         "source_url": "https://github.com/Graphify-Labs/graphify",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "Build company websites with cohesive visual design.",
+          "zh": "Build company websites with cohesive visual design."
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 121801,
+        "stars7d": 3089,
+        "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1652,8 +1652,8 @@
         "match": [
           "security-audit-skill"
         ],
-        "stars": 78181,
-        "stars7d": 3079,
+        "stars": 78568,
+        "stars7d": 2954,
         "source_url": "https://github.com/cloudflare/security-audit-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1676,8 +1676,8 @@
         "match": [
           "orca"
         ],
-        "stars": 137875,
-        "stars7d": 9044,
+        "stars": 140289,
+        "stars7d": 10468,
         "source_url": "https://github.com/stablyai/orca",
         "source_date": null,
         "source_type": "repository",
@@ -1698,8 +1698,8 @@
         "match": [
           "dsh-our-free-model"
         ],
-        "stars": 87073,
-        "stars7d": 7311,
+        "stars": 88140,
+        "stars7d": 7178,
         "source_url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
         "source_date": null,
         "source_type": "repository",
@@ -1720,31 +1720,9 @@
         "match": [
           "firecrawl"
         ],
-        "stars": 209965,
-        "stars7d": 6860,
+        "stars": 210875,
+        "stars7d": 6763,
         "source_url": "https://github.com/firecrawl/firecrawl",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "ccch1mneyyy/dsh-Go",
-        "url": "https://github.com/ccch1mneyyy/dsh-Go",
-        "tagline": {
-          "en": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
-          "zh": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。"
-        },
-        "match": [
-          "dsh-go"
-        ],
-        "stars": 31943,
-        "stars7d": 4801,
-        "source_url": "https://github.com/ccch1mneyyy/dsh-Go",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1764,9 +1742,31 @@
         "match": [
           "ponytail"
         ],
-        "stars": 198676,
-        "stars7d": 4698,
+        "stars": 199329,
+        "stars7d": 4524,
         "source_url": "https://github.com/DietrichGebert/ponytail",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "ccch1mneyyy/dsh-Go",
+        "url": "https://github.com/ccch1mneyyy/dsh-Go",
+        "tagline": {
+          "en": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
+          "zh": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。"
+        },
+        "match": [
+          "dsh-go"
+        ],
+        "stars": 32646,
+        "stars7d": 4492,
+        "source_url": "https://github.com/ccch1mneyyy/dsh-Go",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1786,8 +1786,8 @@
         "match": [
           "ecc"
         ],
-        "stars": 310690,
-        "stars7d": 4248,
+        "stars": 311270,
+        "stars7d": 4024,
         "source_url": "https://github.com/affaan-m/ECC",
         "source_date": null,
         "source_type": "repository",
@@ -1808,8 +1808,8 @@
         "match": [
           "hyperframes"
         ],
-        "stars": 90118,
-        "stars7d": 3614,
+        "stars": 90809,
+        "stars7d": 3793,
         "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "repository",
@@ -1830,8 +1830,8 @@
         "match": [
           "deepseek-harness"
         ],
-        "stars": 287030,
-        "stars7d": 3434,
+        "stars": 287592,
+        "stars7d": 3403,
         "source_url": "https://github.com/deepseek-ai/deepseek-harness",
         "source_date": null,
         "source_type": "repository",
@@ -1852,31 +1852,9 @@
         "match": [
           "graphify"
         ],
-        "stars": 153351,
-        "stars7d": 3212,
+        "stars": 153826,
+        "stars7d": 3217,
         "source_url": "https://github.com/Graphify-Labs/graphify",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "Leonxlnx/taste-skill",
-        "url": "https://github.com/Leonxlnx/taste-skill",
-        "tagline": {
-          "en": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages",
-          "zh": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages"
-        },
-        "match": [
-          "taste-skill"
-        ],
-        "stars": 121533,
-        "stars7d": 3149,
-        "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1896,9 +1874,53 @@
         "match": [
           "ffmpeg-skill"
         ],
-        "stars": 11072,
-        "stars7d": 3064,
+        "stars": 11489,
+        "stars7d": 3172,
         "source_url": "https://github.com/kajisho5/ffmpeg-skill",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "Leonxlnx/taste-skill",
+        "url": "https://github.com/Leonxlnx/taste-skill",
+        "tagline": {
+          "en": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages",
+          "zh": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages"
+        },
+        "match": [
+          "taste-skill"
+        ],
+        "stars": 121957,
+        "stars7d": 3082,
+        "source_url": "https://github.com/Leonxlnx/taste-skill",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "tt-a1i/archify",
+        "url": "https://github.com/tt-a1i/archify",
+        "tagline": {
+          "en": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more.",
+          "zh": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more."
+        },
+        "match": [
+          "archify"
+        ],
+        "stars": 100539,
+        "stars7d": 2505,
+        "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1918,8 +1940,8 @@
         "match": [
           "deeptutor"
         ],
-        "stars": 62755,
-        "stars7d": 2294,
+        "stars": 63243,
+        "stars7d": 2453,
         "source_url": "https://github.com/HKUDS/DeepTutor",
         "source_date": null,
         "source_type": "repository",
@@ -1940,31 +1962,9 @@
         "match": [
           "paperclip"
         ],
-        "stars": 117029,
-        "stars7d": 2222,
+        "stars": 117367,
+        "stars7d": 2191,
         "source_url": "https://github.com/paperclipai/paperclip",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "tt-a1i/archify",
-        "url": "https://github.com/tt-a1i/archify",
-        "tagline": {
-          "en": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more.",
-          "zh": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more."
-        },
-        "match": [
-          "archify"
-        ],
-        "stars": 99896,
-        "stars7d": 2168,
-        "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1984,8 +1984,8 @@
         "match": [
           "ppt-master"
         ],
-        "stars": 80186,
-        "stars7d": 1901,
+        "stars": 80493,
+        "stars7d": 1888,
         "source_url": "https://github.com/hugohe3/ppt-master",
         "source_date": null,
         "source_type": "repository",
@@ -2006,31 +2006,9 @@
         "match": [
           "agent-reach"
         ],
-        "stars": 114704,
-        "stars7d": 1655,
+        "stars": 115047,
+        "stars7d": 1736,
         "source_url": "https://github.com/Panniantong/Agent-Reach",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "cheaper-inference/OmniRoute",
-        "url": "https://github.com/cheaper-inference/OmniRoute",
-        "tagline": {
-          "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
-          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
-        },
-        "match": [
-          "omniroute"
-        ],
-        "stars": 90322,
-        "stars7d": 1655,
-        "source_url": "https://github.com/cheaper-inference/OmniRoute",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2050,9 +2028,31 @@
         "match": [
           "hermes-agent"
         ],
-        "stars": 266095,
-        "stars7d": 1607,
+        "stars": 266373,
+        "stars7d": 1637,
         "source_url": "https://github.com/NousResearch/hermes-agent",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "cheaper-inference/OmniRoute",
+        "url": "https://github.com/cheaper-inference/OmniRoute",
+        "tagline": {
+          "en": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors",
+          "zh": "Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors"
+        },
+        "match": [
+          "omniroute"
+        ],
+        "stars": 90553,
+        "stars7d": 1625,
+        "source_url": "https://github.com/cheaper-inference/OmniRoute",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2072,8 +2072,8 @@
         "match": [
           "claude-mem"
         ],
-        "stars": 119751,
-        "stars7d": 1529,
+        "stars": 119967,
+        "stars7d": 1541,
         "source_url": "https://github.com/thedotmack/claude-mem",
         "source_date": null,
         "source_type": "repository",
@@ -2094,8 +2094,8 @@
         "match": [
           "marketingskills"
         ],
-        "stars": 62634,
-        "stars7d": 1393,
+        "stars": 62836,
+        "stars7d": 1334,
         "source_url": "https://github.com/coreyhaines31/marketingskills",
         "source_date": null,
         "source_type": "repository",
@@ -2109,7 +2109,7 @@
     ],
     "rotate": false,
     "source": "The Skill Leaderboard · GitHub",
-    "updated_at": "2026-11-26",
+    "updated_at": "2026-11-27",
     "origin": "public",
     "product": [
       {
@@ -2122,8 +2122,8 @@
         "match": [
           "opencode"
         ],
-        "stars": 229178,
-        "stars7d": 1355,
+        "stars": 229399,
+        "stars7d": 1368,
         "source_url": "https://github.com/anomalyco/opencode",
         "source_date": null,
         "source_type": "repository",
@@ -2144,8 +2144,8 @@
         "match": [
           "claude-code"
         ],
-        "stars": 157075,
-        "stars7d": 909,
+        "stars": 157210,
+        "stars7d": 880,
         "source_url": "https://github.com/anthropics/claude-code",
         "source_date": null,
         "source_type": "repository",
@@ -2166,8 +2166,8 @@
         "match": [
           "codex"
         ],
-        "stars": 136446,
-        "stars7d": 651,
+        "stars": 136581,
+        "stars7d": 690,
         "source_url": "https://github.com/openai/codex",
         "source_date": null,
         "source_type": "repository",
@@ -2188,8 +2188,8 @@
         "match": [
           "gemini-cli"
         ],
-        "stars": 109106,
-        "stars7d": 182,
+        "stars": 109193,
+        "stars7d": 255,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
         "source_type": "repository",
@@ -2210,8 +2210,8 @@
         "match": [
           "openhands"
         ],
-        "stars": 94336,
-        "stars7d": 572,
+        "stars": 94414,
+        "stars7d": 565,
         "source_url": "https://github.com/OpenHands/OpenHands",
         "source_date": null,
         "source_type": "repository",
@@ -2232,8 +2232,8 @@
         "match": [
           "cline"
         ],
-        "stars": 71894,
-        "stars7d": 137,
+        "stars": 71924,
+        "stars7d": 155,
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
         "source_type": "repository",
@@ -2254,8 +2254,8 @@
         "match": [
           "goose"
         ],
-        "stars": 56994,
-        "stars7d": 230,
+        "stars": 57039,
+        "stars7d": 245,
         "source_url": "https://github.com/aaif-goose/goose",
         "source_date": null,
         "source_type": "repository",
@@ -2276,8 +2276,8 @@
         "match": [
           "aider"
         ],
-        "stars": 50255,
-        "stars7d": 84,
+        "stars": 50276,
+        "stars7d": 90,
         "source_url": "https://github.com/Aider-AI/aider",
         "source_date": null,
         "source_type": "repository",
@@ -2298,8 +2298,8 @@
         "match": [
           "continue"
         ],
-        "stars": 36563,
-        "stars7d": 51,
+        "stars": 36575,
+        "stars7d": 56,
         "source_url": "https://github.com/continuedev/continue",
         "source_date": null,
         "source_type": "repository",
@@ -2320,8 +2320,8 @@
         "match": [
           "qwen-code"
         ],
-        "stars": 30939,
-        "stars7d": 175,
+        "stars": 30962,
+        "stars7d": 173,
         "source_url": "https://github.com/QwenLM/qwen-code",
         "source_date": null,
         "source_type": "repository",
@@ -2342,8 +2342,8 @@
         "match": [
           "kimi-cli"
         ],
-        "stars": 11397,
-        "stars7d": -13,
+        "stars": 11399,
+        "stars7d": -6,
         "source_url": "https://github.com/MoonshotAI/kimi-cli",
         "source_date": null,
         "source_type": "repository",
