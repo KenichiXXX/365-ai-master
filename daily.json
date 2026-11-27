@@ -1,7 +1,7 @@
 {
   "version": 1,
   "course_sources": [],
-  "updated_at": "2026-11-27",
+  "updated_at": "2026-11-28",
   "skills": [
     {
       "id": "rules_file",
@@ -1234,8 +1234,8 @@
         "match": [
           "archify"
         ],
-        "stars": 100289,
-        "stars7d": 27801,
+        "stars": 100779,
+        "stars7d": 28291,
         "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "catalog",
@@ -1256,31 +1256,9 @@
         "match": [
           "claude-bughunter"
         ],
-        "stars": 23819,
-        "stars7d": 12073,
+        "stars": 25384,
+        "stars7d": 11991,
         "source_url": "https://github.com/elementalsouls/Claude-BugHunter",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "erkamyaman/rust-anything",
-        "url": "https://github.com/erkamyaman/rust-anything",
-        "tagline": {
-          "en": "Port applications and functions to Rust.",
-          "zh": "Port applications and functions to Rust."
-        },
-        "match": [
-          "rust-anything"
-        ],
-        "stars": 9842,
-        "stars7d": 5546,
-        "source_url": "https://github.com/erkamyaman/rust-anything",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1300,8 +1278,8 @@
         "match": [
           "skills"
         ],
-        "stars": 333281,
-        "stars7d": 5443,
+        "stars": 333991,
+        "stars7d": 5463,
         "source_url": "https://github.com/mattpocock/skills",
         "source_date": null,
         "source_type": "catalog",
@@ -1322,31 +1300,9 @@
         "match": [
           "superpowers"
         ],
-        "stars": 327066,
-        "stars7d": 5375,
+        "stars": 327930,
+        "stars7d": 5427,
         "source_url": "https://github.com/obra/superpowers",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "mjmirza/app-store-compliance",
-        "url": "https://github.com/mjmirza/app-store-compliance",
-        "tagline": {
-          "en": "Audit mobile apps for store submission compliance.",
-          "zh": "Audit mobile apps for store submission compliance."
-        },
-        "match": [
-          "app-store-compliance"
-        ],
-        "stars": 6784,
-        "stars7d": 5284,
-        "source_url": "https://github.com/mjmirza/app-store-compliance",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1366,8 +1322,8 @@
         "match": [
           "diagram-design"
         ],
-        "stars": 73516,
-        "stars7d": 5149,
+        "stars": 74215,
+        "stars7d": 5217,
         "source_url": "https://github.com/cathrynlavery/diagram-design",
         "source_date": null,
         "source_type": "catalog",
@@ -1388,9 +1344,53 @@
         "match": [
           "last30days-skill"
         ],
-        "stars": 75461,
-        "stars7d": 4945,
+        "stars": 76110,
+        "stars7d": 4940,
         "source_url": "https://github.com/mvanhorn/last30days-skill",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "mjmirza/app-store-compliance",
+        "url": "https://github.com/mjmirza/app-store-compliance",
+        "tagline": {
+          "en": "Audit mobile apps for store submission compliance.",
+          "zh": "Audit mobile apps for store submission compliance."
+        },
+        "match": [
+          "app-store-compliance"
+        ],
+        "stars": 7309,
+        "stars7d": 4939,
+        "source_url": "https://github.com/mjmirza/app-store-compliance",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "erkamyaman/rust-anything",
+        "url": "https://github.com/erkamyaman/rust-anything",
+        "tagline": {
+          "en": "Port applications and functions to Rust.",
+          "zh": "Port applications and functions to Rust."
+        },
+        "match": [
+          "rust-anything"
+        ],
+        "stars": 10553,
+        "stars7d": 4567,
+        "source_url": "https://github.com/erkamyaman/rust-anything",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1410,53 +1410,9 @@
         "match": [
           "ponytail"
         ],
-        "stars": 199094,
-        "stars7d": 4540,
+        "stars": 199688,
+        "stars7d": 4428,
         "source_url": "https://github.com/DietrichGebert/ponytail",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "nexu-io/openmotion",
-        "url": "https://github.com/nexu-io/openmotion",
-        "tagline": {
-          "en": "Create motion design briefs and brandkits.",
-          "zh": "Create motion design briefs and brandkits."
-        },
-        "match": [
-          "openmotion"
-        ],
-        "stars": 16581,
-        "stars7d": 4456,
-        "source_url": "https://github.com/nexu-io/openmotion",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "htdt/godogen",
-        "url": "https://github.com/htdt/godogen",
-        "tagline": {
-          "en": "Generate game assets and configure engine toolchains.",
-          "zh": "Generate game assets and configure engine toolchains."
-        },
-        "match": [
-          "godogen"
-        ],
-        "stars": 7421,
-        "stars7d": 4422,
-        "source_url": "https://github.com/htdt/godogen",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1476,8 +1432,8 @@
         "match": [
           "fast-anything"
         ],
-        "stars": 4119,
-        "stars7d": 4119,
+        "stars": 4377,
+        "stars7d": 4377,
         "source_url": "https://github.com/EL4CTEO/fast-anything",
         "source_date": null,
         "source_type": "catalog",
@@ -1498,9 +1454,31 @@
         "match": [
           "impeccable"
         ],
-        "stars": 117234,
-        "stars7d": 4023,
+        "stars": 117805,
+        "stars7d": 4032,
         "source_url": "https://github.com/pbakaus/impeccable",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "heygen-com/hyperframes",
+        "url": "https://github.com/heygen-com/hyperframes",
+        "tagline": {
+          "en": "Compose and render branded motion graphics videos.",
+          "zh": "Compose and render branded motion graphics videos."
+        },
+        "match": [
+          "hyperframes"
+        ],
+        "stars": 91214,
+        "stars7d": 3665,
+        "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1520,8 +1498,8 @@
         "match": [
           "hallmark"
         ],
-        "stars": 61383,
-        "stars7d": 3564,
+        "stars": 61878,
+        "stars7d": 3548,
         "source_url": "https://github.com/Nutlope/hallmark",
         "source_date": null,
         "source_type": "catalog",
@@ -1542,31 +1520,9 @@
         "match": [
           "unslop"
         ],
-        "stars": 21978,
-        "stars7d": 3489,
+        "stars": 22432,
+        "stars7d": 3455,
         "source_url": "https://github.com/heydamir/unslop",
-        "source_date": null,
-        "source_type": "catalog",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "heygen-com/hyperframes",
-        "url": "https://github.com/heygen-com/hyperframes",
-        "tagline": {
-          "en": "Compose and render branded motion graphics videos.",
-          "zh": "Compose and render branded motion graphics videos."
-        },
-        "match": [
-          "hyperframes"
-        ],
-        "stars": 90509,
-        "stars7d": 3386,
-        "source_url": "https://github.com/heygen-com/hyperframes",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1586,12 +1542,34 @@
         "match": [
           "skills"
         ],
-        "stars": 200792,
-        "stars7d": 3279,
+        "stars": 201287,
+        "stars7d": 3385,
         "source_url": "https://github.com/anthropics/skills",
         "source_date": null,
         "source_type": "catalog",
         "task_category": "skills",
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "nexu-io/openmotion",
+        "url": "https://github.com/nexu-io/openmotion",
+        "tagline": {
+          "en": "Create motion design briefs and brandkits.",
+          "zh": "Create motion design briefs and brandkits."
+        },
+        "match": [
+          "openmotion"
+        ],
+        "stars": 16855,
+        "stars7d": 3327,
+        "source_url": "https://github.com/nexu-io/openmotion",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
         "compatibility": null,
         "caution": {
           "zh": "安装前请核对权限与来源",
@@ -1608,8 +1586,8 @@
         "match": [
           "graphify"
         ],
-        "stars": 153623,
-        "stars7d": 3224,
+        "stars": 154076,
+        "stars7d": 3158,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
         "source_type": "catalog",
@@ -1630,8 +1608,8 @@
         "match": [
           "taste-skill"
         ],
-        "stars": 121801,
-        "stars7d": 3089,
+        "stars": 122167,
+        "stars7d": 3026,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
         "source_date": null,
         "source_type": "catalog",
@@ -1652,9 +1630,31 @@
         "match": [
           "security-audit-skill"
         ],
-        "stars": 78568,
-        "stars7d": 2954,
+        "stars": 79056,
+        "stars7d": 2994,
         "source_url": "https://github.com/cloudflare/security-audit-skill",
+        "source_date": null,
+        "source_type": "catalog",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "lemomo-ai/lemo-opuscar",
+        "url": "https://github.com/lemomo-ai/lemo-opuscar",
+        "tagline": {
+          "en": "Create films from stories using code-driven visual styles.",
+          "zh": "Create films from stories using code-driven visual styles."
+        },
+        "match": [
+          "lemo-opuscar"
+        ],
+        "stars": 21816,
+        "stars7d": 2889,
+        "source_url": "https://github.com/lemomo-ai/lemo-opuscar",
         "source_date": null,
         "source_type": "catalog",
         "task_category": null,
@@ -1676,8 +1676,8 @@
         "match": [
           "orca"
         ],
-        "stars": 140289,
-        "stars7d": 10468,
+        "stars": 142389,
+        "stars7d": 11417,
         "source_url": "https://github.com/stablyai/orca",
         "source_date": null,
         "source_type": "repository",
@@ -1698,8 +1698,8 @@
         "match": [
           "dsh-our-free-model"
         ],
-        "stars": 88140,
-        "stars7d": 7178,
+        "stars": 89087,
+        "stars7d": 7018,
         "source_url": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
         "source_date": null,
         "source_type": "repository",
@@ -1720,9 +1720,31 @@
         "match": [
           "firecrawl"
         ],
-        "stars": 210875,
-        "stars7d": 6763,
+        "stars": 211637,
+        "stars7d": 6452,
         "source_url": "https://github.com/firecrawl/firecrawl",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "zhouxiaoka/autoclip",
+        "url": "https://github.com/zhouxiaoka/autoclip",
+        "tagline": {
+          "en": "AutoClip｜The open-source OpusClip alternative — local-first AI clipping & MCP server, zero subscriptions. 一个链接，一键出片。开源 AI 视频剪辑桌面工具，将播客、访谈、课程等长视频自动剪成短视频，生成字幕、封面和发布文案，适配抖音、小红书、TikTok、Reels 与 YouTube Shorts。",
+          "zh": "AutoClip｜The open-source OpusClip alternative — local-first AI clipping & MCP server, zero subscriptions. 一个链接，一键出片。开源 AI 视频剪辑桌面工具，将播客、访谈、课程等长视频自动剪成短视频，生成字幕、封面和发布文案，适配抖音、小红书、TikTok、Reels 与 YouTube Shorts。"
+        },
+        "match": [
+          "autoclip"
+        ],
+        "stars": 17560,
+        "stars7d": 5424,
+        "source_url": "https://github.com/zhouxiaoka/autoclip",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1742,8 +1764,8 @@
         "match": [
           "ponytail"
         ],
-        "stars": 199329,
-        "stars7d": 4524,
+        "stars": 200078,
+        "stars7d": 4509,
         "source_url": "https://github.com/DietrichGebert/ponytail",
         "source_date": null,
         "source_type": "repository",
@@ -1764,31 +1786,9 @@
         "match": [
           "dsh-go"
         ],
-        "stars": 32646,
-        "stars7d": 4492,
+        "stars": 33289,
+        "stars7d": 4301,
         "source_url": "https://github.com/ccch1mneyyy/dsh-Go",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "affaan-m/ECC",
-        "url": "https://github.com/affaan-m/ECC",
-        "tagline": {
-          "en": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
-          "zh": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond."
-        },
-        "match": [
-          "ecc"
-        ],
-        "stars": 311270,
-        "stars7d": 4024,
-        "source_url": "https://github.com/affaan-m/ECC",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1808,9 +1808,31 @@
         "match": [
           "hyperframes"
         ],
-        "stars": 90809,
-        "stars7d": 3793,
+        "stars": 91490,
+        "stars7d": 4049,
         "source_url": "https://github.com/heygen-com/hyperframes",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "affaan-m/ECC",
+        "url": "https://github.com/affaan-m/ECC",
+        "tagline": {
+          "en": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
+          "zh": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond."
+        },
+        "match": [
+          "ecc"
+        ],
+        "stars": 311803,
+        "stars7d": 3991,
+        "source_url": "https://github.com/affaan-m/ECC",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1830,8 +1852,8 @@
         "match": [
           "deepseek-harness"
         ],
-        "stars": 287592,
-        "stars7d": 3403,
+        "stars": 288032,
+        "stars7d": 3343,
         "source_url": "https://github.com/deepseek-ai/deepseek-harness",
         "source_date": null,
         "source_type": "repository",
@@ -1852,8 +1874,8 @@
         "match": [
           "graphify"
         ],
-        "stars": 153826,
-        "stars7d": 3217,
+        "stars": 154253,
+        "stars7d": 3106,
         "source_url": "https://github.com/Graphify-Labs/graphify",
         "source_date": null,
         "source_type": "repository",
@@ -1874,8 +1896,8 @@
         "match": [
           "ffmpeg-skill"
         ],
-        "stars": 11489,
-        "stars7d": 3172,
+        "stars": 11874,
+        "stars7d": 3072,
         "source_url": "https://github.com/kajisho5/ffmpeg-skill",
         "source_date": null,
         "source_type": "repository",
@@ -1896,31 +1918,9 @@
         "match": [
           "taste-skill"
         ],
-        "stars": 121957,
-        "stars7d": 3082,
+        "stars": 122316,
+        "stars7d": 3010,
         "source_url": "https://github.com/Leonxlnx/taste-skill",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "tt-a1i/archify",
-        "url": "https://github.com/tt-a1i/archify",
-        "tagline": {
-          "en": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more.",
-          "zh": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more."
-        },
-        "match": [
-          "archify"
-        ],
-        "stars": 100539,
-        "stars7d": 2505,
-        "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1940,9 +1940,31 @@
         "match": [
           "deeptutor"
         ],
-        "stars": 63243,
-        "stars7d": 2453,
+        "stars": 63776,
+        "stars7d": 2697,
         "source_url": "https://github.com/HKUDS/DeepTutor",
+        "source_date": null,
+        "source_type": "repository",
+        "task_category": null,
+        "compatibility": null,
+        "caution": {
+          "zh": "安装前请核对权限与来源",
+          "en": "Check permissions and source before installing"
+        }
+      },
+      {
+        "name": "tt-a1i/archify",
+        "url": "https://github.com/tt-a1i/archify",
+        "tagline": {
+          "en": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more.",
+          "zh": "Turn any idea, plan, or codebase into an interactive diagram or one-page answer: 10 diagram types, Architecture Diagnosis, Story video and PR walkthroughs. An Agent Skill for Claude Code, Codex, Cursor and more."
+        },
+        "match": [
+          "archify"
+        ],
+        "stars": 100946,
+        "stars7d": 2638,
+        "source_url": "https://github.com/tt-a1i/archify",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -1962,8 +1984,8 @@
         "match": [
           "paperclip"
         ],
-        "stars": 117367,
-        "stars7d": 2191,
+        "stars": 117598,
+        "stars7d": 2130,
         "source_url": "https://github.com/paperclipai/paperclip",
         "source_date": null,
         "source_type": "repository",
@@ -1984,8 +2006,8 @@
         "match": [
           "ppt-master"
         ],
-        "stars": 80493,
-        "stars7d": 1888,
+        "stars": 80773,
+        "stars7d": 1912,
         "source_url": "https://github.com/hugohe3/ppt-master",
         "source_date": null,
         "source_type": "repository",
@@ -2006,8 +2028,8 @@
         "match": [
           "agent-reach"
         ],
-        "stars": 115047,
-        "stars7d": 1736,
+        "stars": 115346,
+        "stars7d": 1790,
         "source_url": "https://github.com/Panniantong/Agent-Reach",
         "source_date": null,
         "source_type": "repository",
@@ -2028,8 +2050,8 @@
         "match": [
           "hermes-agent"
         ],
-        "stars": 266373,
-        "stars7d": 1637,
+        "stars": 266618,
+        "stars7d": 1638,
         "source_url": "https://github.com/NousResearch/hermes-agent",
         "source_date": null,
         "source_type": "repository",
@@ -2050,8 +2072,8 @@
         "match": [
           "omniroute"
         ],
-        "stars": 90553,
-        "stars7d": 1625,
+        "stars": 90770,
+        "stars7d": 1584,
         "source_url": "https://github.com/cheaper-inference/OmniRoute",
         "source_date": null,
         "source_type": "repository",
@@ -2072,31 +2094,9 @@
         "match": [
           "claude-mem"
         ],
-        "stars": 119967,
-        "stars7d": 1541,
+        "stars": 120200,
+        "stars7d": 1572,
         "source_url": "https://github.com/thedotmack/claude-mem",
-        "source_date": null,
-        "source_type": "repository",
-        "task_category": null,
-        "compatibility": null,
-        "caution": {
-          "zh": "安装前请核对权限与来源",
-          "en": "Check permissions and source before installing"
-        }
-      },
-      {
-        "name": "coreyhaines31/marketingskills",
-        "url": "https://github.com/coreyhaines31/marketingskills",
-        "tagline": {
-          "en": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
-          "zh": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering."
-        },
-        "match": [
-          "marketingskills"
-        ],
-        "stars": 62836,
-        "stars7d": 1334,
-        "source_url": "https://github.com/coreyhaines31/marketingskills",
         "source_date": null,
         "source_type": "repository",
         "task_category": null,
@@ -2109,7 +2109,7 @@
     ],
     "rotate": false,
     "source": "The Skill Leaderboard · GitHub",
-    "updated_at": "2026-11-27",
+    "updated_at": "2026-11-28",
     "origin": "public",
     "product": [
       {
@@ -2122,8 +2122,8 @@
         "match": [
           "opencode"
         ],
-        "stars": 229399,
-        "stars7d": 1368,
+        "stars": 229640,
+        "stars7d": 1390,
         "source_url": "https://github.com/anomalyco/opencode",
         "source_date": null,
         "source_type": "repository",
@@ -2144,8 +2144,8 @@
         "match": [
           "claude-code"
         ],
-        "stars": 157210,
-        "stars7d": 880,
+        "stars": 157322,
+        "stars7d": 866,
         "source_url": "https://github.com/anthropics/claude-code",
         "source_date": null,
         "source_type": "repository",
@@ -2166,8 +2166,8 @@
         "match": [
           "codex"
         ],
-        "stars": 136581,
-        "stars7d": 690,
+        "stars": 136676,
+        "stars7d": 683,
         "source_url": "https://github.com/openai/codex",
         "source_date": null,
         "source_type": "repository",
@@ -2188,8 +2188,8 @@
         "match": [
           "gemini-cli"
         ],
-        "stars": 109193,
-        "stars7d": 255,
+        "stars": 109254,
+        "stars7d": 295,
         "source_url": "https://github.com/google-gemini/gemini-cli",
         "source_date": null,
         "source_type": "repository",
@@ -2210,8 +2210,8 @@
         "match": [
           "openhands"
         ],
-        "stars": 94414,
-        "stars7d": 565,
+        "stars": 94460,
+        "stars7d": 537,
         "source_url": "https://github.com/OpenHands/OpenHands",
         "source_date": null,
         "source_type": "repository",
@@ -2232,8 +2232,8 @@
         "match": [
           "cline"
         ],
-        "stars": 71924,
-        "stars7d": 155,
+        "stars": 71952,
+        "stars7d": 159,
         "source_url": "https://github.com/cline/cline",
         "source_date": null,
         "source_type": "repository",
@@ -2254,8 +2254,8 @@
         "match": [
           "goose"
         ],
-        "stars": 57039,
-        "stars7d": 245,
+        "stars": 57078,
+        "stars7d": 246,
         "source_url": "https://github.com/aaif-goose/goose",
         "source_date": null,
         "source_type": "repository",
@@ -2276,8 +2276,8 @@
         "match": [
           "aider"
         ],
-        "stars": 50276,
-        "stars7d": 90,
+        "stars": 50288,
+        "stars7d": 88,
         "source_url": "https://github.com/Aider-AI/aider",
         "source_date": null,
         "source_type": "repository",
@@ -2298,8 +2298,8 @@
         "match": [
           "continue"
         ],
-        "stars": 36575,
-        "stars7d": 56,
+        "stars": 36584,
+        "stars7d": 53,
         "source_url": "https://github.com/continuedev/continue",
         "source_date": null,
         "source_type": "repository",
@@ -2320,7 +2320,7 @@
         "match": [
           "qwen-code"
         ],
-        "stars": 30962,
+        "stars": 30988,
         "stars7d": 173,
         "source_url": "https://github.com/QwenLM/qwen-code",
         "source_date": null,
@@ -2342,8 +2342,8 @@
         "match": [
           "kimi-cli"
         ],
-        "stars": 11399,
-        "stars7d": -6,
+        "stars": 11397,
+        "stars7d": -8,
         "source_url": "https://github.com/MoonshotAI/kimi-cli",
         "source_date": null,
         "source_type": "repository",
